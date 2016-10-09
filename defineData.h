@@ -294,6 +294,7 @@ public:
 	std::vector<outline*> outline_first;
 
 	Vec2 Topcent;
+	double topPosY;
 	
 	std::vector<std::vector<std::vector<Vec2>>> part_state;
 
@@ -532,7 +533,7 @@ public:
 
 	void Scaling(double value, double scale);
 
-
+	void outputV();
 };
 
 class GLData{

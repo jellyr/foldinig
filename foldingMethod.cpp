@@ -3947,8 +3947,8 @@ void COpenGL::outputObj(){
 		cout << "end\n";
 }
 
-void COpenGL::convertFoldingToMesh(Model *m){
-	double setSize = 1.00;
+void COpenGL::convertFoldingToMesh(Model *m,){
+	double setSize = 0.01;
 	m->vertices.clear();
 	m->faces.clear();
 	m->halfs.clear();
@@ -3976,7 +3976,7 @@ void COpenGL::convertFoldingToMesh(Model *m){
 	c[6] = 0.0; c[7] = 0.0; c[8] = 0.0;
 	c[9] = 0.0; c[10] = 1.0; c[11] = 0.0;
 	c[12] = 0.0;
-	c[13] = 1.0; c[14] = 0.0; c[15] = 0.0;
+	c[13] = m->fold->topPosY; c[14] = 0.0; c[15] = 0.0;
 	//“V’¸–Ê
 	int count = 1;
 

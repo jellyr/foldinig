@@ -16,6 +16,15 @@ void Model::Scaling(double value, double scale){
 	}
 }
 
+void Model::outputV() {
+	std::list<Vertexs*>::iterator it_v;
+
+	for (it_v = vertices.begin(); it_v != vertices.end(); it_v++) {
+		cout << (*it_v)->num << ":" << (*it_v)->p.x << "," << (*it_v)->p.y << "," << (*it_v)->p.z << "\n";
+
+	}
+}
+
 void Model::reducepolygon(int num){
 	
 	Simplify::Vertex v;

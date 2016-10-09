@@ -22,6 +22,7 @@ void QGLClass::initFold() {
 	cgalObj->cgalPoly_Nef = convert_Poly_NefPoly((*cgalObj->cgalPoly));//	polyhedron→Nef_polyhedronへ変換
 
 	cgalObj->foldM = InputData();//	六角形の折りたたみモデルを入力
+	cgalObj->foldM->topPosY = 1.0;
 	fObj->optimization(cgalObj->foldM);//	最適化
 	fObj->Trim(cgalObj->foldM);//	トリム処理
 	fObj->convertFoldingToMesh(cgalObj->foldM);//	折りたたみモデルをメッシュデータに変換
@@ -29,9 +30,9 @@ void QGLClass::initFold() {
 	
 
 	//	最適化の計算をします
-	//	Optimization(cgalObj->foldM, fObj, cgalObj->cgalPoly, cgalObj->cgalPoly_Nef);
+	Optimization(cgalObj->foldM, fObj, cgalObj->cgalPoly, cgalObj->cgalPoly_Nef);
 	//	test calculatoin of volume
-
+	//	testVolumeCalculation(cgalObj->foldM);
 }
 
 void QGLClass::startAllProcess() {
