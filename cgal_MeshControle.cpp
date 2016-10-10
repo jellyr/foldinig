@@ -163,7 +163,7 @@ Polyhedron_G inputPoly_G(Model *m){
 	std::list<Vertexs*>::iterator it_v;
 	std::vector<Faces*> vecF;
 	std::vector<Vertexs*> vecV;
-
+	//cout << " vertex size: " << m->vertices.size() << "Face size" << m->faces.size() << "\n";
 	//	cgalのmeshオブジェクトに頂点を挿入
 	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
 		vecV.push_back((*it_v));
@@ -322,20 +322,29 @@ double calculateDiff(Polyhedron_G *P1, Polyhedron_G *P2){
 }
 
 double calculateDiff(Polyhedron_G P1, Nef_polyhedron_3 P2, Polyhedron_G *P2_){
-	Polyhedron_G D1;
+	/*Polyhedron_G D1;
 	Polyhedron_G D2;
-	cout << "fold - bunny\n";
 	D1 = boolDiff_P1_P2(P1, P2, true);
-	cout << "bunny - fold\n";
 	D2 = boolDiff_P1_P2(P1, P2, false);
-
+	double V1 = calcVolume(D1);
+	double V2 = calcVolume(D2);
 	double volumeDiff = calcVolume(D1) + calcVolume(D2);
-
 	if (volumeDiff) {
 		double P1Vol = calcVolume(P1);
 		double P2Vol = calcVolume((*P2_));
 		volumeDiff = abs(P1Vol - P2Vol);
-	}
+	}*/
+	Polyhedron_G D1,D2;
+	D1 = boolDiff_P1_inter_P2(P1, P2); // ウサギと立体の共通
+	D2 = boolDiff_P1_P2(P1, P2, false); //	ウサギ-立体
+	//cout << "fold Poly のベクトル: " << calcVolume(P1) << "\n";
+	double V1 = calcVolume(D1);
+	double V2 = calcVolume(D2);
+	double V3 = calcVolume((*P2_));//	ウサギ全体の体積
+	//cout << "V1:" << V1 << ", V2: " << V2 << ", V3: " << V3 << "\n";
+	//cout << "V3 / (V1 - V2): " << V3 / (V1 - V2) << "\n";
+	double volumeDiff = abs(log(V3) - log(abs(V1 - V2)));
+	//cout << "volumeDiff:" << volumeDiff << "\n";
 	return volumeDiff;
 }
 
@@ -349,4 +358,8 @@ Polyhedron_G *holeFillAndConvertPolyG(Model *m){//	穴をふさいでPolu_Gへ変換する
 Nef_polyhedron_3 convert_Poly_NefPoly(Polyhedron_G poly) {
 	Nef_polyhedron_3 N(poly);
 	return N;
+}
+
+Polyhedron_G TestMesh(Polyhedron_G *poly1, Nef_polyhedron_3 poly2, bool flg) {
+	return boolDiff_P1_inter_P2((*poly1),poly2);
 }

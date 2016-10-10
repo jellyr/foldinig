@@ -5,6 +5,7 @@
 #include "cgal_defineData.h"
 #include "foldingMethod.h"
 
+
 class QGLClass : public QGLWidget
 {
 	Q_OBJECT

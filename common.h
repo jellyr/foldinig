@@ -1,5 +1,6 @@
 
-#pragma once
+#ifndef _INCLUDE_COMMON_
+#define _INCLUDE_COMMON_
 
 // TODO: プログラムに必要な追加ヘッダーをここで参照してください。
 #include <math.h>
@@ -20,10 +21,4 @@
 #include <time.h>
 #include <functional>
 
-/*#include <Eigen/Core>
-#include <Eigen/Geometry>
-#include <Eigen/Dense>
-#include <Eigen/LU>
-#include <Eigen/SVD>
-#include <Eigen/SparseCore>
-#include <Eigen/SparseLU>*/
+#endif

@@ -3947,7 +3947,7 @@ void COpenGL::outputObj(){
 		cout << "end\n";
 }
 
-void COpenGL::convertFoldingToMesh(Model *m,){
+void COpenGL::convertFoldingToMesh(Model *m){
 	double setSize = 0.01;
 	m->vertices.clear();
 	m->faces.clear();
@@ -3976,7 +3976,7 @@ void COpenGL::convertFoldingToMesh(Model *m,){
 	c[6] = 0.0; c[7] = 0.0; c[8] = 0.0;
 	c[9] = 0.0; c[10] = 1.0; c[11] = 0.0;
 	c[12] = 0.0;
-	c[13] = m->fold->topPosY; c[14] = 0.0; c[15] = 0.0;
+	c[13] = 1.0; c[14] = 0.0; c[15] = 0.0;
 	//天頂面
 	int count = 1;
 
@@ -4038,11 +4038,17 @@ void COpenGL::convertFoldingToMesh(Model *m,){
 				pp = pp*setSize;
 				if (j == 0) {
 					top_center.x += pp.x + c[12];
-					top_center.y += pp.y + c[13];
+					top_center.y += pp.y + c[13] + m->fold->topPosY;
 					top_center.z += pp.z + c[14];
 				}
+				Vertexs *V;
 
-				Vertexs *V = new Vertexs(pp.x + c[12], pp.y + c[13], pp.z + c[14], m->vertices.size());
+				if (j == 0) {
+					V = new Vertexs(pp.x + c[12], pp.y + c[13] + m->fold->topPosY, pp.z + c[14], m->vertices.size());
+				}
+				else {
+					V = new Vertexs(pp.x + c[12], pp.y + c[13], pp.z + c[14], m->vertices.size());
+				}
 				lId.push_back(id);
 				oneP.push_back(V);
 				m->vertices.push_back(V);
@@ -4308,4 +4314,107 @@ void COpenGL::convertFoldingToMesh(Model *m,){
 		Halfedge *h_next = (*it_f)->halfedge->next;
 		Halfedge *h_prev = (*it_f)->halfedge->prev;
 	}
+}
+
+void COpenGL::changeVertexPos(Model *m){
+	
+		double setSize = 0.01;
+
+		std::vector<Vec2> pointPosition = m->fold->pointPosition;
+		std::vector<Vec2> betweenPosition = m->fold->betweenPosition;
+		std::vector<outline*> outlinePoints = m->fold->outlinepoints;
+		std::vector<TrimPoints> trimPoint = m->fold->trimPoint;
+		Vec3 top_center; top_center.set(0, 0, 0);
+		Vec3 bottom_center; bottom_center.set(0, 0, 0);
+
+		Vec2 pFirst = outlinePoints[0]->points[0];
+		Vec2 pLast = outlinePoints[0]->points[outlinePoints[0]->points.size() - 1];
+		double changeY = abs(pLast.y - pFirst.y) / 2;
+		//	cout << "changeY: " << changeY << "\n";
+		double *c = new double[16];
+		c[0] = 1.0; c[1] = 0.0; c[2] = 0.0;
+		c[3] = 0.0; c[4] = 0.0; c[5] = 1.0;
+		c[6] = 0.0; c[7] = 0.0; c[8] = 0.0;
+		c[9] = 0.0; c[10] = 1.0; c[11] = 0.0;
+		c[12] = 0.0;
+		c[13] = m->fold->topPosY; c[14] = 0.0; c[15] = 0.0;
+		//天頂面
+		int count = 1;
+		std::string overlap = " ";
+		std::vector<std::vector<Vec3>> addV;
+		std::list<Vertexs*>::iterator it_v;
+		it_v = m->vertices.begin();
+		for (int i = 0; i<(int)outlinePoints.size(); i++){//側面
+			int ipp = (i + 1) % pointPosition.size();
+			Vec2 sweepVec = pointPosition[ipp] - pointPosition[i];
+			sweepVec.normalize();
+			Vec2 trimVec = pointPosition[ipp] - pointPosition[i];
+			trimVec.rotate(PI / 2.0);
+			trimVec.normalize();
+			bool idSwitch = true;
+			std::vector<Vec3> oneP;
+			
+			for (int j = 0; j<(int)trimPoint[i].trims.size(); j++){
+				int id = trimPoint[i].trims[j].id;
+				double alpha = trimPoint[i].trims[j].alpha;
+				double l = trimPoint[i].trims[j].l;
+				if (id>0){
+					Vec2 outlinei = outlinePoints[i]->points[id];
+					outlinei = outlinei - outlinePoints[i]->points[id - 1];
+					Vec2 foo = trimVec;
+					foo.setLength(alpha*outlinei.x + outlinePoints[i]->points[id - 1].x);
+					double bar = alpha*outlinei.y + outlinePoints[i]->points[id - 1].y;
+					Vec3 p0;
+					p0.set(foo.x + betweenPosition[i].x, foo.y + betweenPosition[i].y, bar);
+
+					Vec3 p1 = p0;
+
+					p1.x += sweepVec.x*l;
+					p1.y += sweepVec.y*l;
+
+					double aa = p1.z;
+					p1.z = p1.y;
+					p1.y = -aa;
+					//モデル座標変換行列
+					Vec3 pp = p1;
+					std::string now_overlap = to_string((long double)(pp.x)) + "," + to_string((long double)(pp.y)) + "," + to_string((long double)(pp.z));
+
+					if (now_overlap == overlap) {
+						continue;
+					}
+					else {
+						overlap = now_overlap;
+					}
+
+					pp.x = p1.x*c[0] + p1.y*c[4] + p1.z*c[8];// + c[12]/setSize;
+					pp.y = p1.x*c[1] + p1.y*c[5] + p1.z*c[9];// + c[13]/setSize;
+					pp.z = p1.x*c[2] + p1.y*c[6] + p1.z*c[10];// + c[14]/setSize;
+
+					pp = pp*setSize;
+					if (j == 0) {
+						top_center.x += pp.x + c[12];
+						top_center.y += pp.y + c[13];
+						top_center.z += pp.z + c[14];
+					}
+					Vec3 V;
+					V.set(pp.x + c[12], pp.y + c[13], pp.z + c[14]);
+					oneP.push_back(V);
+					(*it_v)->p = V;
+					it_v++;
+				}
+			}
+			addV.push_back(oneP);
+		}
+
+
+		for (int i = 0; i<(int)pointPosition.size() - 1; i++) {
+			Vec3 bottomP = addV[i][addV[i].size() - 1];
+			bottom_center = bottom_center + bottomP;
+		}
+
+		top_center = top_center / (double)(pointPosition.size() - 1);
+		bottom_center = bottom_center / (double)(pointPosition.size() - 1);
+
+		(*it_v)->p = top_center; it_v++;
+		(*it_v)->p = bottom_center;
 }

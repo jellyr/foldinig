@@ -5,7 +5,6 @@
 #include "Render.h"
 #include "InputFile/InputFile.h"
 #include "optimization.h"
-
 using namespace std;
 
 const GLfloat lightDiffuse[] = { 1, 1, 1, 1 };
@@ -17,20 +16,26 @@ void QGLClass::initFold() {
 	fObj = new COpenGL();
 	cgalObj = new Cmodel();
 	cgalObj->inputM = fObj->readOBJ("bunny\\body_fixed.obj", true);//	普通のメッシュデータ
-	cgalObj->inputM->reducepolygon(1000);
+	cgalObj->inputM->reducepolygon(500);
 	cgalObj->cgalPoly = holeFillAndConvertPolyG(cgalObj->inputM);//	穴をふさいでpolyhedronへ変換
 	cgalObj->cgalPoly_Nef = convert_Poly_NefPoly((*cgalObj->cgalPoly));//	polyhedron→Nef_polyhedronへ変換
 
 	cgalObj->foldM = InputData();//	六角形の折りたたみモデルを入力
-	cgalObj->foldM->topPosY = 1.0;
+	cgalObj->foldM->fold->topPosY = 1.0;
 	fObj->optimization(cgalObj->foldM);//	最適化
 	fObj->Trim(cgalObj->foldM);//	トリム処理
 	fObj->convertFoldingToMesh(cgalObj->foldM);//	折りたたみモデルをメッシュデータに変換
 	cgalObj->foldPoly = inputPoly_Gnew(cgalObj->foldM);//	折りたたみモデルをcgaのPolyhedronに変換
 	
+	draw();
 
 	//	最適化の計算をします
-	Optimization(cgalObj->foldM, fObj, cgalObj->cgalPoly, cgalObj->cgalPoly_Nef);
+	(*cgalObj->foldPoly) = Optimization(cgalObj->foldM, fObj, cgalObj->cgalPoly, cgalObj->cgalPoly_Nef);
+	//Optimization();
+	//Polyhedron_G P1 = TestMesh(cgalObj->foldPoly, cgalObj->cgalPoly_Nef, true);
+	//Polyhedron_G P2 = TestMesh(cgalObj->foldPoly, cgalObj->cgalPoly_Nef, false);
+	//(*cgalObj->foldPoly) = P1;
+	//(*cgalObj->cgalPoly) = P2;
 	//	test calculatoin of volume
 	//	testVolumeCalculation(cgalObj->foldM);
 }
@@ -146,6 +151,7 @@ void QGLClass::wheelEvent(QWheelEvent *event) {
 void QGLClass::draw()
 {
 	//	qglColor(Qt::red);
-	renderFoldModel(cgalObj->foldM);
-	//	rendercgalPoly(cgalObj->cgalPoly);
+	//	renderFoldModel(cgalObj->foldM);
+	rendercgalPoly(cgalObj->foldPoly);
+	//rendercgalPoly(cgalObj->cgalPoly);
 }
