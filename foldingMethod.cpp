@@ -846,17 +846,14 @@ void COpenGL::Trim(GLData *data){
 }
 
 void COpenGL::Trim(Model *m){
-	cout << "Trim\n";
 	std::vector<TrimPoints> returnData;
 	double setSize = 0.01;
-
 	//double setSize = 1.0;
 	m->fold->trimPoint.clear();
 	m->face_cen.clear();
 	m->nor.clear();
 
 	foldmethod *f = m->fold;
-	
 	m->fold->trimPoint = getPointsForAnimation(m->fold->pointPosition, m->fold->betweenPosition,m->fold->outlinepoints);
 	Vec3 cent = Vec3(0,0,0);
 	int count_=0;

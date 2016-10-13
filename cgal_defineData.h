@@ -105,5 +105,6 @@ double calculateDiff(Polyhedron_G *P1, Polyhedron_G *P2);
 double calculateDiff(Polyhedron_G P1, Nef_polyhedron_3 P2, Polyhedron_G *P2_);
 Nef_polyhedron_3 convert_Poly_NefPoly(Polyhedron_G poly);
 Polyhedron_G TestMesh(Polyhedron_G *poly1, Nef_polyhedron_3 poly2, bool flg);
+void outputAsObj(Polyhedron_G *poly);
 
 #endif

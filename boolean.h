@@ -42,8 +42,8 @@ Polyhedron_G boolDiff_P1_P2(Polyhedron_G poly1, Nef_polyhedron_3 N2, bool flg) {
 	}
 	else {
 		N3 = N2 - N1;
-		if (N2.is_simple()) {
-			N2.convert_to_polyhedron((P));
+		if (N3.is_simple()) {
+			N3.convert_to_polyhedron((P));
 		}
 		else {
 			cout << "N1 is not a 2-manifold\n";

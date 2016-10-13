@@ -5,6 +5,7 @@
 #include <CGAL/Polygon_mesh_processing/triangulate_hole.h>
 #include <CGAL/Polygon_mesh_processing/compute_normal.h>
 #include <boost/foreach.hpp>
+#include <CGAL/IO/print_wavefront.h>
 #include <QtOpenGL>
 #include "boolean.h"
 typedef Mesh::Vertex_index vertex_descriptor;
@@ -13,6 +14,7 @@ typedef Polyhedron_C::Vertex_iterator	Vertex_iterator_C;
 typedef Polyhedron_C::Facet_iterator	Facet_iterator_C;
 typedef Polyhedron_C::Halfedge_around_facet_circulator Halfedge_facet_circulator_C;
 typedef Polyhedron_G::Facet_iterator	Facet_iterator;
+typedef Polyhedron_G::Vertex_iterator	Vertex_iterator;
 typedef Polyhedron_G::Halfedge_around_facet_circulator Halfedge_facet_circulator;
 
 
@@ -335,17 +337,23 @@ double calculateDiff(Polyhedron_G P1, Nef_polyhedron_3 P2, Polyhedron_G *P2_){
 		volumeDiff = abs(P1Vol - P2Vol);
 	}*/
 	Polyhedron_G D1,D2;
-	D1 = boolDiff_P1_inter_P2(P1, P2); // ウサギと立体の共通
+	D1 = boolDiff_P1_P2(P1, P2, true); // ウサギと立体の共通
 	D2 = boolDiff_P1_P2(P1, P2, false); //	ウサギ-立体
-	//cout << "fold Poly のベクトル: " << calcVolume(P1) << "\n";
+	double refeModelVolume = calcVolume((*P2_));
 	double V1 = calcVolume(D1);
 	double V2 = calcVolume(D2);
+	if (V2 > refeModelVolume){//	ウサギ内部にモデルがあると体積の計算がおかしくなる
+		V2 = refeModelVolume - calcVolume(P1);
+	}
 	double V3 = calcVolume((*P2_));//	ウサギ全体の体積
 	//cout << "V1:" << V1 << ", V2: " << V2 << ", V3: " << V3 << "\n";
 	//cout << "V3 / (V1 - V2): " << V3 / (V1 - V2) << "\n";
-	double volumeDiff = abs(log(V3) - log(abs(V1 - V2)));
+	//cout << "ウサギ: " << refeModelVolume << "立体: " << calcVolume(P1) << "\n";
+	//cout << "V1(立体-ウサギ): " << V1 << ",V2(ウサギ-立体): " << V2 << "\n";
+	double volumeDiff = V1 + V2;
 	//cout << "volumeDiff:" << volumeDiff << "\n";
-	return volumeDiff;
+	cout << "return value: " << volumeDiff / (10*refeModelVolume) << "\n";
+	return volumeDiff / (10*refeModelVolume);
 }
 
 
@@ -361,5 +369,11 @@ Nef_polyhedron_3 convert_Poly_NefPoly(Polyhedron_G poly) {
 }
 
 Polyhedron_G TestMesh(Polyhedron_G *poly1, Nef_polyhedron_3 poly2, bool flg) {
-	return boolDiff_P1_inter_P2((*poly1),poly2);
+	return boolDiff_P1_P2((*poly1), poly2, false);
+}
+
+void outputAsObj(Polyhedron_G *poly) {
+	
+	std::ofstream ofs("MeshFile.obj");
+	CGAL::print_polyhedron_wavefront(ofs, (*poly));
 }

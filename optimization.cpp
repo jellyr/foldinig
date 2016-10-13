@@ -1,34 +1,38 @@
-#include "optimization.h"
+ï»¿#include "optimization.h"
 
 using namespace std;
 using namespace Eigen;
 
-//	”’l”÷•ª
-Eigen::VectorXd ComputeNumericalJacobian(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef_polyhedron_3 inputP_, int variableNum) {
+void setJacobian (Eigen::MatrixXd &jacobian, Eigen::VectorXd setP, Eigen::VectorXd fx_tmp, int constraintNum, int count, double invDelta) {
+	for (int i = 0; i < constraintNum; i++) {
+		jacobian(count, i) = invDelta * setP(i) + fx_tmp(i);
+	}
+}
+//	æ•°å€¤å¾®åˆ†
+Eigen::MatrixXd ComputeNumericalJacobian(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef_polyhedron_3 inputP_, int variableNum, int constraintNum) {
 	
-	Eigen::VectorXd jacobian(variableNum);
-	double DELTA = 1.0e-7;
+	Eigen::MatrixXd jacobian(variableNum, constraintNum);
+	double DELTA = 1.0e-4;
 	double invDelta = 1.0 / DELTA;
-	double fx_tmp = -invDelta * penalty(foldM, fObj, inputP, inputP_);
-	cout << "fx_tmp: " << fx_tmp << "\n";
+	Eigen::VectorXd fx_tmp = -invDelta * eachPenalty(foldM, fObj, inputP, inputP_);
 	int pointLastNum = foldM->fold->pointPosition.size() - 1;
 	int count = 0;
 
-	//y‚Ì‚‚³
+	//yã®é«˜ã•
 	foldM->fold->topPosY += DELTA;
-	jacobian(count) = invDelta * penalty(foldM, fObj, inputP, inputP_) + fx_tmp;
+	setJacobian(jacobian, eachPenalty(foldM, fObj, inputP, inputP_), fx_tmp, constraintNum, count, invDelta);
 	cout << count << ": " << jacobian(count) << "\n";
 	foldM->fold->topPosY -= DELTA;
 	count++;
 
 	for (int i = 0; i < foldM->fold->pointPosition.size() - 1; i++) {
-		cout << "i in jacobian: " << i << "\n";
+		cout << "i in outlineP: " << i << "\n";
 		for (int j = 0; j < foldM->fold->outlinepoints[i]->points.size(); j++) {
-			if (j == 0) {//	pointsPosition‚Ìx,y‚ğ•ÏX
+			if (j == 0) {//	pointsPositionã®x,yã‚’å¤‰æ›´
 				foldM->fold->pointPosition[i].x += DELTA;
 				if (i == 0) foldM->fold->pointPosition[pointLastNum].x += DELTA;
 				updateBetweenPos(foldM);
-				jacobian(count) = invDelta * penalty(foldM, fObj, inputP, inputP_) + fx_tmp;
+				setJacobian(jacobian, eachPenalty(foldM, fObj, inputP, inputP_), fx_tmp, constraintNum, count, invDelta);
 				cout << i << "," << j <<  "x: " << jacobian(count) << "\n";
 				count++;
 				foldM->fold->pointPosition[i].x -= DELTA;
@@ -37,7 +41,7 @@ Eigen::VectorXd ComputeNumericalJacobian(Model *foldM, COpenGL *fObj, Polyhedron
 				foldM->fold->pointPosition[i].y += DELTA;
 				if (i == 0) foldM->fold->pointPosition[pointLastNum].y += DELTA;
 				updateBetweenPos(foldM);
-				jacobian(count) = invDelta * penalty(foldM, fObj, inputP, inputP_) + fx_tmp;
+				setJacobian(jacobian, eachPenalty(foldM, fObj, inputP, inputP_), fx_tmp, constraintNum, count, invDelta);
 				cout << i << "," << j << "y: " << jacobian(count) << "\n";
 				count++;
 				foldM->fold->pointPosition[i].y -= DELTA;
@@ -46,24 +50,24 @@ Eigen::VectorXd ComputeNumericalJacobian(Model *foldM, COpenGL *fObj, Polyhedron
 				continue;
 			}
 			foldM->fold->outlinepoints[i]->points[j].x += DELTA;
-			jacobian(count) = invDelta * penalty(foldM, fObj, inputP, inputP_) + fx_tmp;
+			setJacobian(jacobian, eachPenalty(foldM, fObj, inputP, inputP_), fx_tmp, constraintNum, count, invDelta);
 			cout << i << "," << j << "x: " << jacobian(count) << "\n";
 			count++;
 			foldM->fold->outlinepoints[i]->points[j].x -= DELTA;
 			if (j != foldM->fold->outlinepoints[i]->points.size() - 1) {
 				foldM->fold->outlinepoints[i]->points[j].y += DELTA;
-				jacobian(count) = invDelta * penalty(foldM, fObj, inputP, inputP_) + fx_tmp;
+				setJacobian(jacobian, eachPenalty(foldM, fObj, inputP, inputP_), fx_tmp, constraintNum, count, invDelta);
 				cout << i << "," << j << "y: " << jacobian(count) << "\n";
 				count++;
 				foldM->fold->outlinepoints[i]->points[j].y -= DELTA;
 			}
 		}
-		if (i == foldM->fold->pointPosition.size() - 2) {//ÅŒã‚ÉoutlinePoints‚ÌyÀ•W‘S‚Ä‚ğ•ÏŠ·
+		if (i == foldM->fold->pointPosition.size() - 2) {//æœ€å¾Œã«outlinePointsã®yåº§æ¨™å…¨ã¦ã‚’å¤‰æ›
 			for (int j = 0; j < foldM->fold->pointPosition.size() - 1; j++) {
 				int outlinepointsLastNum = foldM->fold->outlinepoints[j]->points.size() - 1;
 				foldM->fold->outlinepoints[j]->points[outlinepointsLastNum].y += DELTA;
 			}
-			jacobian(count) = invDelta * penalty(foldM, fObj, inputP, inputP_) + fx_tmp;
+			setJacobian(jacobian, eachPenalty(foldM, fObj, inputP, inputP_), fx_tmp, constraintNum, count, invDelta);
 			cout << count << ": " << jacobian(count) << "\n";
 			cout << i << ","  << "y: " << jacobian(count) << "\n";
 			for (int j = 0; j < foldM->fold->pointPosition.size() - 1; j++) {
@@ -75,7 +79,6 @@ Eigen::VectorXd ComputeNumericalJacobian(Model *foldM, COpenGL *fObj, Polyhedron
 	cout << "count in jacobian calculation: " << count << "\n";
 	return jacobian;
 }
-
 Eigen::MatrixXf ComputeNumericalJacobian(std::vector<float> u, float *x1, float *x2, int num) {
 
 	Eigen::MatrixXf jacobian(u.size(), 21);
@@ -100,13 +103,34 @@ Eigen::MatrixXf ComputeNumericalJacobian(std::vector<float> u, float *x1, float 
 	return jacobian;
 }
 
+void outputFolding(Model *foldM){
+	cout << "\ntopYpos: " << foldM->fold->topPosY << "\n";
+
+	for (int i = 0; i < foldM->fold->outlinepoints.size(); i++){
+		cout << "outlinePoint " << i << "\n";
+		for (int j = 0; j < foldM->fold->outlinepoints[i]->points.size(); j++){
+			cout << foldM->fold->outlinepoints[i]->points[j].x << " " << foldM->fold->outlinepoints[i]->points[j].y << "\n";
+		}
+	}
+	cout << "pointPosition\n";
+	for (int i = 0; i < foldM->fold->pointPosition.size(); i++){
+		cout << foldM->fold->pointPosition[i].x << " " << foldM->fold->pointPosition[i].y << "\n";
+	}
+
+	updateBetweenPos(foldM);
+	cout << "betweenPosition\n";
+	for (int i = 0; i < foldM->fold->betweenPosition.size(); i++) {
+		cout << foldM->fold->betweenPosition[i].x << " " << foldM->fold->betweenPosition[i].y << "\n";
+	}
+}
 
 double penalty(Model *foldM, COpenGL *fObj, Polyhedron_G * inputP, Nef_polyhedron_3 inputP_) {
-	//	Å‰‚ÉOŸŒ³À•W‚Ö‚Æ•ÏŠ·
+	//	æœ€åˆã«ä¸‰æ¬¡å…ƒåº§æ¨™ã¸ã¨å¤‰æ›
 	for (int i = 0; i < foldM->fold->outlinepoints.size(); i++) {
 		double Ypos = 0;
 		for (int j = 1; j < foldM->fold->outlinepoints[i]->points.size(); j++) {
 			if (foldM->fold->outlinepoints[i]->points[j].y < Ypos) {
+				cout << "return 100000";
 				return 1000000;
 			}
 			else {
@@ -114,10 +138,10 @@ double penalty(Model *foldM, COpenGL *fObj, Polyhedron_G * inputP, Nef_polyhedro
 			}
 		}
 	}
-	fObj->convertFoldingToMesh(foldM);//	ƒƒbƒVƒ…ƒf[ƒ^‚Ö‚Æ•ÏŠ·
-	Polyhedron_G P = inputPoly_G(foldM);//	Polyhedron_G‚Ö‚Æ•ÏŠ·
+	fObj->Trim(foldM); 
+	fObj->convertFoldingToMesh(foldM);//	ãƒ¡ãƒƒã‚·ãƒ¥ãƒ‡ãƒ¼ã‚¿ã¸ã¨å¤‰æ›
+	Polyhedron_G P = inputPoly_G(foldM);//	Polyhedron_Gã¸ã¨å¤‰æ›
 	double Diff = calculateDiff(P, inputP_, inputP);
-	
 	/*if (Diff == 0) {
 		for (int i = 0; i < foldM->fold->pointPosition.size(); i++){
 			cout << "pointsPos: " << foldM->fold->pointPosition[i].x << "," << foldM->fold->pointPosition[i].y << "\n";
@@ -146,7 +170,6 @@ float penalty(std::vector<float> u, float *x1, float *x2, int num) {
 	}
 	return sum;
 }
-
 float penalty_(std::vector<float> u, float *x1, float *x2, int num) {
 
 	float sum = 0;
@@ -156,6 +179,16 @@ float penalty_(std::vector<float> u, float *x1, float *x2, int num) {
 	}
 	cout << "sum: " << sum << "\n";
 	return sum;
+}
+
+Eigen::VectorXd eachPenalty(Model *foldM, COpenGL *fObj, Polyhedron_G * inputP, Nef_polyhedron_3 inputP_) {
+	int constraintsNum = 4;
+	Eigen::VectorXd penaltyValue(constraintsNum);
+	penaltyValue(0) = penalty(foldM, fObj, inputP, inputP_);
+	penaltyValue(1) = topConvex(foldM);
+	penaltyValue(2) = topSmoothing(foldM);
+	penaltyValue(3) = foldingGap(foldM);
+	return penaltyValue;
 }
 
 Eigen::MatrixXd computeLambda(Eigen::MatrixXd A, double lambda, int numOfA){
@@ -179,13 +212,113 @@ Eigen::MatrixXd computeLambdaUnit(Eigen::MatrixXd A, double lambda, int numOfA){
 	}
 	return A;
 }
-
 Eigen::MatrixXf computeLambdaUnit(Eigen::MatrixXf A, double lambda, int numOfA){
 	for (int i = 0; i < numOfA; i++) {
 		A(i, i) = A(i, i) + lambda;
 		cout << A(i, i) << "\n";
 	}
 	return A;
+}
+
+Vec2 intersection_l(Vec2 a1, Vec2 a2, Vec2 b1, Vec2 b2) {// ç›´ç·šã¨ã®äº¤ç‚¹è¨ˆç®—
+	Vec2 a = a2 - a1; Vec2 b = b2 - b1;
+	return a1 + a * (b % (b1 - a1)) / (b % a);
+}
+
+double topConvex(Model *foldM) {//	å‡¹å½¢çŠ¶ã®å ´åˆã«å€¤ãŒå¤§ãããªã‚‹é–¢æ•° é•·ã•ãƒãƒ¼ã‚¸ãƒ§ãƒ³
+	std::vector<Vec2> pointPosition = foldM->fold->pointPosition;
+	Vec2 center; center.set(0, 0);
+	for (int i = 0; i < pointPosition.size()-1; i++) {
+		center += pointPosition[i];
+	}
+	center = center / ((double)pointPosition.size() - 1);
+
+	double penaltySum = 0;
+	int pointLastNum = pointPosition.size() - 2;
+	for (int i = 0; i < pointPosition.size() - 1; i++) {
+		Vec2 crossP;
+		if (i == 0){
+			crossP = intersection_l(pointPosition[i + 1], pointPosition[pointLastNum], center, pointPosition[i]);//ç·šã¨ã®å‚ç·šã¨ã®äº¤ç‚¹
+		}
+		else {
+			crossP = intersection_l(pointPosition[i + 1], pointPosition[i - 1], center, pointPosition[i]);//ç·šã¨ã®å‚ç·šã¨ã®äº¤ç‚¹
+		}
+
+		double length1 = (crossP - center).length();
+		double length2 = (pointPosition[i] - center).length();
+		cout << pow(10, (length1 / length2)) << "\n";
+		penaltySum += pow(10, (length1 / length2));
+	}
+	cout << "convex penalty sum: " << penaltySum << "\n";
+	return penaltySum;
+}
+double topConvex_area(Model *foldM) {//	å‡¹å½¢çŠ¶ã®å ´åˆã«å€¤ãŒå¤§ãããªã‚‹é–¢æ•° é¢ç©ãƒãƒ¼ã‚¸ãƒ§ãƒ³
+	std::vector<Vec2> pointPosition = foldM->fold->pointPosition;
+	Vec2 center; center.set(0, 0);
+	for (int i = 0; i < pointPosition.size() - 1; i++) {
+		center += pointPosition[i];
+	}
+	center = center / ((double)pointPosition.size() - 1);
+
+	double penaltySum = 0;
+	double AreaSum = 0;
+	int pointLastNum = pointPosition.size() - 2;
+	for (int i = 0; i < pointPosition.size() - 1; i++) {
+		Vec2 P1 = pointPosition[i];
+		Vec2 P2 = pointPosition[i + 1];
+		double L1 = (P1 - center).length();
+		double L2 = (P2 - center).length();
+		double L3 = (P1 - P2).length();
+		double s = (L1 + L2 + L3) / 2;
+		double Area = sqrt(s*(s-L1)*(s-L2)*(s-L3));
+		Vec2 crossP;
+		if (i == 0){
+			crossP = intersection_l(pointPosition[i + 1], pointPosition[pointLastNum], center, pointPosition[i]);//ç·šã¨ã®å‚ç·šã¨ã®äº¤ç‚¹
+		}
+		else {
+			crossP = intersection_l(pointPosition[i + 1], pointPosition[i - 1], center, pointPosition[i]);//ç·šã¨ã®å‚ç·šã¨ã®äº¤ç‚¹
+		}
+		if ((center - crossP) * (center - pointPosition[i]) > 0) {
+			penaltySum += Area;
+		}
+		else{
+			AreaSum += Area;
+		}
+	}
+	cout << "convex penalty sum (Area): " << penaltySum << "\n";
+	return penaltySum / AreaSum;
+}
+//	ğ‘ƒğ‘–â€²=1/4ğ‘ƒğ‘–âˆ’1+1/2ğ‘ƒğ‘–+1/4ğ‘ƒğ‘–+1 (ğ‘–=2,â€¦ğ‘›âˆ’1)
+double topSmoothing(Model *foldM) {
+	std::vector<Vec2> pointPosition = foldM->fold->pointPosition;
+	std::vector<Vec2> pIdeal;
+	double diffSum = 0;
+	double periphery = 0;//	å¤–å‘¨
+
+	for (int i = 0; i < pointPosition.size() - 1; i++) {
+		periphery += (pointPosition[i] - pointPosition[i + 1]).length();
+	}
+
+	for (int i = 0; i < pointPosition.size() - 1; i++) {
+		Vec2 P0, P1, P2;
+		if (i == 0) {
+			P0 = pointPosition[pointPosition.size() - 2];
+		}
+		else{
+			P0 = pointPosition[i - 1];
+		}
+		P1 = pointPosition[i];
+		P2 = pointPosition[i + 1];
+		Vec2 IdealPos = 0.25*P0 + 0.5*P1 + 0.25*P2;
+		pIdeal.push_back(0.25*P0 + 0.5*P1 + 0.25*P2);
+		diffSum += (IdealPos - pointPosition[i]).length() / periphery;
+	}
+	//	èª¤å·®ã‚’è¨ˆæ¸¬ã™ã‚‹
+	cout << "smoothig penalty Sum: " << diffSum << "\n";
+	return diffSum;
+}
+double foldingGap(Model *foldM) {
+	return 0;
 }
 
 void updateParam(Model *foldM, Eigen::VectorXd dir) {
@@ -197,23 +330,23 @@ void updateParam(Model *foldM, Eigen::VectorXd dir) {
 		for (int l = 0; l < foldM->fold->outlinepoints[k]->points.size(); l++) {
 			if (l == 0) {
 				Vec2 h;
-				double x = dir(count); count++;
-				double y = dir(count); count++;
+				double x = dir(count); count++; cout << "pointP x : " << dir(count - 1) << "\n";
+				double y = dir(count); count++; cout << "pointP y : " << dir(count - 1) << "\n";
 				h.set(x, y);
 				foldM->fold->pointPosition[k] += h;
 				if (k == 0) foldM->fold->pointPosition[pointLastNum] = foldM->fold->pointPosition[0];
 				continue;
 			}
-			if (l != foldM->fold->outlinepoints[k]->points.size() - 1) {//ÅŒã‚Ì“_‚Å‚È‚¯‚ê‚Îx,y—¼•û‚ğ“®‚©‚¹‚é
+			if (l != foldM->fold->outlinepoints[k]->points.size() - 1) {//æœ€å¾Œã®ç‚¹ã§ãªã‘ã‚Œã°x,yä¸¡æ–¹ã‚’å‹•ã‹ã›ã‚‹
 				Vec2 h;
-				double x = dir(count); count++;
-				double y = dir(count); count++;
+				double x = dir(count); count++; cout << "out x : " << dir(count - 1) << "\n";
+				double y = dir(count); count++; cout << "out y : " << dir(count - 1) << "\n";
 				h.set(x, y);
 				foldM->fold->outlinepoints[k]->points[l] += h;
 			}
-			else {//	ÅŒã‚Ì“_‚Íx‚¾‚¯“®‚©‚¹‚é
+			else {//	æœ€å¾Œã®ç‚¹ã¯xã ã‘å‹•ã‹ã›ã‚‹
 				Vec2 h;
-				double x = dir(count); count++;
+				double x = dir(count); count++; cout << "out last x : " << dir(count - 1) << "\n";
 				double y = 0;
 				h.set(x, y);
 				foldM->fold->outlinepoints[k]->points[l] += h;
@@ -222,7 +355,7 @@ void updateParam(Model *foldM, Eigen::VectorXd dir) {
 		if (k == foldM->fold->pointPosition.size() - 2){
 			Vec2 h;
 			double x = 0;
-			double y = dir(count);
+			double y = dir(count); cout << "out last y : " << dir(count) << "\n";
 			h.set(x, y);
 			for (int m = 0; m < foldM->fold->pointPosition.size() - 1; m++) {
 				int outlinepointsLastNum = foldM->fold->outlinepoints[m]->points.size() - 1;
@@ -236,15 +369,19 @@ void updateParam(Model *foldM, Eigen::VectorXd dir) {
 
 Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef_polyhedron_3 inputP_) {
 	double lambda = 0.00001;
-	double cost_ = penalty(foldM, fObj, inputP, inputP_);
-	double prevCost = pow(cost_, 2) / 2;
+	Eigen::VectorXd test = eachPenalty(foldM, fObj, inputP, inputP_);
+	cout << "test:\n" <<test << "\n";
+	double prevCost = test.squaredNorm();
+	double firstCost = prevCost;
 	double difference;
-	int itr = 2;
+	int itr = 10;
 	int variableNum = 1;
+	int constraintNum = 3;//	åˆ¶ç´„ã®æ•° è¿‘ä¼¼é …ã€å‡¸è¿‘ä¼¼é …ã€ã‚¹ãƒ ãƒ¼ã‚¸ãƒ³ã‚°é …
 	Polyhedron_G P;
 	std::vector<std::vector<Vec2>> outlinepoints_tmp;
 	std::vector<Vec2> pointPosition_tmp;
 	
+	//	return P;
 	variableNum += (foldM->fold->pointPosition.size() - 1) * 2 + 1;
 	for (int i = 0; i < foldM->fold->pointPosition.size() - 1; i++) {
 		variableNum += (foldM->fold->outlinepoints[i]->points.size() - 1) * 2 - 1;
@@ -253,22 +390,35 @@ Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef
 
 	int pointLastNum = foldM->fold->pointPosition.size() - 1;
 
-	Eigen::VectorXd jacobian(variableNum);
-	Eigen::MatrixXd hessian(variableNum, variableNum);
+	Eigen::MatrixXd jacobian(variableNum, constraintNum);//	å¤‰æ•°ã®æ•°ã€åˆ¶ç´„ã®æ•°
+	Eigen::MatrixXd hessian(constraintNum, constraintNum);
 	Eigen::VectorXd grad(variableNum);
-	
+
 	for (int i = 0; i < itr; i++) {
-		grad = Eigen::VectorXd::Zero(variableNum);
-		jacobian = ComputeNumericalJacobian(foldM, fObj, inputP, inputP_, variableNum);
-		prevCost = pow(penalty(foldM, fObj, inputP, inputP_), 2) / 2;
+		Eigen::VectorXd penaltyS = eachPenalty(foldM, fObj, inputP, inputP_);
+		prevCost = pow(penaltyS.squaredNorm(), 2) / 2;
+		Eigen::VectorXd grad = Eigen::VectorXd::Zero(variableNum);
+		Eigen::VectorXd gradJ = Eigen::VectorXd(variableNum);
+
+		jacobian = ComputeNumericalJacobian(foldM, fObj, inputP, inputP_, variableNum, constraintNum);
+		
+		for (int j = 0; j < constraintNum; j++) {
+			double value = penaltyS[j];
+			for (int k = 0; k < variableNum; k++) {
+				gradJ(k) += value * jacobian(k, j);
+			}
+		}
+
 		hessian = jacobian * jacobian.transpose();
-		Eigen::VectorXd delTas = penalty(foldM, fObj, inputP, inputP_)*jacobian;
+		cout << "jacobian:\n" << jacobian << "\n";
+		//cout << "hessian:\n" << hessian << "\n";
+
 		double topPos = foldM->fold->topPosY;
 		while (1) {
 			Eigen::MatrixXd A = computeLambda(hessian, lambda, variableNum);
-
-			grad = retunDelta(A, grad, -penalty(foldM, fObj, inputP, inputP_)*jacobian);
-
+			
+			grad = retunDelta(A, -gradJ);
+			//	grad = retunDelta(A, grad, -penalty(foldM, fObj, inputP, inputP_)*jacobian);
 			//backUp position
 			for (int j = 0; j < foldM->fold->outlinepoints.size(); j++) {
 				outlinepoints_tmp.push_back(foldM->fold->outlinepoints[j]->points);
@@ -276,22 +426,25 @@ Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef
 			pointPosition_tmp = foldM->fold->pointPosition;
 			cout << "updateParam: " << "\n";
 			cout << grad << "\n";
-			//	ƒpƒ‰ƒ[ƒ^‚ğƒAƒbƒvƒf[ƒg
-			updateParam(foldM, -grad);
-			cout << "updateParam: after" << "\n";
+			cout << "gradJ \n";
+			cout << gradJ << "\n";
+			return P;
+			//	ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’ã‚¢ãƒƒãƒ—ãƒ‡ãƒ¼ãƒˆ
+			updateParam(foldM, grad);
 			cout << "prevCost: " << prevCost << "\n";
-			double cost = penalty(foldM, fObj, inputP, inputP_);
-			cost = (cost*cost) / 2;
+			//	outputFolding(foldM);
+			double cost = eachPenalty(foldM, fObj, inputP, inputP_).squaredNorm() / 2;
 
 			cout << "cost: " << cost << "\n";
+			break;
 			if (cost < prevCost) {
+				cout << "\n\nbreak\n\n";
 				difference = prevCost - cost;
 				break;
 			}
 			else {
-				// ‘Ş”ğ‚µ‚½‚à‚Ì‚ğ–ß‚·
+				// é€€é¿ã—ãŸã‚‚ã®ã‚’æˆ»ã™
 				lambda *= 10.0;
-				if (lambda > 10.0) break;
 				for (int j = 0; j < foldM->fold->outlinepoints.size(); j++) {
 					foldM->fold->outlinepoints[j]->points = outlinepoints_tmp[j];
 				}
@@ -299,6 +452,8 @@ Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef
 				foldM->fold->topPosY = topPos;
 				outlinepoints_tmp.clear();
 				pointPosition_tmp.clear();
+				updateBetweenPos(foldM);
+				if (lambda > 10.0) break;
 			}
 		}
 		lambda /= 10;
@@ -307,22 +462,14 @@ Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef
 			break; 
 		}*/
 	}
-	cout << "topYpos: " << foldM->fold->topPosY << "\n";
+	
 	cout << "Diff: " << penalty(foldM, fObj, inputP, inputP_) << "\n";
-	for (int i = 0; i < foldM->fold->pointPosition.size(); i++){
-		cout << "pointsPos: " << foldM->fold->pointPosition[i].x << "," << foldM->fold->pointPosition[i].y << "\n";
-	}
-	cout << "\n";
-	for (int i = 0; i < foldM->fold->pointPosition.size() - 1; i++){
-		cout << "outline: " << i << "\n";
-		for (int j = 0; j < foldM->fold->outlinepoints[i]->points.size(); j++){
-			cout << "outlinePos" << foldM->fold->outlinepoints[i]->points[j].x << "," << foldM->fold->outlinepoints[i]->points[j].y << "\n";
-		}
-		cout << "\n";
-	}
+	cout << "first cost: " << firstCost << "\n";
+	
+	outputFolding(foldM);
 
-	fObj->convertFoldingToMesh(foldM);//	ƒƒbƒVƒ…ƒf[ƒ^‚Ö‚Æ•ÏŠ·
-	P = inputPoly_G(foldM);//	Polyhedron_G‚Ö‚Æ•ÏŠ·
+	fObj->convertFoldingToMesh(foldM);//	ãƒ¡ãƒƒã‚·ãƒ¥ãƒ‡ãƒ¼ã‚¿ã¸ã¨å¤‰æ›
+	P = inputPoly_G(foldM);//	Polyhedron_Gã¸ã¨å¤‰æ›
 
 	return P;
 }
@@ -383,16 +530,16 @@ void Optimization() {
 			}
 			cout << "A: \n" << A << "\n";
 			cout << "gradJ: \n" << gradJ << "\n";
-			//s—ñ®‚ğ‰ğ‚­
+			//è¡Œåˆ—å¼ã‚’è§£ã
 			grad = retunDelta(A, grad, -1 * gradJ);
 			cout << "deltau: \n" << grad << "\n";
 			//	return;
-			//’l‚ğ•Û‘¶‚µ‚Ä‚¨‚­
+			//å€¤ã‚’ä¿å­˜ã—ã¦ãŠã
 			std::vector<float> u_;
 			u_.push_back(u[0]);
 			u_.push_back(u[1]);
 
-			//	ƒpƒ‰ƒ[ƒ^‚ğƒAƒbƒvƒf[ƒg
+			//	ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’ã‚¢ãƒƒãƒ—ãƒ‡ãƒ¼ãƒˆ
 			u[0] += grad(0);
 			u[1] += grad(1);
 			
@@ -405,7 +552,7 @@ void Optimization() {
 				break;
 			}
 			else {
-				// ‘Ş”ğ‚µ‚½‚à‚Ì‚ğ–ß‚·
+				// é€€é¿ã—ãŸã‚‚ã®ã‚’æˆ»ã™
 				lambda *= 10.0;
 				if (lambda > 10.0) {
 					break;
@@ -425,8 +572,8 @@ void Optimization() {
 	return;
 }
 
-Eigen::VectorXd retunDelta(Eigen::MatrixXd M, Eigen::VectorXd V, Eigen::VectorXd b) {
-	V =  M.jacobiSvd(ComputeThinU | ComputeThinV).solve(b);
+Eigen::VectorXd retunDelta(Eigen::MatrixXd M, Eigen::VectorXd b) {
+	Eigen::VectorXd V =  M.jacobiSvd(ComputeThinU | ComputeThinV).solve(b);
 	return V;
 }
 
@@ -453,17 +600,17 @@ Eigen::VectorXd retunDelta(Eigen::MatrixXd M, Eigen::VectorXd V, Eigen::VectorXd
 
 
 // grad = retunGradient(A, a, jacobian, variableNum * 2);
-//	V = ƒ¢u
+//	V = Î”u
 //  M = (Hu + c(lambda)D[Hu])
 //	b = jacobian
-//	b‚ÍƒxƒNƒgƒ‹
+//	bã¯ãƒ™ã‚¯ãƒˆãƒ«
 //
-//	grad//	XV‚·‚é’l
-// A ¨@(Hu + c(lambda)D[Hu])
+//	grad//	æ›´æ–°ã™ã‚‹å€¤
+// A â†’ã€€(Hu + c(lambda)D[Hu])
 // Ax = b
-// (Hu + c(lambda)D[Hu])Eƒ¢u = -¤uJ
-// x = ¤u
-// b = -¤uJ
+// (Hu + c(lambda)D[Hu])ãƒ»Î”u = -â–½uJ
+// x = â–½u
+// b = -â–½uJ
 //
 
 void updateBetweenPos(Model *foldM) {

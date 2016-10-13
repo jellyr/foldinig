@@ -114,9 +114,11 @@ Model *InputData(){
 			now_o = out;
 			openfile.ignore(BUFSIZ,'\n');
 		}else if(token == "pointPosition"){
+			cout << "point\n";
 			now_o = nullptr;
 			readDataKind = 0;
 		}else if(token == "betweenPosition"){
+			cout << "betWeenPostion\n";
 			now_o = nullptr;
 			readDataKind = 1;
 		}else{
@@ -148,6 +150,7 @@ Model *InputData(){
 	}
 	
 	foldmethod *fold;
+	now_m->fold->topPosY = 1.0;
 	fold = now_m->fold;
 	double lines = (double)fold->outlinepoints.size();//全部あわせたやつを出力する
 	int row_num = (int)sqrt(lines);
@@ -176,7 +179,7 @@ Model *InputData(){
 
 void InputData(Model *m){
 
-	ifstream openfile("inputData_2.txt");
+	ifstream openfile("inputData_4.txt");
 	string token(BUFSIZ, '\0');//サイズはBUFSIZE、すべてを\0で初期化
 
 	Model *now_m;
@@ -240,6 +243,7 @@ void InputData(Model *m){
 	}
 
 	foldmethod *fold;
+	now_m->fold->topPosY = 1.0;
 	fold = now_m->fold;
 	double lines = (double)fold->outlinepoints.size();//全部あわせたやつを出力する
 	int row_num = (int)sqrt(lines);

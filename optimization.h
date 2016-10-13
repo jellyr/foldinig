@@ -8,7 +8,7 @@
 #include <Eigen/Dense>
 
 
-Eigen::VectorXd ComputeNumericalJacobian(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef_polyhedron_3 inputP_, int variableNum);
+Eigen::MatrixXd ComputeNumericalJacobian(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef_polyhedron_3 inputP_, int variableNum, int constraintNum);
 Eigen::MatrixXf ComputeNumericalJacobian(std::vector<float> u, float *x1, float *x2, int num);
 
 double penalty(Model *foldM, COpenGL *fObj, Polyhedron_G * inputP, Nef_polyhedron_3 inputP_);
@@ -23,7 +23,7 @@ Eigen::MatrixXd computeLambdaUnit(Eigen::MatrixXd A, double lambda, int numOfA);
 Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef_polyhedron_3 inputP_);
 void Optimization();
 
-Eigen::VectorXd retunDelta(Eigen::MatrixXd M, Eigen::VectorXd V, Eigen::VectorXd b);
+Eigen::VectorXd retunDelta(Eigen::MatrixXd M, Eigen::VectorXd b);
 Eigen::VectorXd retunDelta(Eigen::MatrixXd M, Eigen::VectorXd V, Eigen::VectorXd b, int Mrow);
 Eigen::VectorXf retunDelta(Eigen::MatrixXf M, Eigen::VectorXf V, Eigen::VectorXf b);
 Eigen::MatrixXf computeLambdaUnit(Eigen::MatrixXf A, double lambda, int numOfA);
@@ -32,5 +32,15 @@ void updateBetweenPos(Model *foldM);
 
 void testVolumeCalculation(Model *m);
 void testVolumeCalculation(Polyhedron_G m);
+
+Vec2 intersection_l(Vec2 a1, Vec2 a2, Vec2 b1, Vec2 b2);
+double topConvex(Model *foldM);
+double topSmoothing(Model *foldM);
+double topConvex_area(Model *foldM);
+
+double foldingGap(Model *foldM);
+
+Eigen::VectorXd eachPenalty(Model *foldM, COpenGL *fObj, Polyhedron_G * inputP, Nef_polyhedron_3 inputP_);
+void setJacobian(Eigen::MatrixXd &jacobian, Eigen::VectorXd setP, Eigen::VectorXd fx_tmp, int constraintNum, int count, double invDelta);
 
 #endif

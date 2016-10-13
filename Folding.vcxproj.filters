@@ -83,13 +83,13 @@
     <ClCompile Include="Model_function.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cgal_MeshControle.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="Triangulation_cliping.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="optimization.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cgal_MeshControle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
