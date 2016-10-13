@@ -1,9 +1,12 @@
 #include <QtOpenGL>
+#ifndef _INCLUDE_OPTIMIZATION_
+#define _INCLUDE_OPTIMIZATION_
 #include "Optimization/trim/Trimfunc.h"
 #include "Optimization/SteepDescent.h"
 #include "Optimization/Animation/Animation.h"
 #include "foldingMethod.h"
 #include "Triangulation_cliping.h"
+#endif
 
 #define PI 3.14159265359
 
@@ -2837,7 +2840,6 @@ void COpenGL::CrossSectionBottom(Model *m){
 	}
 }
 
-
 void COpenGL::CrossSection(Vec3 P, Vec3 N, Vec3 Top , Vec3 Bottom, Vec3 dir, std::vector<Vec3> &plane_, Model *m){
 
 	std::list<Halfedge*>::iterator it_h;
@@ -4035,13 +4037,13 @@ void COpenGL::convertFoldingToMesh(Model *m){
 				pp = pp*setSize;
 				if (j == 0) {
 					top_center.x += pp.x + c[12];
-					top_center.y += pp.y + c[13] + m->fold->topPosY;
+					top_center.y += pp.y + c[13] + m->fold->topPosY*setSize;
 					top_center.z += pp.z + c[14];
 				}
 				Vertexs *V;
 
 				if (j == 0) {
-					V = new Vertexs(pp.x + c[12], pp.y + c[13] + m->fold->topPosY, pp.z + c[14], m->vertices.size());
+					V = new Vertexs(pp.x + c[12], pp.y + c[13] + m->fold->topPosY*setSize, pp.z + c[14], m->vertices.size());
 				}
 				else {
 					V = new Vertexs(pp.x + c[12], pp.y + c[13], pp.z + c[14], m->vertices.size());

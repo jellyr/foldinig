@@ -89,7 +89,7 @@ void InputData(std::string filename, GLData *data){
 
 Model *InputData(){
 
-	ifstream openfile("inputData_2.txt");
+	ifstream openfile("inputData_4.txt");
 	string token(BUFSIZ, '\0');//サイズはBUFSIZE、すべてを\0で初期化
 
 	Model *now_m;

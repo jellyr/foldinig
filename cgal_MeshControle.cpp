@@ -352,7 +352,6 @@ double calculateDiff(Polyhedron_G P1, Nef_polyhedron_3 P2, Polyhedron_G *P2_){
 	//cout << "V1(—§‘Ì-ƒEƒTƒM): " << V1 << ",V2(ƒEƒTƒM-—§‘Ì): " << V2 << "\n";
 	double volumeDiff = V1 + V2;
 	//cout << "volumeDiff:" << volumeDiff << "\n";
-	cout << "return value: " << volumeDiff / (10*refeModelVolume) << "\n";
 	return volumeDiff / (10*refeModelVolume);
 }
 

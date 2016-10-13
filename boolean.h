@@ -28,10 +28,9 @@ Polyhedron_G boolDiff_P1_P2(Polyhedron_G poly1, Nef_polyhedron_3 N2, bool flg) {
 	if (!poly1.is_valid()) {
 		cout << "error\n";
 	}
-	Nef_polyhedron_3 N1(poly1);
+	Nef_polyhedron_3 N1(poly1); //	 ‚±‚±‚ªƒGƒ‰[
 	Nef_polyhedron_3 N3;
 	Polyhedron_G P;
-
 	if (flg){
 		N3 = N1 - N2;
 		if (N3.is_simple()) {

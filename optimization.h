@@ -43,4 +43,6 @@ double foldingGap(Model *foldM);
 Eigen::VectorXd eachPenalty(Model *foldM, COpenGL *fObj, Polyhedron_G * inputP, Nef_polyhedron_3 inputP_);
 void setJacobian(Eigen::MatrixXd &jacobian, Eigen::VectorXd setP, Eigen::VectorXd fx_tmp, int constraintNum, int count, double invDelta);
 
+void Step(double *output, double gap, std::vector<Vec2> points, int size, Vec2 *pointsN, bool One);
+
 #endif

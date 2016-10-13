@@ -147,6 +147,6 @@ void QGLClass::draw()
 {
 	//	qglColor(Qt::red);
 	renderFoldModel(cgalObj->foldM);
-	rendercgalPoly(cgalObj->foldPoly);
+	//rendercgalPoly(cgalObj->foldPoly);
 	//rendercgalPoly(cgalObj->cgalPoly);
 }
