@@ -14,6 +14,11 @@ using namespace Eigen;
 
 void setJacobian(Eigen::MatrixXd &jacobian, Eigen::VectorXd setP, Eigen::VectorXd fx_tmp, int constraintNum, int count, double invDelta) {
 	for (int i = 0; i < constraintNum; i++) {
+		/*if (invDelta * setP(i) + fx_tmp(i) < 1.0e-10) {
+			jacobian(count, i) = 0;
+			continue;
+		}*/
+		///cout << "set: " << invDelta * setP(i) << "," << fx_tmp(i) << "\n";
 		jacobian(count, i) = invDelta * setP(i) + fx_tmp(i);
 	}
 }
@@ -26,7 +31,6 @@ Eigen::MatrixXd ComputeNumericalJacobian(Model *foldM, COpenGL *fObj, Polyhedron
 	Eigen::VectorXd fx_tmp = -invDelta * eachPenalty(foldM, fObj, inputP, inputP_);
 	int pointLastNum = foldM->fold->pointPosition.size() - 1;
 	int count = 0;
-	cout << "fx_tmp:  " << fx_tmp << "\n";
 	//yの高さ
 	foldM->fold->topPosY += DELTA;
 	setJacobian(jacobian, eachPenalty(foldM, fObj, inputP, inputP_), fx_tmp, constraintNum, count, invDelta);
@@ -85,7 +89,7 @@ Eigen::MatrixXd ComputeNumericalJacobian(Model *foldM, COpenGL *fObj, Polyhedron
 			}
 		}
 	}
-	cout << "count in jacobian calculation: " << count << "\n";
+	//cout << "count in jacobian calculation: " << count << "\n";
 	return jacobian;
 }
 Eigen::MatrixXf ComputeNumericalJacobian(std::vector<float> u, float *x1, float *x2, int num) {
@@ -225,24 +229,23 @@ Eigen::VectorXd eachPenalty(Model *foldM, COpenGL *fObj, Polyhedron_G * inputP, 
 	int constraintsNum = 4;
 	Eigen::VectorXd penaltyValue(constraintsNum);
 	//	outputFolding(foldM);
-	penaltyValue(0) = 10*penalty(foldM, fObj, inputP, inputP_);
-	penaltyValue(1) = 0;//0.1*topConvex(foldM);
+	penaltyValue(0) = 1000*penalty(foldM, fObj, inputP, inputP_);
+	penaltyValue(1) = topConvex_area(foldM);
 	penaltyValue(2) = 0;//topSmoothing(foldM);
-	penaltyValue(3) = 0;// foldingGap(foldM);
-	cout << "penaltyValue: \n" << penaltyValue << "\n";
+	penaltyValue(3) = foldingGap(foldM);
+	//cout << "penaltyValue: \n" << penaltyValue << "\n";
 	return penaltyValue;
 }
 
 Eigen::MatrixXd computeLambda(Eigen::MatrixXd A, double lambda, int numOfA){
 	for (int i = 0; i < numOfA; i++) {
-		A(i, i) = A(i, i) + A(i, i) * lambda;
+		A(i, i) = /*A(i, i) +*/ A(i, i) * lambda;
 	}
 	return A;
 }
 Eigen::MatrixXf computeLambda(Eigen::MatrixXf A, double lambda, int numOfA){
 	for (int i = 0; i < numOfA; i++) {
 		A(i, i) = A(i, i) + A(i, i) * lambda;
-		cout << A(i, i) << "\n";
 	}
 	return A;
 }
@@ -318,14 +321,14 @@ double topConvex_area(Model *foldM) {//	凹形状の場合に値が大きくな�
 		else {
 			crossP = intersection_l(pointPosition[i + 1], pointPosition[i - 1], center, pointPosition[i]);//線との垂線との交点
 		}
-		if ((center - crossP) * (center - pointPosition[i]) > 0) {
+		if ((center - crossP) * (pointPosition[i] - crossP) > 0) {
 			penaltySum += Area;
 		}
 		else{
 			AreaSum += Area;
 		}
 	}
-	cout << "convex penalty sum (Area): " << penaltySum << "\n";
+	//cout << "convex penalty sum (Area): " << penaltySum << "\n";
 	return penaltySum / AreaSum;
 }
 //	𝑃𝑖′=1/4𝑃𝑖−1+1/2𝑃𝑖+1/4𝑃𝑖+1 (𝑖=2,…𝑛−1)
@@ -478,8 +481,8 @@ void updateParam(Model *foldM, Eigen::VectorXd dir) {
 		for (int l = 0; l < foldM->fold->outlinepoints[k]->points.size(); l++) {
 			if (l == 0) {
 				Vec2 h;
-				double x = dir(count); count++; cout << "pointP x : " << dir(count - 1) << "\n";
-				double y = dir(count); count++; cout << "pointP y : " << dir(count - 1) << "\n";
+				double x = dir(count); count++; cout << "count: " << count-1 << "pointP x : " << dir(count - 1) << "\n";
+				double y = dir(count); count++; cout << "count: " << count-1 << "pointP y : " << dir(count - 1) << "\n";
 				h.set(x, y);
 				foldM->fold->pointPosition[k] += h;
 				if (k == 0) foldM->fold->pointPosition[pointLastNum] = foldM->fold->pointPosition[0];
@@ -487,14 +490,14 @@ void updateParam(Model *foldM, Eigen::VectorXd dir) {
 			}
 			if (l != foldM->fold->outlinepoints[k]->points.size() - 1) {//最後の点でなければx,y両方を動かせる
 				Vec2 h;
-				double x = dir(count); count++; cout << "out x : " << dir(count - 1) << "\n";
-				double y = dir(count); count++; cout << "out y : " << dir(count - 1) << "\n";
+				double x = dir(count); count++; cout << "count: " << count-1 << "out x : " << dir(count - 1) << "\n";
+				double y = dir(count); count++; cout << "count: " << count-1 << "out y : " << dir(count - 1) << "\n";
 				h.set(x, y);
 				foldM->fold->outlinepoints[k]->points[l] += h;
 			}
 			else {//	最後の点はxだけ動かせる
 				Vec2 h;
-				double x = dir(count); count++; cout << "out last x : " << dir(count - 1) << "\n";
+				double x = dir(count); count++; cout << "count: " << count-1 << "out last x : " << dir(count - 1) << "\n";
 				double y = 0;
 				h.set(x, y);
 				foldM->fold->outlinepoints[k]->points[l] += h;
@@ -503,7 +506,7 @@ void updateParam(Model *foldM, Eigen::VectorXd dir) {
 		if (k == foldM->fold->pointPosition.size() - 2){
 			Vec2 h;
 			double x = 0;
-			double y = dir(count); cout << "out last y : " << dir(count) << "\n";
+			double y = dir(count); cout << "count: " << count-1 << "out last y : " << dir(count) << "\n";
 			h.set(x, y);
 			for (int m = 0; m < foldM->fold->pointPosition.size() - 1; m++) {
 				int outlinepointsLastNum = foldM->fold->outlinepoints[m]->points.size() - 1;
@@ -516,15 +519,15 @@ void updateParam(Model *foldM, Eigen::VectorXd dir) {
 }
 
 Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef_polyhedron_3 inputP_) {
-	double lambda = 0.00001;
+	double lambda = 0.001;
 	Eigen::VectorXd test = eachPenalty(foldM, fObj, inputP, inputP_);
-	cout << "test:\n" << test << "\n";
 	double prevCost = test.squaredNorm() / 2;
 	double firstCost = prevCost;
 	double difference;
 	int itr = 2;
+	int count = 0;
 	int variableNum = 1;
-	int constraintNum = 3;//	制約の数 近似項、凸近似項、スムージング項
+	int constraintNum = 4;//	制約の数 近似項、凸近似項、スムージング項
 	Polyhedron_G P;
 	std::vector<std::vector<Vec2>> outlinepoints_tmp;
 	std::vector<Vec2> pointPosition_tmp;
@@ -534,12 +537,11 @@ Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef
 	for (int i = 0; i < foldM->fold->pointPosition.size() - 1; i++) {
 		variableNum += (foldM->fold->outlinepoints[i]->points.size() - 1) * 2 - 1;
 	}
-	cout << "variable Num: " << variableNum << "\n";
 
 	int pointLastNum = foldM->fold->pointPosition.size() - 1;
 
 	Eigen::MatrixXd jacobian(variableNum, constraintNum);//	変数の数、制約の数
-	Eigen::MatrixXd hessian(constraintNum, constraintNum);
+	Eigen::MatrixXd hessian(variableNum, variableNum);
 	Eigen::VectorXd grad(variableNum);
 
 	for (int i = 0; i < itr; i++) {
@@ -547,54 +549,80 @@ Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef
 		prevCost = penaltyS.squaredNorm() / 2;
 		Eigen::VectorXd grad = Eigen::VectorXd::Zero(variableNum);
 		Eigen::VectorXd gradJ = Eigen::VectorXd(variableNum);
-
+		cout << "calculate: " << i << "\n";
 		jacobian = ComputeNumericalJacobian(foldM, fObj, inputP, inputP_, variableNum, constraintNum);
-
+		cout << "jacobian:\n" << jacobian << "\n";
 		for (int j = 0; j < constraintNum; j++) {
 			double value = penaltyS[j];
+			cout << "j: " << j << "value: " << value << "\n";
 			for (int k = 0; k < variableNum; k++) {
 				gradJ(k) += value * jacobian(k, j);
+				cout << "( " << k << "," << jacobian(k, j) << ") ";
 			}
+			cout << "\n";
 		}
-
+		cout << "gradJ \n";
+		cout << gradJ << "\n";
 		hessian = jacobian * jacobian.transpose();
-		cout << "jacobian:\n" << jacobian << "\n";
-		//cout << "hessian:\n" << hessian << "\n";
-
+		//cout << "jacobian:\n" << jacobian << "\n";
 		double topPos = foldM->fold->topPosY;
+		//return P;
 		while (1) {
+			count++;
 			Eigen::MatrixXd A = computeLambda(hessian, lambda, variableNum);
+			grad = Eigen::VectorXd::Zero(variableNum);
+			for (int ii = 0; ii < 5; ii++) {
+				grad = retunDelta(A, grad, gradJ, variableNum);
+			}
 
-			grad = retunDelta(A, -gradJ);
-			//	grad = -gradJ.transpose() * A.transpose();
+			//grad = A.colPivHouseholderQr().solve(-1*gradJ);
 
 			//	grad = retunDelta(A, grad, -penalty(foldM, fObj, inputP, inputP_)*jacobian);
 			//backUp position
 			for (int j = 0; j < foldM->fold->outlinepoints.size(); j++) {
 				outlinepoints_tmp.push_back(foldM->fold->outlinepoints[j]->points);
 			}
+			/*double Max = 0;
+			for (int ii = 0; ii < variableNum; ii++) {
+				cout << abs(grad(ii)) << " ";
+				if (abs(grad(ii)) > Max) {
+					Max = abs(grad(ii));
+				}
+			}
+			Max = pow(10,(int)log10(abs(Max)));
+			for (int ii = 0; ii < variableNum; ii++) {
+				cout << grad(ii) << " , ";
+				grad(ii) = grad(ii) / Max;
+				cout << grad(ii) << "\n";
+			}*/
 			pointPosition_tmp = foldM->fold->pointPosition;
-			std::cout << "updateParam: " << "\n";
-			cout << "lambda: " << lambda << "\n";
-			cout << grad << "\n";
-			cout << "gradJ \n";
-			cout << gradJ << "\n";
-			cout << "grad Rows: " << grad.rows() << ", cols: " << grad.cols() << "\n";
+			/*cout << "updateParam: " << "\n";
+			cout << "lambda: " << lambda << "\n";*/
+			cout << "grad:\n" << grad << "\n";
 			//	パラメータをアップデート
-			updateParam(foldM, grad);
-			cout << "prevCost: " << prevCost << "\n";
-			//	outputFolding(foldM);
-			double cost = eachPenalty(foldM, fObj, inputP, inputP_).squaredNorm() / 2;
+			//grad = -jacobian.col(0);
 
+			updateParam(foldM, grad);
+			double cost = eachPenalty(foldM, fObj, inputP, inputP_).squaredNorm() / 2;
+			cout << "lambda << " << lambda << "\n";
+			cout << "prevCost: " << prevCost << "\n";
 			cout << "cost: " << cost << "\n";
+			//return P;
+			outputFolding(foldM);
 			if (cost < prevCost) {
 				difference = prevCost - cost;
-				cout << "\n\nbreak: diff" << difference << "\n\n";
-				break;
+				prevCost = cost;
+				outlinepoints_tmp.clear();
+				pointPosition_tmp.clear();
+				//cout << "\n\nbreak: diff" << difference << "\n\n";
+				//	break;
 			}
 			else {
 				// 退避したものを戻す
-				lambda *= 10.0;
+				/*if (count > 50) {
+					break;
+				}*/
+				lambda /= 10.0;
 				for (int j = 0; j < foldM->fold->outlinepoints.size(); j++) {
 					foldM->fold->outlinepoints[j]->points = outlinepoints_tmp[j];
 				}
@@ -603,10 +631,10 @@ Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef
 				outlinepoints_tmp.clear();
 				pointPosition_tmp.clear();
 				updateBetweenPos(foldM);
-				if (lambda > 10.0) break;
+				break;
 			}
 		}
-		lambda /= 10;
+		lambda *= 10;
 		/*if (difference < 1.0e-5 && difference > 0) {
 			cout << "difference: " << difference << "\n";
 			break;
@@ -659,17 +687,22 @@ void Optimization() {
 		grad = Eigen::VectorXf::Zero(variableNum);
 		jacobian = ComputeNumericalJacobian(u, x1, x2, 21);
 		Eigen::VectorXf gradJ = Eigen::VectorXf::Zero(2);
+		cout << "value,u[0],u[1]:\n";
 		for (int k = 0; k < 21; k++) {
 			float value = ((u[0] * pow((x1[k] - u[1]), 2) - x2[k]));
 			gradJ(0) += value * jacobian(0, k);
 			gradJ(1) += value * jacobian(1, k);
+
+			cout << value << "," << jacobian(0, k) << "," << jacobian(1, k) << "\n";
 		}
 		hessian = jacobian * jacobian.transpose();
-		cout << "jacobian:\n" << jacobian << "\n\n";
-		cout << "hessian: \n" << hessian << "\n\n";
+		//cout << "jacobian:\n" << jacobian << "\n\n";
+		cout << "gradJ: \n" << gradJ << "\n\n";
+		//cout << "hessian: \n" << hessian << "\n\n";
 		bool T = true;
 		int L = 0;
 		while (1) {
+			cout << "while: " << L << "\n";
 			Eigen::MatrixXf A;
 			if (T) {
 				A = computeLambda(hessian, lambda, variableNum);
@@ -678,10 +711,12 @@ void Optimization() {
 				A = computeLambdaUnit(hessian, lambda, variableNum);
 			}
 			cout << "A: \n" << A << "\n";
-			cout << "gradJ: \n" << gradJ << "\n";
+			
 			//行列式を解く
 			grad = retunDelta(A, grad, -1 * gradJ);
-			cout << "deltau: \n" << grad << "\n";
+		
+			cout << "deltau: \n" << grad << "\n\n";
+			
 			//	return;
 			//値を保存しておく
 			std::vector<float> u_;
@@ -694,8 +729,8 @@ void Optimization() {
 
 			float cost = penalty(u, x1, x2, 21) / 2;
 
-			cout << "cost: " << cost << "\n";
-			cout << "prevCost: " << prevCost << "\n";
+			//cout << "cost: " << cost << "\n";
+			//cout << "prevCost: " << prevCost << "\n";
 			if (cost < prevCost) {
 				difference = prevCost - cost;
 				break;
@@ -733,7 +768,7 @@ Eigen::VectorXf retunDelta(Eigen::MatrixXf M, Eigen::VectorXf V, Eigen::VectorXf
 
 Eigen::VectorXd retunDelta(Eigen::MatrixXd M, Eigen::VectorXd V, Eigen::VectorXd b, int Mrow) {
 	Eigen::VectorXd curr;
-	V = Eigen::VectorXd::Zero(Mrow);
+	
 	double diag;
 	for (int j = 0; j < 1; j++) {
 		for (int i = 0; i < Mrow; i++) {

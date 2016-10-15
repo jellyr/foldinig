@@ -28,11 +28,13 @@ void QGLClass::initFold() {
 	draw();
 
 	//	Å“K‰»‚ÌŒvŽZ‚ð‚µ‚Ü‚·
+	//(*cgalObj->foldPoly) = TestMesh(cgalObj->foldPoly, cgalObj->cgalPoly_Nef, false);
 	(*cgalObj->foldPoly) = Optimization(cgalObj->foldM, fObj, cgalObj->cgalPoly, cgalObj->cgalPoly_Nef);
 	//Optimization();
 	//(*cgalObj->cgalPoly) = P2;
 	//	test calculatoin of volume
-	//	testVolumeCalculation(cgalObj->foldM);
+	//testVolumeCalculation(cgalObj->foldM);
+	//cout << "volume:" << calcVolume((*cgalObj->foldPoly)) << "\n";
 }
 
 void QGLClass::startAllProcess() {
@@ -148,5 +150,5 @@ void QGLClass::draw()
 	//	qglColor(Qt::red);
 	renderFoldModel(cgalObj->foldM);
 	//rendercgalPoly(cgalObj->foldPoly);
-	//rendercgalPoly(cgalObj->cgalPoly);
+	rendercgalPoly(cgalObj->cgalPoly);
 }

@@ -11,7 +11,7 @@
 #define PI 3.14159265359
 
 Model* COpenGL::readOBJ(std::string filename,bool IsNormalize){
-	//cout << "\nread OBJ file\n";
+	////cout << "\nread OBJ file\n";
 	std::ifstream ifs(filename);
 	std::string token(BUFSIZ, '\0');//サイズはBUFSIZE、すべてを\0で初期化
 	std::list<Faces*>::iterator fa;
@@ -103,9 +103,9 @@ Model* COpenGL::readOBJ(std::string filename,bool IsNormalize){
 		(*it_v)->p = (*it_v)->p - cen;
 	}
 	
-	cout << "ver size: " << model->vertices.size() << "\n";
-	cout << "face size: " <<model->faces.size() << "\n";
-	cout << "half size: " <<model->halfs.size() << "\n";
+	//cout << "ver size: " << model->vertices.size() << "\n";
+	//cout << "face size: " <<model->faces.size() << "\n";
+	//cout << "half size: " <<model->halfs.size() << "\n";
 
 	
 	return model;
@@ -126,7 +126,7 @@ void COpenGL::renderScene(void)//描画関数
 	//		glColor3d(1,0.1,0.2);
 	//		glDisable(GL_LIGHTING);
 	//		for(it_v=m->vertices.begin(); it_v!=m->vertices.end(); it_v++){
-	//			cout << (*it_v)->num << " ";
+	//			//cout << (*it_v)->num << " ";
 	//			Vec3 renderP = (*it_v)->p;
 	//			glBegin(GL_POINTS);
 	//				glVertex3d(TDdata->parts[i]->scale.x*renderP.x+TDdata->parts[i]->cent_move.x, TDdata->parts[i]->scale.y*renderP.y+TDdata->parts[i]->cent_move.y, TDdata->parts[i]->scale.z*renderP.z+TDdata->parts[i]->cent_move.z);
@@ -228,7 +228,7 @@ void COpenGL::renderParts(int number, Model *m, bool flg, Vec3 move, Vec3 scale)
 		q0 = q0 * setSize;
 		Vec3 q0_;q0_.set(q0.x*scale.x, -q0.z*scale.y, q0.y*scale.z);
 		q0_ = Rotates(m->angle, q0_);
-		//cout << q0_.x << "," << q0_.y << "," << q0_.z << "\n"; 		
+		////cout << q0_.x << "," << q0_.y << "," << q0_.z << "\n"; 		
 		glVertex3d(q0_.x+move.x, q0_.y+move.y, q0_.z+move.z );
 	}
 	glEnd();
@@ -352,7 +352,7 @@ void COpenGL::renderParts(int number, Model *m, bool flg, Vec3 move, Vec3 scale)
 
 						glVertex3d(p2.x+move.x, p2.y+move.y, p2.z+move.z);
 						glVertex3d(p3.x+move.x, p3.y+move.y, p3.z+move.z);
-						//cout << p0.x << "," <<  p1.x << "," <<  p2.x << "," <<  p3.x << "," << "\n";
+						////cout << p0.x << "," <<  p1.x << "," <<  p2.x << "," <<  p3.x << "," << "\n";
 					glEnd();
 					
 					if(number == now_n &&  face_n == face_nor_count){
@@ -456,7 +456,7 @@ void COpenGL::renderParts(int number, Model *m, bool flg, Vec3 move, Vec3 scale)
 						p3 = Rotates(m->angle, p3_);
 
 						/*if(i == 0){
-							cout << "rotate before" << p1.x+move.x << "," << p1.y+move.y<< "," <<  p1.z+move.z << "\n";
+							//cout << "rotate before" << p1.x+move.x << "," << p1.y+move.y<< "," <<  p1.z+move.z << "\n";
 						}*/
 
 						glVertex3d(p2.x+move.x, p2.y+move.y, p2.z+move.z);
@@ -515,7 +515,7 @@ void COpenGL::renderParts(int number, Model *m, bool flg, Vec3 move, Vec3 scale)
 						between2 = p2 + ( nor * ax );
 
 						if(f->outlinepoints[i]->points[count-1] == f->outlinepoints[i]->points[id-1] && count-1 < (int)f->outlinepoints[i]->points.size()){
-							//cout << "In render count: " << count-1 << " ";
+							////cout << "In render count: " << count-1 << " ";
 							glColor3d(f->outlinepoints[i]->color[0],f->outlinepoints[i]->color[1],f->outlinepoints[i]->color[2]);
 							glBegin(GL_LINES);
 								glVertex3d(between.x+move.x, between.y+move.y, between.z+move.z);
@@ -532,7 +532,7 @@ void COpenGL::renderParts(int number, Model *m, bool flg, Vec3 move, Vec3 scale)
 							glBegin(GL_POINTS);
 								glVertex3d(between2.x+move.x, between2.y+move.y, between2.z+move.z);
 							glEnd();
-							//cout << "count: " << count << "," << j << "\n";
+							////cout << "count: " << count << "," << j << "\n";
 						}
 
 						glEnable(GL_LIGHTING);
@@ -542,7 +542,7 @@ void COpenGL::renderParts(int number, Model *m, bool flg, Vec3 move, Vec3 scale)
 				//線を引くだけ
 			}
 		}
-		//cout << "\n";
+		////cout << "\n";
 		idSwitch = true;
 		
 		/*glBegin(GL_QUAD_STRIP);
@@ -818,7 +818,7 @@ void COpenGL::Trim(GLData *data){
 			}
 		}
 		
-		//cout << "元の中心座標: " << m->cent.x+ m->cent_move.x<< "," << m->cent.y+m->cent_move.y << "," << m->cent.z+m->cent_move.z << "\n";
+		////cout << "元の中心座標: " << m->cent.x+ m->cent_move.x<< "," << m->cent.y+m->cent_move.y << "," << m->cent.z+m->cent_move.z << "\n";
 		cent = cent / (double)count_;
 		if(m->cent.eq(Vec3(0,0,0)) && m->cent_move.eq(Vec3(0,0,0))){//初期
 			m->cent_move = -cent;
@@ -831,7 +831,7 @@ void COpenGL::Trim(GLData *data){
 			m->cent = cent;*/
 		}
 		
-		//cout << "変更の後の中心座標: " << m->cent.x+ m->cent_move.x<< "," << m->cent.y+m->cent_move.y << "," << m->cent.z+m->cent_move.z << "\n";
+		////cout << "変更の後の中心座標: " << m->cent.x+ m->cent_move.x<< "," << m->cent.y+m->cent_move.y << "," << m->cent.z+m->cent_move.z << "\n";
 
 		//TDdata->parts[i]->fold->part_state.clear();
 		////最大と最小を比べる
@@ -1163,7 +1163,7 @@ bool COpenGL::optimization_oen_outline(Model *m, int outline_num){
 		Vec2 *pointsN = new Vec2[(int)points.size()];
 		Step(outputN[j], gapN[j], points, outputN_array_size[j],pointsN,false);
 		if(foldableV(outputN[j], pointsN, outputN_array_size[j], (int)points.size())){
-			cout << "optimized true: \n";
+			//cout << "optimized true: \n";
 			for(int s=0; s<(int)m->fold->outlinepoints[outline_num]->points.size(); s++){
 				m->fold->outlinepoints[outline_num]->points[s].x = pointsN[s].x;
 				m->fold->outlinepoints[outline_num]->points[s].y = pointsN[s].y;
@@ -1171,7 +1171,7 @@ bool COpenGL::optimization_oen_outline(Model *m, int outline_num){
 			}
 			break;
 		}else{
-			//cout << "optimized error\n";
+			////cout << "optimized error\n";
 		}
 	}
 
@@ -1294,7 +1294,7 @@ void COpenGL::optimization(Model *m){
 			Vec2 *pointsN = new Vec2[(int)points.size()];
 			Step(outputN[j], gapN[j], points, outputN_array_size[j],pointsN,false);
 			if(foldableV(outputN[j], pointsN, outputN_array_size[j], (int)points.size())){
-				cout << "optimized true: " << i << " and j number is " << j << "\n";
+				//cout << "optimized true: " << i << " and j number is " << j << "\n";
 				flg = true;
 				//m->fold->outlinepoints[i]->foldingPattern.resize(outputN_array_size[j]);;
 				m->fold->outlinepoints[i]->foldingPattern_size = outputN_array_size[j];
@@ -1302,30 +1302,30 @@ void COpenGL::optimization(Model *m){
 		
 				for(int s=0; s<outputN_array_size[j]; s++){
 					m->fold->outlinepoints[i]->foldingPattern[s] =outputN[j][s];
-					//cout << "outputN: " << m->fold->outlinepoints[i]->foldingPattern[s] << "\n"; 
+					////cout << "outputN: " << m->fold->outlinepoints[i]->foldingPattern[s] << "\n"; 
 				}
 				for(int s=0; s<(int)m->fold->outlinepoints[i]->points.size(); s++){
 					m->fold->outlinepoints[i]->points[s].x = pointsN[s].x;
 					m->fold->outlinepoints[i]->points[s].y = pointsN[s].y;
-					//cout << "points: " << s << ": " << pointsN[s].x << "," << pointsN[s].y << "\n";
+					////cout << "points: " << s << ": " << pointsN[s].x << "," << pointsN[s].y << "\n";
 				}
 				
-			//	cout << "\n";
+			//	//cout << "\n";
 				break;
 			}else{
 				flg = false;
 				if(j == 0){
-					/*cout << "error\n";
-					cout << "outputN_array_size[j] : " << outputN_array_size[j] << "\n";
+					/*//cout << "error\n";
+					//cout << "outputN_array_size[j] : " << outputN_array_size[j] << "\n";
 					for(int s=0; s<outputN_array_size[j]; s++){
-						cout << "outputN: " << outputN[j][s] << "\n"; 
+						//cout << "outputN: " << outputN[j][s] << "\n"; 
 					}
 					for(int s=0; s<(int)m->fold->outlinepoints[i]->points.size(); s++){
-						cout << "points: " << s << ": " << pointsN[s].x << "," << pointsN[s].y << "\n";
+						//cout << "points: " << s << ": " << pointsN[s].x << "," << pointsN[s].y << "\n";
 					}*/
 				
 				}
-				//cout << "optimized error\n";
+				////cout << "optimized error\n";
 			}
 		}
 
@@ -1342,9 +1342,9 @@ void COpenGL::optimization(Model *m){
 	}
 
 	/*for(int s=(int)m->fold->outlinepoints.size()-1; s>=0; s--){
-		cout << "optimized outline: " << s << "\n";
+		//cout << "optimized outline: " << s << "\n";
 		for(int d=0; d<m->fold->outlinepoints[s]->points.size(); d++){
-			cout << m->fold->outlinepoints[s]->points[d].x << "," << m->fold->outlinepoints[s]->points[d].y<< "\n";
+			//cout << m->fold->outlinepoints[s]->points[d].x << "," << m->fold->outlinepoints[s]->points[d].y<< "\n";
 		}
 	}*/
 
@@ -1454,7 +1454,7 @@ void COpenGL::optimization_one(Model *m){
 			Vec2 *pointsN = new Vec2[(int)points.size()];
 			Step(outputN[j], gapN[j], points, outputN_array_size[j],pointsN,true);
 			if(foldableV(outputN[j], pointsN, outputN_array_size[j], (int)points.size())){
-				cout << "optimized true: " << "\n";
+				//cout << "optimized true: " << "\n";
 				flg = true;
 				//line->foldingPattern.resize(outputN_array_size[j]);;
 				line->foldingPattern_size = outputN_array_size[j];
@@ -1462,31 +1462,31 @@ void COpenGL::optimization_one(Model *m){
 		
 				for(int s=0; s<outputN_array_size[j]; s++){
 					line->foldingPattern[s] =outputN[j][s];
-					//cout << "outputN: " << line->foldingPattern[s] << "\n"; 
+					////cout << "outputN: " << line->foldingPattern[s] << "\n"; 
 				}
 				for(int s=0; s<(int)line->points.size(); s++){
 					line->points[s].x = pointsN[s].x;
 					line->points[s].y = pointsN[s].y;
-					//cout << "points: " << s << ": " << pointsN[s].x << "," << pointsN[s].y << "\n";
+					////cout << "points: " << s << ": " << pointsN[s].x << "," << pointsN[s].y << "\n";
 				}
 				success_flg = true;
-			//	cout << "\n";
+			//	//cout << "\n";
 				break;
 			}else{
-				cout << "optimized error: " << "\n";
+				//cout << "optimized error: " << "\n";
 				success_flg = false;
 				if(j == 0){
-					/*cout << "error\n";
-					cout << "outputN_array_size[j] : " << outputN_array_size[j] << "\n";
+					/*//cout << "error\n";
+					//cout << "outputN_array_size[j] : " << outputN_array_size[j] << "\n";
 					for(int s=0; s<outputN_array_size[j]; s++){
-						cout << "outputN: " << outputN[j][s] << "\n"; 
+						//cout << "outputN: " << outputN[j][s] << "\n"; 
 					}
 					for(int s=0; s<(int)line->points.size(); s++){
-						cout << "points: " << s << ": " << pointsN[s].x << "," << pointsN[s].y << "\n";
+						//cout << "points: " << s << ": " << pointsN[s].x << "," << pointsN[s].y << "\n";
 					}*/
 				
 				}
-				//cout << "optimized error\n";
+				////cout << "optimized error\n";
 			}
 		}
 
@@ -1508,7 +1508,7 @@ void COpenGL::optimization_one(Model *m){
 }
 void COpenGL::optimization_color(Model *m){
 
-		//cout << "outline_n: " << outline_n << "\n";
+		////cout << "outline_n: " << outline_n << "\n";
 		outline *line = m->fold->outlinepoints[outline_n];
 		bool flg;
 		std::vector<Vec2> points = m->fold->outlinepoints[outline_n]->points;
@@ -1593,7 +1593,7 @@ void COpenGL::optimization_color(Model *m){
 			gapN[j] = gap[index];
 		}
 
-		//cout << "(int)outputN.size(): " << (int)outputN.size() << "\n";
+		////cout << "(int)outputN.size(): " << (int)outputN.size() << "\n";
 		for(int j=0; j<(int)outputN.size(); j++){
 			double L = 0;
 			double alpha;
@@ -1610,12 +1610,12 @@ void COpenGL::optimization_color(Model *m){
 			Vec2 *pointsN = new Vec2[(int)points.size()];
 			Step(outputN[j], gapN[j], points, outputN_array_size[j],pointsN,true);
 			if(foldableV(outputN[j], pointsN, outputN_array_size[j], (int)points.size())){
-				//cout << "optimized true: " << "\n";
+				////cout << "optimized true: " << "\n";
 				line->color_num = point_n;
 		
 				break;
 			}else{
-				//cout << "optimized error: " << "\n";
+				////cout << "optimized error: " << "\n";
 				line->color_num = -1;
 			}
 		}
@@ -1678,7 +1678,7 @@ void COpenGL::AnimationSet(foldmethod *fold){
 
 	for(int i=0;i<=STEP;i++){
 		for(int j=0;j<(int)fold->outlinepoints.size();j++){
-			//cout << "STEP: " << i << " FK: " << j << "\n";
+			////cout << "STEP: " << i << " FK: " << j << "\n";
 			std::vector<Vec2> returns;
 			FK(fold->outlinepoints[j]->points, fold->outlinepoints[j]->foldingPattern,fold->outlinepoints[j]->foldingPattern_size, i,returns);
 			fold->part_state[i].push_back(returns);
@@ -1695,15 +1695,15 @@ void COpenGL::setPartlinePoint(foldmethod *fold,int state){
 	int INIT = 0;
 	int interval = STEP/STEP_DIV;
 	//値が変更したら
-	//cout << "state: " << state << "\n";
+	////cout << "state: " << state << "\n";
 	for(int i=0; i<(int)fold->outlinepoints.size(); i++){
 		int point_num = (int)fold->outlinepoints[i]->points.size()-1;
 		for(int j=0; j<(int)fold->outlinepoints[i]->points.size(); j++){
 			fold->outlinepoints[i]->points[j] = fold->part_state[state][i][point_num-j];
-			//cout << fold->outlinepoints[i]->points[j].x << "," << fold->outlinepoints[i]->points[j].y << "\n";
+			////cout << fold->outlinepoints[i]->points[j].x << "," << fold->outlinepoints[i]->points[j].y << "\n";
 			//fold->outlinepoints[i]->points[j].y = p[i][p[i].size()-1-j].y;
 		}
-		//cout << "//////////\n";
+		////cout << "//////////\n";
 	}
 }
 void COpenGL::outputFolding(Model *m){
@@ -1764,7 +1764,7 @@ void COpenGL::outputFolding(Model *m){
 //	int n=selectBuf[0];
 //	
 //	if(hits > 0){
-//		//cout << "point hits; " << hits << "\n";
+//		////cout << "point hits; " << hits << "\n";
 //		unsigned int smallest = UINT_MAX;
 //		
 //		line_n = -1;
@@ -1780,8 +1780,8 @@ void COpenGL::outputFolding(Model *m){
 //					now_n = selectBuf[i*6+3];
 //				}
 //			}
-//			//cout << "face_n: " << face_n << "\n";
-//			//cout << "now_n: " << now_n << "\n";
+//			////cout << "face_n: " << face_n << "\n";
+//			////cout << "now_n: " << now_n << "\n";
 //			if(now_n >= (int)TDdata->parts.size()){
 //				now_n = -1;
 //			}
@@ -1797,8 +1797,8 @@ void COpenGL::outputFolding(Model *m){
 //			}
 //			outline_n = outline;
 //			point_n = point;
-//			//cout << "outline_n: " << outline_n << "\n";
-//			//cout << "point_n: " << point_n << "\n";
+//			////cout << "outline_n: " << outline_n << "\n";
+//			////cout << "point_n: " << point_n << "\n";
 //		}else{//線
 //			int outline = selectBuf[3];
 //			int point = selectBuf[4];
@@ -1811,8 +1811,8 @@ void COpenGL::outputFolding(Model *m){
 //			}
 //			outline_n = outline;
 //			line_n = point;
-//			//cout << "outline_n: " << outline_n << "\n";
-//			//cout << "line_n: " << line_n << "\n";
+//			////cout << "outline_n: " << outline_n << "\n";
+//			////cout << "line_n: " << line_n << "\n";
 //		}
 //	}else{
 //		line_n = -1;
@@ -2113,12 +2113,12 @@ void COpenGL::outputFolding(Model *m){
 //						ax = nor*(between-p2);
 //						between2 = p2 + ( nor * ax );
 //						if(f->outlinepoints[i]->points[count_] == f->outlinepoints[i]->points[id-1] && count_ < (int)f->outlinepoints[i]->points.size()){
-//							//cout << "In pick line_num: " << line_num << "\n";
+//							////cout << "In pick line_num: " << line_num << "\n";
 //							line_num++;
 //							count_++;
 //						}
 //						if(f->outlinepoints[i]->points[count-1] == f->outlinepoints[i]->points[id-1] && count-1 < (int)f->outlinepoints[i]->points.size()){
-//							//cout << "In pick line_num: " << line_num << "\n";
+//							////cout << "In pick line_num: " << line_num << "\n";
 //							glPushName(2);
 //							glPushName(line_num-1);
 //							glBegin(GL_LINES);
@@ -2135,7 +2135,7 @@ void COpenGL::outputFolding(Model *m){
 //				//線を引くだけ
 //			}
 //		}
-//		//cout << "\n";
+//		////cout << "\n";
 //		idSwitch = true;
 //	}
 //
@@ -2329,7 +2329,7 @@ void COpenGL::outputFolding(Model *m){
 //						glBegin(GL_POINTS);
 //							glVertex3d(between2.x+move.x, between2.y+move.y, between2.z+move.z);
 //						glEnd();
-//						//cout << "count: " << count << "," << j << "\n";
+//						////cout << "count: " << count << "," << j << "\n";
 //					}
 //				}
 //			}
@@ -2429,9 +2429,9 @@ void COpenGL::outputFolding(Model *m){
 //					p1.y += -sweepVec.y*l;
 //
 //					if(i == 0){
-//						//cout << "after: " << p1.x+m->cent_move.x << "," <<  p1.y+m->cent_move.y<< "," << p1.z+m->cent_move.z << "\n";
-//						//cout << "after: " << p1.x << "," <<  p1.y<< "," << p1.z << "\n";
-//						//cout << "after: " << m->cent_move.x << "," <<  m->cent_move.y<< "," << m->cent_move.z << "\n";
+//						////cout << "after: " << p1.x+m->cent_move.x << "," <<  p1.y+m->cent_move.y<< "," << p1.z+m->cent_move.z << "\n";
+//						////cout << "after: " << p1.x << "," <<  p1.y<< "," << p1.z << "\n";
+//						////cout << "after: " << m->cent_move.x << "," <<  m->cent_move.y<< "," << m->cent_move.z << "\n";
 //					}
 //
 //					p1 = p1*setSize;
@@ -2708,7 +2708,7 @@ void COpenGL::outputFolding(Model *m){
 //				}
 //			}
 //		}
-//		//cout << "\n";
+//		////cout << "\n";
 //		idSwitch = true;
 //	}
 //}
@@ -2769,7 +2769,7 @@ void COpenGL::ChangeTop( Model *m ,int x, int y){
 	}else{
 		Top_point_n = n;
 	}
-	cout << "Top_point_m: " << Top_point_n << "\n";*/
+	//cout << "Top_point_m: " << Top_point_n << "\n";*/
 }
 
 void COpenGL::move_point(int line_num, int point_num, foldmethod *fold, double x,double y){
@@ -2801,7 +2801,7 @@ void COpenGL::CrossSection(Model *m){
 	Vec3 angle = Angles(TDdata->plane_normal,base);
 	
 	for(it_h=m->halfs.begin(); it_h!=m->halfs.end(); it_h++){ 
-		//cout << "halfs\n";
+		////cout << "halfs\n";
 		Vec3 A = (*it_h)->vertex->p;
 		Vec3 B = (*it_h)->next->vertex->p;
 		if(((P-A)*N >=0 && (P-B)*N <= 0) || ((P-A)*N <=0 && (P-B)*N >= 0)){//交差
@@ -2826,7 +2826,7 @@ void COpenGL::CrossSectionBottom(Model *m){
 	Vec3 angle = Angles(TDdata->plane_normal,base);
 	
 	for(it_h=m->halfs.begin(); it_h!=m->halfs.end(); it_h++){ 
-		//cout << "halfs\n";
+		////cout << "halfs\n";
 		Vec3 A = (*it_h)->vertex->p;
 		Vec3 B = (*it_h)->next->vertex->p;
 		if(((P-A)*N >=0 && (P-B)*N <= 0) || ((P-A)*N <=0 && (P-B)*N >= 0)){//交差
@@ -2847,7 +2847,7 @@ void COpenGL::CrossSection(Vec3 P, Vec3 N, Vec3 Top , Vec3 Bottom, Vec3 dir, std
 	Vec3 angle = Angles(TDdata->plane_normal,base);
 	
 	for(it_h=m->halfs.begin(); it_h!=m->halfs.end(); it_h++){ 
-		//cout << "halfs\n";
+		////cout << "halfs\n";
 		Vec3 A = (*it_h)->vertex->p;
 		Vec3 B = (*it_h)->next->vertex->p;
 		if(((P-A)*N >=0 && (P-B)*N <= 0) || ((P-A)*N <=0 && (P-B)*N >= 0)){//交差
@@ -2932,7 +2932,7 @@ void COpenGL::Quickhull(const std::vector<Vec2> points, Model *m){
 			far_num = i;
 		}
 	}
-	////cout << "far_num; " << far_num << "\n";
+	//////cout << "far_num; " << far_num << "\n";
 	Vec2D *v1 = new Vec2D(point_[0]);
 	Vec2D *v2 = new Vec2D(point_[(int)point_.size()-1]);
 	Vec2D *v3 = new Vec2D(point_[far_num]);
@@ -2972,7 +2972,7 @@ void COpenGL::Quickhull(const std::vector<Vec2> points, Model *m){
 			}
 			if(count == (int)lines.size()){
 				//内側にあるpt
-				////cout << "erased: " << i << "\n";
+				//////cout << "erased: " << i << "\n";
 				point_.erase(point_.begin() + i);
 				i--;
 				//m->cross_p.push_back(point_[i]);
@@ -3016,7 +3016,7 @@ void COpenGL::Quickhull(const std::vector<Vec2> points, Model *m){
 			for(int j=0; j<(int)point_to_line[i].size(); j++){//一番遠い点を確認する
 				double l = distance_point_line(point_[point_to_line[i][j]], lines[i]->start->p, lines[i]->end->p);
 				if(l > max_dis){
-					////cout << "l: " << l << "\n";
+					//////cout << "l: " << l << "\n";
 					max_dis = l;
 					max_num[0] = i;
 					max_num[1] = point_to_line[i][j];
@@ -3025,10 +3025,10 @@ void COpenGL::Quickhull(const std::vector<Vec2> points, Model *m){
 			}
 		}
 
-		//cout << "xcounts: " << counts << " pount_: " << point_.size() << "\n";
+		////cout << "xcounts: " << counts << " pount_: " << point_.size() << "\n";
 
 		Vec2 max_far_p = point_[max_num[1]];//こいつを凸包に加える
-		//cout << "max_num[1]: " << max_num[1] << "\n";
+		////cout << "max_num[1]: " << max_num[1] << "\n";
 		//point_から削除
 		point_.erase(point_.begin()+max_num[1]);
 
@@ -3075,10 +3075,10 @@ void COpenGL::Quickhull(const std::vector<Vec2> points, Model *m){
 	}
 	
 	
-	//cout << "lines.size(): " << lines.size() << "\n";
+	////cout << "lines.size(): " << lines.size() << "\n";
 	for(int i=0; i<(int)lines.size(); i++){
 		m->convex_line.push_back(lines[i]);
-		////cout << "lines[i]: " << lines[i]->start->p.x << "," <<lines[i]->start->p.y << "\n";
+		//////cout << "lines[i]: " << lines[i]->start->p.x << "," <<lines[i]->start->p.y << "\n";
 	}
 
 	for(int i=0; i<(int)point_.size(); i++){
@@ -3216,7 +3216,7 @@ void COpenGL::CutModel(Model *m){//面を切り取る処理
 		Normal.normalize();
 		Vec3 Cent; Cent = (TopP + bottomP + bet)/3.0;
 		Vec3 nor; nor = bet - TDdata->plane_cent; nor.normalize();
-		//cout << "nor; " << nor.x << "," << nor.y << "," << nor.z << "\n";
+		////cout << "nor; " << nor.x << "," << nor.y << "," << nor.z << "\n";
 		CrossSection(Cent, Normal, TopP,TDdata->plane_cent, nor, m->cut_point[i], m);
 	}
 
@@ -3284,7 +3284,7 @@ void COpenGL::AutoOptimization(Model *m){
 				m->cut_point_2D[i].push_back(v);
 				line->points.push_back(v);
 				m->length[i].push_back(d);
-				//cout << "j: " << j << " "<< v.x << "," << v.y << "\n";
+				////cout << "j: " << j << " "<< v.x << "," << v.y << "\n";
 			}
 			
 		}
@@ -3341,7 +3341,7 @@ void COpenGL::AutoOptimization(Model *m){
 
 			while(1){
 				reduced = reduce_line.simplifyWithRDP(m->fold->vec_point[i], ep);
-				//cout << "j: " << j << "point size: " << m->fold->vec_point[i].size() << "reduced.size(): " << reduced.size() << " reduce_num: " << reduce_num << " ep: " << ep << " befor_num: " << before_num << "\n";
+				////cout << "j: " << j << "point size: " << m->fold->vec_point[i].size() << "reduced.size(): " << reduced.size() << " reduce_num: " << reduce_num << " ep: " << ep << " befor_num: " << before_num << "\n";
 				if((int)reduced.size() == j){
 					break;
 				}else if((int)reduced.size() < j){
@@ -3368,10 +3368,10 @@ void COpenGL::AutoOptimization(Model *m){
 			}
 
 			if(flg_){
-				//cout << "this point can't create\n";
+				////cout << "this point can't create\n";
 				continue;
 			}
-			//cout << "reduced: " << reduced.size() << "\n";
+			////cout << "reduced: " << reduced.size() << "\n";
 			m->fold->outlinepoints[i]->points.clear();
 			for(int k=0; k<(int)reduced.size(); k++){
 				Vec2 addP; addP.x = reduced[k].x; addP.y = reduced[k].y;
@@ -3379,11 +3379,11 @@ void COpenGL::AutoOptimization(Model *m){
 				// << "addP: " << addP.x << "," << addP.y << "\n";
 			}
 	
-			//cout << "m->fold->outlinepoints[i]->points.: " << m->fold->outlinepoints[i]->points.size() << "\n";
+			////cout << "m->fold->outlinepoints[i]->points.: " << m->fold->outlinepoints[i]->points.size() << "\n";
 			bool flg =  optimization_oen_outline(m, i);
 			if(flg){
 				//まだ最適化できる
-				//cout << "i: " << i << "j: " << j << "\n";  
+				////cout << "i: " << i << "j: " << j << "\n";  
 				stock = m->fold->outlinepoints[i]->points;
 			}else{
 				//一個前の点に戻す
@@ -3391,10 +3391,10 @@ void COpenGL::AutoOptimization(Model *m){
 				break;
 			}
 		}
-		cout << "i: " << i << " 点\n";
+		//cout << "i: " << i << " 点\n";
 		for(int j=0; j<(int)m->fold->outlinepoints[i]->points.size(); j++){
 			Vec2 p = m->fold->outlinepoints[i]->points[j];
-			cout << p.x << "," << p.y << "\n";
+			//cout << p.x << "," << p.y << "\n";
 		}
 	}
 	optimization(m);
@@ -3511,7 +3511,7 @@ void COpenGL::SetPlane(Model *m) {
 		N.normalize();
 		Vec3 P = (Top+Bottom+cent_vector[i])/3.0;//平面の中心
 		std::vector<Halfedge*>::iterator it_h2;
-		cout << "i: " << halfs.size() << "\n";
+		//cout << "i: " << halfs.size() << "\n";
 		for(it_h2=halfs.begin(); it_h2!=halfs.end(); it_h2++){ 
 			Vec3 A = (*it_h2)->vertex->p;
 			Vec3 B = (*it_h2)->next->vertex->p;
@@ -3525,7 +3525,7 @@ void COpenGL::SetPlane(Model *m) {
 		double min = 1000000;
 		Vec3 max_vec;
 		Vec3 min_vec;
-		cout << "points.size(): " << points.size() << "\n";
+		//cout << "points.size(): " << points.size() << "\n";
 		for(int j=0; j<(int)points.size(); j++){
 			if(max < Distance_DotAndLine(points[j], Top, Bottom)){
 				max = Distance_DotAndLine(points[j], Top, Bottom);
@@ -3609,8 +3609,8 @@ void COpenGL::outputObj(){
 				double alpha = trimPoint[i].trims[j].alpha;
 				double l = trimPoint[i].trims[j].l;
 				if (id>0){
-					//cout << id << " ";
-					//	cout << trimPoint[i].trims[j].outlinePid << " ";
+					////cout << id << " ";
+					//	//cout << trimPoint[i].trims[j].outlinePid << " ";
 					Vec2 outlinei = outlinePoints[i]->points[id];
 					outlinei = outlinei - outlinePoints[i]->points[id - 1];
 					Vec2 foo = trimVec;
@@ -3643,11 +3643,11 @@ void COpenGL::outputObj(){
 					*/
 
 					if (now_overlap == overlap) {
-						cout << "same: ";
+						//cout << "same: ";
 						continue;
 					}
 					else {
-						cout << "dif: ";
+						//cout << "dif: ";
 						overlap = now_overlap;
 					}
 
@@ -3671,15 +3671,15 @@ void COpenGL::outputObj(){
 					output << text;
 				}
 			}
-			cout << "\n";
+			//cout << "\n";
 			r_overlap = " ";
-			cout << "rId: ";
+			//cout << "rId: ";
 			for (int j = 0; j<(int)trimPoint[i].trims.size(); j++){//右側のIdを確かめている
 				int id = trimPoint[i].trims[j].id;
 				double alpha = trimPoint[i].trims[j].alpha;
 				double l = trimPoint[i].trims[j].l;
 				if (id < 0) {
-					//	cout << -1*id << " ";
+					//	//cout << -1*id << " ";
 					id *= -1;
 					Vec2 outlinei = outlinePoints[i]->points[id];
 					outlinei = outlinei - outlinePoints[i]->points[id - 1];
@@ -3859,7 +3859,7 @@ void COpenGL::outputObj(){
 				std::vector<Vertexs*> plane;
 				std::vector<Vec3> plane2D;
 				std::vector<Vec2i> plane2Di;
-				cout << "angle: " << angle << "\n";
+				//cout << "angle: " << angle << "\n";
 				for (int l = 0; l<(int)plane_r[k].size(); l++) {
 					Vec3 rP = right[plane_r[k][l]]->p;
 					rP = calcmatrix(rP, matrix);
@@ -3895,7 +3895,7 @@ void COpenGL::outputObj(){
 			std::vector<Vec2i> points_;
 			points_ = triangulate(convert2Di[i]);
 			for (int k = 0; k<convert2Di[i].size(); k++) {
-				cout << convert2Di[i][k].index << " ";
+				//cout << convert2Di[i][k].index << " ";
 			}
 			for (int k = 0; k<points_.size(); k += 3) {
 				Vertexs *v0 = tmp_vec[points_[k].index];
@@ -3943,10 +3943,11 @@ void COpenGL::outputObj(){
 			output << text_face;
 		}
 		output.close();
-		cout << "end\n";
+		//cout << "end\n";
 }
 
 void COpenGL::convertFoldingToMesh(Model *m){
+	//cout << "convert\n";
 	double setSize = 0.01;
 	m->vertices.clear();
 	m->faces.clear();
@@ -3968,7 +3969,7 @@ void COpenGL::convertFoldingToMesh(Model *m){
 	Vec2 pFirst = outlinePoints[0]->points[0];
 	Vec2 pLast = outlinePoints[0]->points[outlinePoints[0]->points.size()-1];
 	double changeY = abs(pLast.y - pFirst.y)/2;
-	//	cout << "changeY: " << changeY << "\n";
+	//	//cout << "changeY: " << changeY << "\n";
 	double *c = new double[16];
 	c[0] = 1.0; c[1] = 0.0; c[2] = 0.0;
 	c[3] = 0.0; c[4] = 0.0; c[5] = 1.0;
@@ -3989,6 +3990,7 @@ void COpenGL::convertFoldingToMesh(Model *m){
 
 	//for(int i=outlinePoints.size()-1;i>=0;i--){//側面
 	for (int i = 0; i<(int)outlinePoints.size(); i++){//側面
+		//cout << "outline: " << i << "\n";
 		int ipp = (i + 1) % pointPosition.size();
 		Vec2 sweepVec = pointPosition[ipp] - pointPosition[i];
 		sweepVec.normalize();
@@ -3999,6 +4001,7 @@ void COpenGL::convertFoldingToMesh(Model *m){
 		std::vector<Vertexs*> oneP;
 		std::vector<int> rId;
 		std::vector<int> lId;
+		int pCount = 0;
 		for (int j = 0; j<(int)trimPoint[i].trims.size(); j++){
 			int id = trimPoint[i].trims[j].id;
 			double alpha = trimPoint[i].trims[j].alpha;
@@ -4044,9 +4047,15 @@ void COpenGL::convertFoldingToMesh(Model *m){
 
 				if (j == 0) {
 					V = new Vertexs(pp.x + c[12], pp.y + c[13] + m->fold->topPosY*setSize, pp.z + c[14], m->vertices.size());
+					////cout << "outline: " << outlinePoints[i]->points[pCount].x << "," << outlinePoints[i]->points[pCount].y << "\n";
+					//cout << V->p.x << "," << V->p.y << "," << V->p.z << "\n";
+					pCount++;
 				}
 				else {
 					V = new Vertexs(pp.x + c[12], pp.y + c[13], pp.z + c[14], m->vertices.size());
+					//cout << "outline: " << outlinePoints[i]->points[pCount].x << "," << outlinePoints[i]->points[pCount].y << "\n";
+					//cout << V->p.x << "," << V->p.y << "," << V->p.z << "\n";
+					pCount++;
 				}
 				lId.push_back(id);
 				oneP.push_back(V);
@@ -4060,7 +4069,7 @@ void COpenGL::convertFoldingToMesh(Model *m){
 			double alpha = trimPoint[i].trims[j].alpha;
 			double l = trimPoint[i].trims[j].l;
 			if (id < 0) {
-				//	cout << -1*id << " ";
+				//	//cout << -1*id << " ";
 				id *= -1;
 				Vec2 outlinei = outlinePoints[i]->points[id];
 				outlinei = outlinei - outlinePoints[i]->points[id - 1];
@@ -4329,7 +4338,7 @@ void COpenGL::changeVertexPos(Model *m){
 		Vec2 pFirst = outlinePoints[0]->points[0];
 		Vec2 pLast = outlinePoints[0]->points[outlinePoints[0]->points.size() - 1];
 		double changeY = abs(pLast.y - pFirst.y) / 2;
-		//	cout << "changeY: " << changeY << "\n";
+		//	//cout << "changeY: " << changeY << "\n";
 		double *c = new double[16];
 		c[0] = 1.0; c[1] = 0.0; c[2] = 0.0;
 		c[3] = 0.0; c[4] = 0.0; c[5] = 1.0;

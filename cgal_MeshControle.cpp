@@ -337,7 +337,7 @@ double calculateDiff(Polyhedron_G P1, Nef_polyhedron_3 P2, Polyhedron_G *P2_){
 		volumeDiff = abs(P1Vol - P2Vol);
 	}*/
 	Polyhedron_G D1,D2;
-	D1 = boolDiff_P1_P2(P1, P2, true); // ウサギと立体の共通
+	D1 = boolDiff_P1_P2(P1, P2, true); // 立体-ウサギ
 	D2 = boolDiff_P1_P2(P1, P2, false); //	ウサギ-立体
 	double refeModelVolume = calcVolume((*P2_));
 	double V1 = calcVolume(D1);
@@ -352,7 +352,7 @@ double calculateDiff(Polyhedron_G P1, Nef_polyhedron_3 P2, Polyhedron_G *P2_){
 	//cout << "V1(立体-ウサギ): " << V1 << ",V2(ウサギ-立体): " << V2 << "\n";
 	double volumeDiff = V1 + V2;
 	//cout << "volumeDiff:" << volumeDiff << "\n";
-	return volumeDiff / (10*refeModelVolume);
+	return volumeDiff / refeModelVolume;
 }
 
 
@@ -368,7 +368,7 @@ Nef_polyhedron_3 convert_Poly_NefPoly(Polyhedron_G poly) {
 }
 
 Polyhedron_G TestMesh(Polyhedron_G *poly1, Nef_polyhedron_3 poly2, bool flg) {
-	return boolDiff_P1_P2((*poly1), poly2, false);
+	return boolDiff_P1_P2((*poly1), poly2, flg);
 }
 
 void outputAsObj(Polyhedron_G *poly) {

@@ -89,7 +89,7 @@ void InputData(std::string filename, GLData *data){
 
 Model *InputData(){
 
-	ifstream openfile("inputData_4.txt");
+	ifstream openfile("inputData_2.txt");
 	string token(BUFSIZ, '\0');//サイズはBUFSIZE、すべてを\0で初期化
 
 	Model *now_m;
@@ -150,7 +150,7 @@ Model *InputData(){
 	}
 	
 	foldmethod *fold;
-	now_m->fold->topPosY = 1.0;
+	now_m->fold->topPosY = 128.645;
 	fold = now_m->fold;
 	double lines = (double)fold->outlinepoints.size();//全部あわせたやつを出力する
 	int row_num = (int)sqrt(lines);
@@ -179,7 +179,7 @@ Model *InputData(){
 
 void InputData(Model *m){
 
-	ifstream openfile("inputData_4.txt");
+	ifstream openfile("inputData_2.txt");
 	string token(BUFSIZ, '\0');//サイズはBUFSIZE、すべてを\0で初期化
 
 	Model *now_m;
