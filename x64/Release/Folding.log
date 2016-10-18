@@ -1,31 +1,49 @@
-﻿2016/10/15 23:16:24 にビルドを開始しました。
+﻿2016/10/18 15:54:15 にビルドを開始しました。
      1>ノード 2 上のプロジェクト "C:\Users\miyato\Desktop\Folding\Folding\Folding.vcxproj" (Build ターゲット)。
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /IC:\Eigens\eigen /I.\GeneratedFiles /I. /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include /I.\GeneratedFiles\Release /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include\QtCore /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include\QtGui /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include\QtOpenGL /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include\QtWidgets /I"C:\local\CGAL-4.7\auxiliary\gmp\include" /I"C:\local\CGAL-4.7\build\include" /I"C:\local\CGAL-4.7\include" /IC:\local\boost_1_58_0 /nologo /W1 /WX- /O2 /D UNICODE /D WIN32 /D WIN64 /D QT_DLL /D QT_NO_DEBUG /D NDEBUG /D QT_CORE_LIB /D QT_GUI_LIB /D QT_OPENGL_LIB /D QT_WIDGETS_LIB /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Release\\" /Fd"x64\Release\vc120.pdb" /Gd /TP /errorReport:prompt Render.cpp optimization.cpp
-         Render.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /IC:\Eigens\eigen /I.\GeneratedFiles /I. /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include /I.\GeneratedFiles\Release /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include\QtCore /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include\QtGui /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include\QtOpenGL /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include\QtWidgets /I"C:\local\CGAL-4.7\auxiliary\gmp\include" /I"C:\local\CGAL-4.7\build\include" /I"C:\local\CGAL-4.7\include" /IC:\local\boost_1_58_0 /nologo /W1 /WX- /O2 /D UNICODE /D WIN32 /D WIN64 /D QT_DLL /D QT_NO_DEBUG /D NDEBUG /D QT_CORE_LIB /D QT_GUI_LIB /D QT_OPENGL_LIB /D QT_WIDGETS_LIB /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Release\\" /Fd"x64\Release\vc120.pdb" /Gd /TP /errorReport:prompt apps\metro\metro.cpp optimization.cpp
+         metro.cpp
+     1>.\vcg/complex/algorithms/smooth.h : warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+     1>.\vcg/complex/algorithms/update/color.h : warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+     1>apps\metro\metro.cpp(207): error C2065: 'Model' : 定義されていない識別子です。
+     1>apps\metro\metro.cpp(207): error C2065: 'm' : 定義されていない識別子です。
+     1>apps\metro\metro.cpp(207): error C2448: 'openMesh' : 関数の定義が間違っています。
+     1>apps\metro\metro.cpp(332): error C2065: 'argv' : 定義されていない識別子です。
+     1>apps\metro\metro.cpp(335): error C2065: 'argv' : 定義されていない識別子です。
+     1>apps\metro\metro.cpp(408): error C2065: 'S1NewName' : 定義されていない識別子です。
+     1>apps\metro\metro.cpp(408): error C2228: '.c_str' の左側はクラス、構造体、共用体でなければなりません
+                 型は 'unknown-type' です。
+     1>apps\metro\metro.cpp(408): error C2665: 'vcg::tri::io::ExporterPLY<CMesh>::Save' : 3 オーバーロードのどれも、すべての引数の型を変換できませんでした
+                 .\wrap/io_trimesh/export_ply.h(89): 'int vcg::tri::io::ExporterPLY<CMesh>::Save(SaveMeshType &,const char *,int,bool,vcg::CallBackPos (__cdecl *))' の可能性があります。
+                 with
+                 [
+                     SaveMeshType=CMesh
+                 ]
+                 .\wrap/io_trimesh/export_ply.h(83): または 'int vcg::tri::io::ExporterPLY<CMesh>::Save(SaveMeshType &,const char *,bool)'
+                 with
+                 [
+                     SaveMeshType=CMesh
+                 ]
+                 引数リスト '(CMesh, bool, vcg::tri::io::PlyInfo)' を一致させようとしているとき
+     1>apps\metro\metro.cpp(409): error C2065: 'S2NewName' : 定義されていない識別子です。
+     1>apps\metro\metro.cpp(409): error C2228: '.c_str' の左側はクラス、構造体、共用体でなければなりません
+                 型は 'unknown-type' です。
+     1>apps\metro\metro.cpp(409): error C2665: 'vcg::tri::io::ExporterPLY<CMesh>::Save' : 3 オーバーロードのどれも、すべての引数の型を変換できませんでした
+                 .\wrap/io_trimesh/export_ply.h(89): 'int vcg::tri::io::ExporterPLY<CMesh>::Save(SaveMeshType &,const char *,int,bool,vcg::CallBackPos (__cdecl *))' の可能性があります。
+                 with
+                 [
+                     SaveMeshType=CMesh
+                 ]
+                 .\wrap/io_trimesh/export_ply.h(83): または 'int vcg::tri::io::ExporterPLY<CMesh>::Save(SaveMeshType &,const char *,bool)'
+                 with
+                 [
+                     SaveMeshType=CMesh
+                 ]
+                 引数リスト '(CMesh, bool, vcg::tri::io::PlyInfo)' を一致させようとしているとき
          optimization.cpp
          コードを生成中...
-       Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\miyato\Desktop\Folding\x64\Release\\Folding.exe" /NOLOGO /LIBPATH:C:\Qt\Qt5.5.1\5.5\msvc2013_64\lib /LIBPATH:"C:/local/CGAL-4.7/build/lib" /LIBPATH:"C:/local/CGAL-4.7/build/lib/Release" /LIBPATH:"C:/local/boost_1_58_0/lib64-msvc-12.0" /LIBPATH:"C:/local/boost_1_58_0/lib64-msvc-12.0/Release" qtmain.lib Qt5Core.lib Qt5Gui.lib Qt5OpenGL.lib opengl32.lib glu32.lib Qt5Widgets.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib "C:\local\CGAL-4.7\auxiliary\gmp\lib\libmpfr-4.lib" "C:\local\CGAL-4.7\auxiliary\gmp\lib\libgmp-10.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:"C:\Users\miyato\Desktop\Folding\x64\Release\Folding.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\miyato\Desktop\Folding\x64\Release\Folding.lib" /MACHINE:X64 x64\Release\cgal_MeshControle.obj
-         x64\Release\defineData.obj
-         x64\Release\foldingMethod.obj
-         x64\Release\qrc_folding.obj
-         x64\Release\moc_folding.obj
-         x64\Release\moc_Render.obj
-         x64\Release\InputFile.obj
-         x64\Release\main.obj
-         x64\Release\Model_function.obj
-         x64\Release\optimization.obj
-         x64\Release\Animation.obj
-         x64\Release\VecMath.obj
-         x64\Release\simplifypath.obj
-         x64\Release\SteepDescent.obj
-         x64\Release\TrimFunc.obj
-         x64\Release\Render.obj
-         x64\Release\Triangulation_cliping.obj
-         Folding.vcxproj -> C:\Users\miyato\Desktop\Folding\x64\Release\Folding.exe
-     1>プロジェクト "C:\Users\miyato\Desktop\Folding\Folding\Folding.vcxproj" (Build ターゲット) のビルドが完了しました。
+     1>プロジェクト "C:\Users\miyato\Desktop\Folding\Folding\Folding.vcxproj" (Build ターゲット) のビルドが終了しました -- 失敗。
 
-ビルドに成功しました。
+ビルドに失敗しました。
 
-経過時間 00:01:12.37
+経過時間 00:00:57.64

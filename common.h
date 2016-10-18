@@ -1,6 +1,4 @@
-
-#ifndef _INCLUDE_COMMON_
-#define _INCLUDE_COMMON_
+#pragma once
 
 // TODO: プログラムに必要な追加ヘッダーをここで参照してください。
 #include <math.h>
@@ -20,5 +18,3 @@
 #include <map>
 #include <time.h>
 #include <functional>
-
-#endif

@@ -92,6 +92,9 @@
     <ClCompile Include="cgal_MeshControle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="apps\metro\metro.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="folding.h">

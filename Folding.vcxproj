@@ -137,6 +137,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="apps\metro\metro.cpp" />
     <ClCompile Include="cgal_MeshControle.cpp" />
     <ClCompile Include="defineData.cpp" />
     <ClCompile Include="foldingMethod.cpp" />

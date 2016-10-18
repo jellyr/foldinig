@@ -232,7 +232,7 @@ Eigen::VectorXd eachPenalty(Model *foldM, COpenGL *fObj, Polyhedron_G * inputP, 
 	penaltyValue(0) = 1000*penalty(foldM, fObj, inputP, inputP_);
 	penaltyValue(1) = topConvex_area(foldM);
 	penaltyValue(2) = 0;//topSmoothing(foldM);
-	penaltyValue(3) = foldingGap(foldM);
+	penaltyValue(3) = 100*foldingGap(foldM);
 	//cout << "penaltyValue: \n" << penaltyValue << "\n";
 	return penaltyValue;
 }
@@ -519,7 +519,7 @@ void updateParam(Model *foldM, Eigen::VectorXd dir) {
 }
 
 Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef_polyhedron_3 inputP_) {
-	double lambda = 0.001;
+	double lambda = 100000;//	小さいほどガウス：ニュートン法の影響が大きい
 	Eigen::VectorXd test = eachPenalty(foldM, fObj, inputP, inputP_);
 	double prevCost = test.squaredNorm() / 2;
 	double firstCost = prevCost;
@@ -549,7 +549,7 @@ Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef
 		prevCost = penaltyS.squaredNorm() / 2;
 		Eigen::VectorXd grad = Eigen::VectorXd::Zero(variableNum);
 		Eigen::VectorXd gradJ = Eigen::VectorXd(variableNum);
-		cout << "calculate: " << i << "\n";
+		cout << "calclate: " << i << "\n";
 		jacobian = ComputeNumericalJacobian(foldM, fObj, inputP, inputP_, variableNum, constraintNum);
 		cout << "jacobian:\n" << jacobian << "\n";
 		for (int j = 0; j < constraintNum; j++) {
@@ -571,12 +571,11 @@ Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef
 			count++;
 			Eigen::MatrixXd A = computeLambda(hessian, lambda, variableNum);
 			grad = Eigen::VectorXd::Zero(variableNum);
-			for (int ii = 0; ii < 5; ii++) {
+			/*for (int ii = 0; ii < 5; ii++) {
 				grad = retunDelta(A, grad, gradJ, variableNum);
-			}
+			}*/
 
-			//grad = A.colPivHouseholderQr().solve(-1*gradJ);
-
+			grad = A.colPivHouseholderQr().solve(-1*gradJ);
 			//	grad = retunDelta(A, grad, -penalty(foldM, fObj, inputP, inputP_)*jacobian);
 			//backUp position
 			for (int j = 0; j < foldM->fold->outlinepoints.size(); j++) {
@@ -600,7 +599,7 @@ Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef
 			cout << "lambda: " << lambda << "\n";*/
 			cout << "grad:\n" << grad << "\n";
 			//	パラメータをアップデート
-			//grad = -jacobian.col(0);
+			grad = -jacobian.col(0);
 
 			updateParam(foldM, grad);
 			double cost = eachPenalty(foldM, fObj, inputP, inputP_).squaredNorm() / 2;
@@ -609,6 +608,7 @@ Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef
 			cout << "cost: " << cost << "\n";
 			//return P;
 			outputFolding(foldM);
+			return P;
 			if (cost < prevCost) {
 				difference = prevCost - cost;
 				prevCost = cost;
