@@ -9,10 +9,10 @@
 #include <Eigen/LU>
 
 
-Eigen::MatrixXd ComputeNumericalJacobian(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef_polyhedron_3 inputP_, int variableNum, int constraintNum);
+Eigen::MatrixXd ComputeNumericalJacobian(Cmodel *cm, COpenGL *fObj, int variableNum, int constraintNum);
 Eigen::MatrixXf ComputeNumericalJacobian(std::vector<float> u, float *x1, float *x2, int num);
 
-double penalty(Model *foldM, COpenGL *fObj, Polyhedron_G * inputP, Nef_polyhedron_3 inputP_);
+double penalty(Cmodel *cm, COpenGL *fObj);
 float penalty(std::vector<float> u, float *x1, float *x2, int num);
 float penalty_(std::vector<float> u, float *x1, float *x2, int num);
 
@@ -21,7 +21,8 @@ Eigen::MatrixXf computeLambda(Eigen::MatrixXf A, double lambda, int numOfA);
 Eigen::MatrixXd computeLambdaUnit(Eigen::MatrixXd A, double lambda, int numOfA);
 
 //	void Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef_polyhedron_3 inputP_);
-Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef_polyhedron_3 inputP_);
+//Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef_polyhedron_3 inputP_);
+Polyhedron_G Optimization(Cmodel *cm, COpenGL *fObj);
 void Optimization();
 
 Eigen::VectorXd retunDelta(Eigen::MatrixXd M, Eigen::VectorXd b);
@@ -41,7 +42,7 @@ double topConvex_area(Model *foldM);
 
 double foldingGap(Model *foldM);
 
-Eigen::VectorXd eachPenalty(Model *foldM, COpenGL *fObj, Polyhedron_G * inputP, Nef_polyhedron_3 inputP_);
+Eigen::VectorXd eachPenalty(Cmodel *cm, COpenGL *fObj);
 void setJacobian(Eigen::MatrixXd &jacobian, Eigen::VectorXd setP, Eigen::VectorXd fx_tmp, int constraintNum, int count, double invDelta);
 
 void Step(double *output, double gap, std::vector<Vec2> points, int size, Vec2 *pointsN, bool One);

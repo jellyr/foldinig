@@ -220,6 +220,7 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="apps\metro\metro.h" />
     <ClInclude Include="boolean.h" />
     <ClInclude Include="cgal_defineData.h" />
     <ClInclude Include="common.h" />

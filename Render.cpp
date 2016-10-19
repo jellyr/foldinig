@@ -28,8 +28,9 @@ void QGLClass::initFold() {
 	draw();
 
 	//	Å“K‰»‚ÌŒvŽZ‚ð‚µ‚Ü‚·
+	cgalObj->metropPrepar();
 	//(*cgalObj->foldPoly) = TestMesh(cgalObj->foldPoly, cgalObj->cgalPoly_Nef, false);
-	(*cgalObj->foldPoly) = Optimization(cgalObj->foldM, fObj, cgalObj->cgalPoly, cgalObj->cgalPoly_Nef);
+	//(*cgalObj->foldPoly) = Optimization(cgalObj->foldM, fObj, cgalObj->cgalPoly, cgalObj->cgalPoly_Nef);
 	//Optimization();
 	//(*cgalObj->cgalPoly) = P2;
 	//	test calculatoin of volume

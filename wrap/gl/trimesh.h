@@ -57,7 +57,7 @@ namespace vcg {
 	//template <> GL_TYPE::SCALAR<double>() { return GL_DOUBLE; }
 
 	// classe base di glwrap usata solo per poter usare i vari drawmode, normalmode senza dover
-	// specificare tutto il tipo (a volte lunghissimo)
+	// specificare tutto il tipo (a volte lungstatichissimo)
 	// della particolare classe glwrap usata.
 	class GLW
 	{

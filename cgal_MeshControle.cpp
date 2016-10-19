@@ -376,3 +376,18 @@ void outputAsObj(Polyhedron_G *poly) {
 	std::ofstream ofs("MeshFile.obj");
 	CGAL::print_polyhedron_wavefront(ofs, (*poly));
 }
+
+void Cmodel::metropPrepar() {
+	CMesh S1,S2;
+	inputC = new CMesh();
+	foldC = new CMesh();
+	//openMesh(inputM, S1);//CMesh‚Ö•ÏŠ·
+	openMesh(inputM, inputC);//CMesh‚Ö•ÏŠ·
+	openMesh(foldM, foldC);//CMesh‚Ö•ÏŠ·
+	cout << "inputC.fn: " << inputC->fn << "\n";
+	cout << "foldC.fn: " << foldC->fn << "\n";
+	setMeshInfo(inputC);
+	setMeshInfo(foldC);
+	double metro = calcMetro((*inputC),(*foldC));
+	cout << "metro is " << metro << "\n";
+}

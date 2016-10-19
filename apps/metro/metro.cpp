@@ -188,14 +188,13 @@ using namespace vcg;
 //}
 
 
-CMesh openMesh(Model *m) {
-	CMesh S;
+void openMesh(Model *m, CMesh *S) {
 	std::list<Vertexs*>::iterator it_v;
 	std::list<Faces*>::iterator it_f;
-	CMesh::VertexIterator vi = vcg::tri::Allocator<CMesh>::AddVertices(S, m->vertices.size());
-	CMesh::FaceIterator fi = vcg::tri::Allocator<CMesh>::AddFaces(S, m->faces.size());
-	
-	CMesh::VertexPointer ivp[m->vertices.size()];
+	CMesh S1;
+	CMesh::VertexIterator vi = vcg::tri::Allocator<CMesh>::AddVertices(S1, m->vertices.size());
+	CMesh::FaceIterator fi = vcg::tri::Allocator<CMesh>::AddFaces(S1, m->faces.size());
+	CMesh::VertexPointer *ivp = new CMesh::VertexPointer[(int)(m->vertices.size())+1];
 
 	int vertexCount = 0;
 	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++, vertexCount++) {
@@ -203,29 +202,50 @@ CMesh openMesh(Model *m) {
 		vi->P() = CMesh::CoordType((*it_v)->p.x, (*it_v)->p.y, (*it_v)->p.z);
 		vi++;
 	}
-
 	for (it_f = m->faces.begin(); it_f != m->faces.end(); it_f++) {
 		Halfedge *h = (*it_f)->halfedge;
 		fi->V(0) = ivp[h->vertex->num];
 		fi->V(1) = ivp[h->next->vertex->num];
 		fi->V(2) = ivp[h->prev->vertex->num];
+		fi++;
+	};
+
+	vcg::tri::Append<CMesh, CMesh>::MeshCopy((*S), S1);
+	cout << "S1.fn: " << S->fn << "\n";
+}
+
+void changeVertexPos(Model *m, CMesh(*S)) {
+	
+	std::list<Vertexs*>::iterator it_v;
+	it_v = m->vertices.begin(); 
+	int vertexSize = S->VN();
+
+	for (int i = 0; i < vertexSize; i++, it_v++) {
+		CMesh::VertexPointer vi = &S->vert[0];
+		vi->P() = CMesh::CoordType((*it_v)->p.x, (*it_v)->p.y, (*it_v)->p.z);
 	}
-	return S;
 }
 
 void setMeshInfo(CMesh *S1) {
+	CMesh S;
+	vcg::tri::Append<CMesh, CMesh>::MeshCopy(S, (*S1));
 	// compute face information
-	tri::UpdateComponentEP<CMesh>::Set((*S1));
+	tri::UpdateComponentEP<CMesh>::Set(S);
 	// set bounding boxes for S1 and S2
-	tri::UpdateBounding<CMesh>::Box((*S1));
+	tri::UpdateBounding<CMesh>::Box(S);
+	vcg::tri::Append<CMesh, CMesh>::MeshCopy((*S1), S);
 }
 
-double calcMetro(CMesh S1, CMesh S2)
-{
+
+double calcMetro(CMesh &S1, CMesh &S2)
+{	
+	cout << "calcMetro\n";
+	cout << "S1.fn: " << S1.fn << "\n";
+	cout << "S2.fn: " << S2.fn << "\n";
     float                 ColorMin=0, ColorMax=0;
     double                dist1_max, dist2_max;
     unsigned long         n_samples_target, elapsed_time;
-    double								n_samples_per_area_unit;
+    double				  n_samples_per_area_unit;
     int                   flags;
 	bool NumberOfSamples = false;
 	bool SamplesPerAreaUnit = false;
@@ -240,6 +260,7 @@ double calcMetro(CMesh S1, CMesh S2)
 
    // if(argc <= 2)    Usage();
     // default parameters
+	cout << "this1\n";
     flags = SamplingFlags::VERTEX_SAMPLING |
           SamplingFlags::EDGE_SAMPLING |
           SamplingFlags::FACE_SAMPLING |
@@ -280,31 +301,36 @@ double calcMetro(CMesh S1, CMesh S2)
       }
       i++;
     }*/
-
-		if(!(flags & SamplingFlags::USE_HASH_GRID) && !(flags & SamplingFlags::USE_AABB_TREE) && !(flags & SamplingFlags::USE_OCTREE))
+	cout << "this2\n";
+	if(!(flags & SamplingFlags::USE_HASH_GRID) && !(flags & SamplingFlags::USE_AABB_TREE) && !(flags & SamplingFlags::USE_OCTREE))
        flags |= SamplingFlags::USE_STATIC_GRID;
 
-    // load input meshes.
+   // load input meshes.
     //OpenMesh(argv[1],S1);
     //OpenMesh(argv[2],S2);
 
    // string S1NewName=SaveFileName(argv[1]);
    // string S2NewName=SaveFileName(argv[2]);
-
+	cout << "this3\n";
+	cout << "S1.fn: " << S1.fn << "\n";
+	cout << "S2.fn: " << S2.fn << "\n";
     if(!NumberOfSamples && !SamplesPerAreaUnit)
     {
+		cout << "aaaa\n";
         NumberOfSamples = true;
-        n_samples_target = 10 * max(S1.fn,S2.fn);// take 10 samples per face
+        n_samples_target = max(S1.fn,S2.fn);// take 10 samples per face
     }
-
+	cout << " n_samples_target: " << n_samples_target << "\n";
     // compute face information
-       /* tri::UpdateComponentEP<CMesh>::Set(S1);
-        tri::UpdateComponentEP<CMesh>::Set(S2);*/
+    /*
+	   tri::UpdateComponentEP<CMesh>::Set(S1);
+       tri::UpdateComponentEP<CMesh>::Set(S2);
+	*/
 
-	// set bounding boxes for S1 and S2
-		/*tri::UpdateBounding<CMesh>::Box(S1);
+	/* set bounding boxes for S1 and S2
+	tri::UpdateBounding<CMesh>::Box(S1);
 		tri::UpdateBounding<CMesh>::Box(S2);*/
-
+	cout << "this2\n";
     // set Bounding Box.
 	Box3<CMesh::ScalarType> bbox, tmp_bbox_M1=S1.bbox, tmp_bbox_M2=S2.bbox;
     bbox.Add(S1.bbox);
@@ -315,7 +341,7 @@ double calcMetro(CMesh S1, CMesh S2)
 
     // initialize time info.
     int t0=clock();
-
+	cout << "this3\n";
     Sampling<CMesh> ForwardSampling(S1,S2);
     Sampling<CMesh> BackwardSampling(S2,S1);
 
@@ -331,6 +357,7 @@ double calcMetro(CMesh S1, CMesh S2)
     // Forward distance.
     //printf("\nForward distance (M1 -> M2):\n");
     ForwardSampling.SetFlags(flags);
+	cout << "this4\n";
     if(NumberOfSamples)
     {
         ForwardSampling.SetSamplesTarget(n_samples_target);
@@ -378,11 +405,9 @@ double calcMetro(CMesh S1, CMesh S2)
     printf("# total samples  %9lu\n", BackwardSampling.GetNSamples());
     printf("# samples per area unit: %f\n\n", BackwardSampling.GetNSamplesPerAreaUnit());
 */
-    // compute time info.
-    //elapsed_time = clock() - t0;
     int n_total_sample=ForwardSampling.GetNSamples()+BackwardSampling.GetNSamples();
     double mesh_dist_max  = max(dist1_max , dist2_max);
-
+	cout << "dist1_max: " << dist1_max << "dist2_max: " << dist2_max << "\n";
     /*printf("\nHausdorff distance: %f (%f  wrt bounding box diagonal)\n",(float)mesh_dist_max,(float)mesh_dist_max/bbox.Diag());
     printf("  Computation time  : %d ms\n",(int)(1000.0*elapsed_time/CLOCKS_PER_SEC));
     printf("  # samples/second  : %f\n\n", (float)n_total_sample/((float)elapsed_time/CLOCKS_PER_SEC));*/
@@ -407,7 +432,7 @@ double calcMetro(CMesh S1, CMesh S2)
     //  ForwardSampling.GetHist().FileWrite("forward_result.csv");
     //  BackwardSampling.GetHist().FileWrite("backward_result.csv");
     //}
-   return 0;
+   return mesh_dist_max;
 }
 
 // -----------------------------------------------------------------------------------------------

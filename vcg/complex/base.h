@@ -406,7 +406,7 @@ public:
   /// The incremental mark
   int imark;
 
-private:
+public:
     // TriMesh cannot be copied. Use Append (see vcg/complex/append.h)
   TriMesh operator =(const TriMesh &  /*m*/){assert(0);return TriMesh();}
   TriMesh(const TriMesh & ){}

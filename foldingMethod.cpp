@@ -4347,7 +4347,7 @@ void COpenGL::changeVertexPos(Model *m){
 		c[12] = 0.0;
 		c[13] = m->fold->topPosY; c[14] = 0.0; c[15] = 0.0;
 		//“V’¸–Ê
-		int count = 1;
+		int count = 0;
 		std::string overlap = " ";
 		std::vector<std::vector<Vec3>> addV;
 		std::list<Vertexs*>::iterator it_v;

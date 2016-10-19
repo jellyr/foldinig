@@ -159,5 +159,8 @@
     <ClInclude Include="optimization.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="apps\metro\metro.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

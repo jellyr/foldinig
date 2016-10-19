@@ -23,17 +23,17 @@ void setJacobian(Eigen::MatrixXd &jacobian, Eigen::VectorXd setP, Eigen::VectorX
 	}
 }
 //	数値微分
-Eigen::MatrixXd ComputeNumericalJacobian(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef_polyhedron_3 inputP_, int variableNum, int constraintNum) {
-
+Eigen::MatrixXd ComputeNumericalJacobian(Cmodel *cm, COpenGL *fObj, int variableNum, int constraintNum) {
+	Model *foldM = cm->foldM;
 	Eigen::MatrixXd jacobian(variableNum, constraintNum);
 	double DELTA = 1.0e-7;
 	double invDelta = 1.0 / DELTA;
-	Eigen::VectorXd fx_tmp = -invDelta * eachPenalty(foldM, fObj, inputP, inputP_);
+	Eigen::VectorXd fx_tmp = -invDelta * eachPenalty(cm, fObj);
 	int pointLastNum = foldM->fold->pointPosition.size() - 1;
 	int count = 0;
 	//yの高さ
 	foldM->fold->topPosY += DELTA;
-	setJacobian(jacobian, eachPenalty(foldM, fObj, inputP, inputP_), fx_tmp, constraintNum, count, invDelta);
+	setJacobian(jacobian, eachPenalty(cm, fObj), fx_tmp, constraintNum, count, invDelta);
 	cout << count << ": " << jacobian(count) << "\n";
 	foldM->fold->topPosY -= DELTA;
 	count++;
@@ -45,7 +45,7 @@ Eigen::MatrixXd ComputeNumericalJacobian(Model *foldM, COpenGL *fObj, Polyhedron
 				foldM->fold->pointPosition[i].x += DELTA;
 				if (i == 0) foldM->fold->pointPosition[pointLastNum].x += DELTA;
 				updateBetweenPos(foldM);
-				setJacobian(jacobian, eachPenalty(foldM, fObj, inputP, inputP_), fx_tmp, constraintNum, count, invDelta);
+				setJacobian(jacobian, eachPenalty(cm, fObj), fx_tmp, constraintNum, count, invDelta);
 				cout << i << "," << j << "x: " << jacobian(count) << "\n";
 				count++;
 				foldM->fold->pointPosition[i].x -= DELTA;
@@ -54,7 +54,7 @@ Eigen::MatrixXd ComputeNumericalJacobian(Model *foldM, COpenGL *fObj, Polyhedron
 				foldM->fold->pointPosition[i].y += DELTA;
 				if (i == 0) foldM->fold->pointPosition[pointLastNum].y += DELTA;
 				updateBetweenPos(foldM);
-				setJacobian(jacobian, eachPenalty(foldM, fObj, inputP, inputP_), fx_tmp, constraintNum, count, invDelta);
+				setJacobian(jacobian, eachPenalty(cm, fObj), fx_tmp, constraintNum, count, invDelta);
 				cout << i << "," << j << "y: " << jacobian(count) << "\n";
 				count++;
 				foldM->fold->pointPosition[i].y -= DELTA;
@@ -63,13 +63,13 @@ Eigen::MatrixXd ComputeNumericalJacobian(Model *foldM, COpenGL *fObj, Polyhedron
 				continue;
 			}
 			foldM->fold->outlinepoints[i]->points[j].x += DELTA;
-			setJacobian(jacobian, eachPenalty(foldM, fObj, inputP, inputP_), fx_tmp, constraintNum, count, invDelta);
+			setJacobian(jacobian, eachPenalty(cm, fObj), fx_tmp, constraintNum, count, invDelta);
 			cout << i << "," << j << "x: " << jacobian(count) << "\n";
 			count++;
 			foldM->fold->outlinepoints[i]->points[j].x -= DELTA;
 			if (j != foldM->fold->outlinepoints[i]->points.size() - 1) {
 				foldM->fold->outlinepoints[i]->points[j].y += DELTA;
-				setJacobian(jacobian, eachPenalty(foldM, fObj, inputP, inputP_), fx_tmp, constraintNum, count, invDelta);
+				setJacobian(jacobian, eachPenalty(cm, fObj), fx_tmp, constraintNum, count, invDelta);
 				cout << i << "," << j << "y: " << jacobian(count) << "\n";
 				count++;
 				foldM->fold->outlinepoints[i]->points[j].y -= DELTA;
@@ -80,7 +80,7 @@ Eigen::MatrixXd ComputeNumericalJacobian(Model *foldM, COpenGL *fObj, Polyhedron
 				int outlinepointsLastNum = foldM->fold->outlinepoints[j]->points.size() - 1;
 				foldM->fold->outlinepoints[j]->points[outlinepointsLastNum].y += DELTA;
 			}
-			setJacobian(jacobian, eachPenalty(foldM, fObj, inputP, inputP_), fx_tmp, constraintNum, count, invDelta);
+			setJacobian(jacobian, eachPenalty(cm, fObj), fx_tmp, constraintNum, count, invDelta);
 			cout << count << ": " << jacobian(count) << "\n";
 			cout << i << "," << "y: " << jacobian(count) << "\n";
 			for (int j = 0; j < foldM->fold->pointPosition.size() - 1; j++) {
@@ -168,7 +168,10 @@ void outputFolding(Model *foldM){
 	}
 }
 
-double penalty(Model *foldM, COpenGL *fObj, Polyhedron_G * inputP, Nef_polyhedron_3 inputP_) {
+double penalty(Cmodel *cm, COpenGL *fObj) {
+	Model *foldM = cm->foldM;
+	Polyhedron_G *inputP = cm->cgalPoly;
+	Nef_polyhedron_3 inputP_ = cm->cgalPoly_Nef;
 	//	最初に三次元座標へと変換
 	for (int i = 0; i < foldM->fold->outlinepoints.size(); i++) {
 		double Ypos = 0;
@@ -225,11 +228,14 @@ float penalty_(std::vector<float> u, float *x1, float *x2, int num) {
 	return sum;
 }
 
-Eigen::VectorXd eachPenalty(Model *foldM, COpenGL *fObj, Polyhedron_G * inputP, Nef_polyhedron_3 inputP_) {
+Eigen::VectorXd eachPenalty(Cmodel *cm, COpenGL *fObj) {
+	
+	Model *foldM = cm->foldM;
+
 	int constraintsNum = 4;
 	Eigen::VectorXd penaltyValue(constraintsNum);
 	//	outputFolding(foldM);
-	penaltyValue(0) = 1000*penalty(foldM, fObj, inputP, inputP_);
+	penaltyValue(0) = 1000 * penalty(cm, fObj);
 	penaltyValue(1) = topConvex_area(foldM);
 	penaltyValue(2) = 0;//topSmoothing(foldM);
 	penaltyValue(3) = 100*foldingGap(foldM);
@@ -472,6 +478,10 @@ double foldingGap(Model *foldM) {
 	return foldgapMin;
 }
 
+double metro(Model *m, CMesh *S) {
+
+}
+
 void updateParam(Model *foldM, Eigen::VectorXd dir) {
 	int count = 1;
 	foldM->fold->topPosY += dir(0);
@@ -518,9 +528,11 @@ void updateParam(Model *foldM, Eigen::VectorXd dir) {
 	updateBetweenPos(foldM);
 }
 
-Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef_polyhedron_3 inputP_) {
+Polyhedron_G Optimization(Cmodel *cm, COpenGL *fObj) {
+	Model *foldM = cm->foldM;
+
 	double lambda = 100000;//	小さいほどガウス：ニュートン法の影響が大きい
-	Eigen::VectorXd test = eachPenalty(foldM, fObj, inputP, inputP_);
+	Eigen::VectorXd test = eachPenalty(cm, fObj);
 	double prevCost = test.squaredNorm() / 2;
 	double firstCost = prevCost;
 	double difference;
@@ -545,12 +557,12 @@ Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef
 	Eigen::VectorXd grad(variableNum);
 
 	for (int i = 0; i < itr; i++) {
-		Eigen::VectorXd penaltyS = eachPenalty(foldM, fObj, inputP, inputP_);
+		Eigen::VectorXd penaltyS = eachPenalty(cm, fObj);
 		prevCost = penaltyS.squaredNorm() / 2;
 		Eigen::VectorXd grad = Eigen::VectorXd::Zero(variableNum);
 		Eigen::VectorXd gradJ = Eigen::VectorXd(variableNum);
 		cout << "calclate: " << i << "\n";
-		jacobian = ComputeNumericalJacobian(foldM, fObj, inputP, inputP_, variableNum, constraintNum);
+		jacobian = ComputeNumericalJacobian(cm, fObj, variableNum, constraintNum);
 		cout << "jacobian:\n" << jacobian << "\n";
 		for (int j = 0; j < constraintNum; j++) {
 			double value = penaltyS[j];
@@ -602,7 +614,7 @@ Polyhedron_G Optimization(Model *foldM, COpenGL *fObj, Polyhedron_G *inputP, Nef
 			grad = -jacobian.col(0);
 
 			updateParam(foldM, grad);
-			double cost = eachPenalty(foldM, fObj, inputP, inputP_).squaredNorm() / 2;
+			double cost = eachPenalty(cm, fObj).squaredNorm() / 2;
 			cout << "lambda << " << lambda << "\n";
 			cout << "prevCost: " << prevCost << "\n";
 			cout << "cost: " << cost << "\n";

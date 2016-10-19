@@ -12,6 +12,7 @@
 #include <CGAL/Homogeneous.h>
 #include <CGAL/Nef_polyhedron_3.h>
 #include "defineData.h"
+#include "apps/metro/metro.h"
 
 typedef CGAL::Simple_cartesian<CGAL::Gmpq> G_Kernel;
 typedef CGAL::Simple_cartesian<double> C_Kernel;
@@ -37,13 +38,14 @@ public:
 	Polyhedron_G *foldPoly;//	foldModel‚ğcgal‚ÌPolyhedron‚É•ÏŠ·
 	Polyhedron_G *diffPoly;//	foldPoly - cgalPoly;
 	Nef_polyhedron_3 cgalPoly_Nef;
-
+	CMesh *inputC;
+	CMesh *foldC;
 	Cmodel() {
 		cgalM = new Mesh();
 		cgalPoly = new Polyhedron_G();
 		diffPoly = new Polyhedron_G();
 	}
-
+	void metropPrepar();
 };
 
 // cgalPoly‚ğ¶¬‚·‚é‚½‚ß‚ÌƒNƒ‰ƒXBVertexs* Faces*‚ğ“ü‚ê‚é
@@ -106,5 +108,6 @@ double calculateDiff(Polyhedron_G P1, Nef_polyhedron_3 P2, Polyhedron_G *P2_);
 Nef_polyhedron_3 convert_Poly_NefPoly(Polyhedron_G poly);
 Polyhedron_G TestMesh(Polyhedron_G *poly1, Nef_polyhedron_3 poly2, bool flg);
 void outputAsObj(Polyhedron_G *poly);
+void metrpPrepar();
 
 #endif

@@ -30,8 +30,7 @@ class CVertex : public vcg::Vertex<UsedType, vcg::vertex::Coord3d, vcg::vertex::
 class CFace : public vcg::Face< UsedType, vcg::face::VertexRef, vcg::face::Normal3d, vcg::face::EdgePlane, vcg::face::Color4b, vcg::face::Mark, vcg::face::BitFlags> {};
 class CMesh : public vcg::tri::TriMesh< std::vector<CVertex>, std::vector<CFace> > {};
 
-
-
-CMesh openMesh(Model *m);
-double calcMetro(CMesh S1, CMesh S2);
+void openMesh(Model *m, CMesh (*S));
+double calcMetro(CMesh &S1, CMesh &S2);
 void setMeshInfo(CMesh *S1);
+void changeVertexPos(Model *m, CMesh(*S));
