@@ -398,10 +398,12 @@ void renderModelCluster(Model *m) {
 			glVertex3d(p.x, p.y, p.z);
 			glEnd();
 			
-			glBegin(GL_LINES);
-			glVertex3d(p.x, p.y, p.z);
-			glVertex3d(p.x + dir.x, p.y, p.z + dir.y);
-			glEnd();
+			// ((*it_v)->num == 0 || (*it_v)->num == 1) {
+				glBegin(GL_LINES);
+				glVertex3d(p.x, p.y, p.z);
+				glVertex3d(p.x + dir.x, p.y, p.z + dir.y);
+				glEnd();
+			//}
 		}
 	}
 	glLineWidth(7);
@@ -949,7 +951,7 @@ void setCluster(Model *m) {
 			}
 		}
 
-		cout << combine[0] << "," << combine[1] << "\n";
+		//cout << combine[0] << "," << combine[1] << "\n";
 		dirCluster.erase(dirCluster.begin() + combine[1]);
 		posCluster.erase(posCluster.begin() + combine[1]);
 		curvCluster.erase(curvCluster.begin() + combine[1]);
@@ -1099,77 +1101,98 @@ void convertPolyToModel (Model *m) {
 		Vec3 vertexNormal;
 		vertexNormal.set(0, 0, 0);
 		double curv = M_PI;
-		std::vector<Vertexs*> st_v;
+		std::vector<Vec2> st_v;
+		Vec2 st; st.set(0, 0);
+		double radD = 0;
 		do {
 			vertexNormal += h->face->normal;
 			(*it_v)->adjCenter += h->next->vertex->p;
-			st_v.push_back(h->next->vertex);
+			Vec2 ver2D(h->next->vertex->p);
+			st_v.push_back(ver2D);
 			verCount++;
-			cout << h->next->vertex->p.y << "\n";
+			Vec2 dir1(h->next->vertex->p - (*it_v)->p); dir1.normalize();
+			Vec2 dir2(h->prev->vertex->p - (*it_v)->p); dir2.normalize();
+			radD += acos(dir1*dir2);
+			st += ver2D;
+			//cout << h->next->vertex->p.y << "\n";
 			h = h->prev->pair;
 		} while (h != (*it_v)->halfedge);
-		double min1 = 10000, min2 = 10000;
-		Vec2 p1, p2;
-		Vec3 p13, p23;
-		for (int i = 0; i < st_v.size(); i++) {
+		st = st / (double)verCount;
 
-			if (min1 > abs(st_v[i]->p.y - (*it_v)->p.y)) {
-				min1 = abs(st_v[i]->p.y - (*it_v)->p.y);
-				p1.set(st_v[i]->p.x, st_v[i]->p.z);
-				p13 = st_v[i]->p;
+		(*it_v)->normal = vertexNormal / (double)verCount;
+		Vec2 normal2D((*it_v)->normal); normal2D.normalize();
+		Vec2 v2D((*it_v)->p);
+		std::vector<Vec2> left;
+		std::vector<Vec2> right;
+		for (int i = 0; i < st_v.size(); i++) {
+			if (normal2D % (st_v[i] - v2D) > 0) {//¶‰E‚É•ª—Þ
+				left.push_back(st_v[i]);
+			}
+			else{
+				right.push_back(st_v[i]);
 			}
 		}
-
-		Vec2 itv; itv.set((*it_v)->p.x, (*it_v)->p.z);
-		Vec2 itvNor; itv.set((*it_v)->p.x + 10*vertexNormal.x, (*it_v)->p.z + 10*vertexNormal.z);
-
-		for (int i = 0; i < st_v.size(); i++) {
-			Vec2 v2D(st_v[i]->p.x, st_v[i]->p.z);
-			if (!judgeIntersectedVec(p1, v2D, itv, itvNor)) { continue; }
-			if (min1 < abs(st_v[i]->p.y - (*it_v)->p.y) && min2 > abs(st_v[i]->p.y - (*it_v)->p.y)) {
-				min2 = abs(st_v[i]->p.y - (*it_v)->p.y);
-				p2.set(st_v[i]->p.x, st_v[i]->p.z);
-				p23 = st_v[i]->p;
+		if ((*it_v)->num == 0 || (*it_v)->num == 1) {
+			cout << "leftSize: " << left.size() << ", rightSize: " << right.size() << "\n";
+		}
+		double maxRad = 0;
+		double radSum;
+		int leftMax = 0, rightMax = 0;
+		for (int i = 0; i < left.size(); i++) {//left,right‚Å¬‚·Šp‚ªÅ‘å‚É¬‚é‚à‚Ì‚ð‹‚ß‚é
+			Vec2 dir = (left[i] - v2D); dir.normalize();
+			double rad = acos(normal2D * dir);
+			if (rad > M_PI / 2.0) {
+				rad = M_PI - rad;
+			}
+			if ((*it_v)->num == 0 || (*it_v)->num == 1) {
+				cout << "rad: " << (rad * 180) / M_PI << " ";
+			}
+			if (rad > maxRad) {
+				maxRad = rad;
+				leftMax = i;
 			}
 		}
-
-		cout << p13.y << "," << p23.y << "," << (*it_v)->p.y << "\n";
-		vertexNormal.normalize();
-		(*it_v)->normal = vertexNormal;
-		(*it_v)->adjCenter = (*it_v)->adjCenter / (double)verCount;
-		//x-z‚Ì“ñŽŸŒ³ã‚Ì‹È—¦‚ðŒvŽZ‚·‚é
-		Vec2 ver2D, adj2D, normal2D;
-		normal2D.set(vertexNormal.x, vertexNormal.z); normal2D.normalize();
-		ver2D.set((*it_v)->p.x, (*it_v)->p.z);
-		adj2D.set((*it_v)->adjCenter.x, (*it_v)->adjCenter.z);
-		p1 = p1 - (*it_v)->p; p1.normalize();
-		p2 = p2 - (*it_v)->p; p2.normalize();
-		double rad = acos(p1*p2);
-		(*it_v)->curvture = 0.3 / rad;//maxRad;// (ver2D - adj2D).length();
-
-		cout << "(*it_v)->curvture: " << rad << "," << (180 * rad) / M_PI << "\n";
-		if (normal2D * (adj2D-ver2D) > 0) {
-			(*it_v)->curvture *= -1;
+		if ((*it_v)->num == 0 || (*it_v)->num == 1) {
+			cout << "Max left rad: " << (maxRad * 180) / M_PI << "\n";
 		}
+		radSum = maxRad;
+		maxRad = 0;
+		for (int i = 0; i < right.size(); i++) {//left,right‚Å¬‚·Šp‚ªÅ‘å‚É¬‚é‚à‚Ì‚ð‹‚ß‚é
+			Vec2 dir = (right[i] - v2D); dir.normalize();
+			double rad = acos(normal2D * dir);
+			if (rad > M_PI/2.0) {
+				rad = M_PI - rad;
+			}
+			if ((*it_v)->num == 0 || (*it_v)->num == 1) {
+				cout << "rad: " << (rad * 180) / M_PI << " ";
+			}
+			if (rad > maxRad) {
+				maxRad = rad;
+				rightMax = i;
+			}
+		}
+		if ((*it_v)->num == 0 || (*it_v)->num == 1) {
+			cout << "Max right rad: " << (maxRad * 180) / M_PI << "\n";
+			cout << leftMax << ", " << rightMax << "\n";
 
-		// ‚±‚±‚ÅyŽ²•ûŒü‚Ì‹È—¦‚àŒvŽZ‚µ‚Ä‚¨‚­
-		if (vertexNormal.x < vertexNormal.z) {
-			ver2D.set(vertexNormal.x, vertexNormal.y);
-			normal2D.set(vertexNormal.x, vertexNormal.y); normal2D.normalize();
-			adj2D.set((*it_v)->adjCenter.x, (*it_v)->adjCenter.y);
+		}
+		radSum += maxRad;
+		Vec2 rightDir, leftDir;
+		rightDir = right[rightMax] - (*it_v)->p; rightDir.normalize();
+		leftDir =  left[leftMax] - (*it_v)->p;    leftDir.normalize();
+		cout << "calc rad: " << (acos(rightDir*leftDir) * 180) / M_PI << "\n";
+		Vec2 ver2((*it_v)->p);
+		Vec2 normalver2((*it_v)->normal);  normalver2.normalize();
+		Vec2 calcDir;
+		if ((st - ver2)*normalver2 < 0) {
+			calcDir = ver2 - st;
 		}
 		else{
-			ver2D.set(vertexNormal.z, vertexNormal.y);
-			normal2D.set(vertexNormal.z, vertexNormal.y); normal2D.normalize();
-			adj2D.set((*it_v)->adjCenter.z, (*it_v)->adjCenter.y);
+			calcDir = st - ver2;
 		}
+		(*it_v)->curvture = sqrt(calcDir*normalver2);
+		(*it_v)->curvtureY = 0;
 
-		(*it_v)->curvtureY = (ver2D - adj2D).length();
-
-
-		if (normal2D * (adj2D - ver2D) > 0) {
-			(*it_v)->curvtureY *= -1;
-		}
 	}
 	m->fold = new foldmethod();
 	m->fold->topPosY = top;

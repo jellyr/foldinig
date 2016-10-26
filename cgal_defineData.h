@@ -119,4 +119,5 @@ std::vector<int> cluster(std::vector<Vec2> points);
 void removeTopinternalPoint();
 void bottomPlaneIntersection(Model *m, Vec3 centroid);
 void setThreeCluster(Model *m);//è„ÅAë§ñ ÅAíÍñ Ç…ï™ÇØÇÈ
+
 #endif
