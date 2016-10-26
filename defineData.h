@@ -74,6 +74,7 @@ public:
 	Vec2(void);
 	Vec2(const double& _x, const double& _y);
 	Vec2(const int& _x, const int& _y);
+	Vec2(Vec3 v);
 	void set(const double& _x, const double& _y);
 	void set(const int& _x, const int& _y);
 
@@ -195,6 +196,7 @@ inline void Vec3::cross(const double& xi, const double& yi, const double& zi){
 inline Vec2::Vec2(const Vec2& v) {x = v.x; y = v.y;}
 inline Vec2::Vec2(void) {x = 0; y = 0;}
 inline Vec2::Vec2(const double& _x, const double& _y) {x = _x; y = _y;}
+inline Vec2::Vec2(Vec3 v) { x = v.x; y = v.z; }
 inline Vec2& Vec2::operator = (const Vec2& v){x = v.x; y = v.y; return *this;}
 inline Vec2 operator - (const Vec2& v){ return (Vec2(-v.x, -v.y));}
 inline Vec2& Vec2::operator+=(const Vec2& v){ x += v.x; y += v.y; return (*this);}
@@ -295,7 +297,7 @@ public:
 
 	Vec2 Topcent;
 	double topPosY;
-	
+	double bottomPosY;
 	std::vector<std::vector<std::vector<Vec2>>> part_state;
 
 	void move_zero(){
@@ -321,8 +323,11 @@ public:
 	Vec3 p;
 	Halfedge *halfedge;
 	Vec3 normal;
+	Vec3 adjCenter;
 	unsigned int num;
-
+	unsigned int clusterNum;
+	double curvture;
+	double curvtureY;
 	std::vector<Halfedge*> v_half;
 
 	Vertexs(double _x, double _y, double _z,unsigned int _num) {
@@ -331,7 +336,10 @@ public:
 		p.z = _z;
 		halfedge = NULL;
 		num = _num;
+		clusterNum = -1;
+		adjCenter.set(0, 0, 0);
 	}
+
 
 };
 

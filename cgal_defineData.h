@@ -45,7 +45,7 @@ public:
 		cgalPoly = new Polyhedron_G();
 		diffPoly = new Polyhedron_G();
 	}
-	void metropPrepar();
+	void metroPrepar();
 };
 
 // cgalPolyを生成するためのクラス。Vertexs* Faces*を入れる
@@ -108,6 +108,15 @@ double calculateDiff(Polyhedron_G P1, Nef_polyhedron_3 P2, Polyhedron_G *P2_);
 Nef_polyhedron_3 convert_Poly_NefPoly(Polyhedron_G poly);
 Polyhedron_G TestMesh(Polyhedron_G *poly1, Nef_polyhedron_3 poly2, bool flg);
 void outputAsObj(Polyhedron_G *poly);
-void metrpPrepar();
+void calcCurvture(Model *m);
 
+void convertPolyToModel(Model *m);
+void coloring(Model *m);
+void renderModelCluster(Model *m);
+void setCluster(Model *m);
+std::vector<int> cluster(std::vector<Vec2> points);
+
+void removeTopinternalPoint();
+void bottomPlaneIntersection(Model *m, Vec3 centroid);
+void setThreeCluster(Model *m);//上、側面、底面に分ける
 #endif

@@ -10,7 +10,7 @@ using namespace std;
 const GLfloat lightDiffuse[] = { 1, 1, 1, 1 };
 const GLfloat materialDiffuseFront[] = { 0, 1.0, 0, 1 };
 const GLfloat materialDiffuseBack[] = { 1.0, 1.0, 0, 1 };
-const GLfloat lightPosition[] = { 200, 200, 200, 0 };
+const GLfloat lightPosition[] = { 10, 10, 10, 0 };
 
 void QGLClass::initFold() {
 	fObj = new COpenGL();
@@ -21,16 +21,20 @@ void QGLClass::initFold() {
 	cgalObj->cgalPoly_Nef = convert_Poly_NefPoly((*cgalObj->cgalPoly));//	polyhedron→Nef_polyhedronへ変換
 
 	cgalObj->foldM = InputData();//	六角形の折りたたみモデルを入力
-	fObj->optimization(cgalObj->foldM);//	最適化
+	//fObj->optimization(cgalObj->foldM);//	最適化
 	fObj->Trim(cgalObj->foldM);//	トリム処理
+	cout << "foldingGap(Model *foldM): " << foldingGap(cgalObj->foldM) << "\n";
 	fObj->convertFoldingToMesh(cgalObj->foldM);//	折りたたみモデルをメッシュデータに変換
 	cgalObj->foldPoly = inputPoly_Gnew(cgalObj->foldM);//	折りたたみモデルをcgaのPolyhedronに変換
+	convertPolyToModel(cgalObj->inputM);
+	coloring(cgalObj->inputM);
+	setCluster(cgalObj->inputM);
 	draw();
-
+	//cgalObj->metroPrepar();
 	//	最適化の計算をします
-	cgalObj->metropPrepar();
+	//cgalObj->metroPrepar();
 	//(*cgalObj->foldPoly) = TestMesh(cgalObj->foldPoly, cgalObj->cgalPoly_Nef, false);
-	//(*cgalObj->foldPoly) = Optimization(cgalObj->foldM, fObj, cgalObj->cgalPoly, cgalObj->cgalPoly_Nef);
+	//(*cgalObj->foldPoly) = Optimization(cgalObj, fObj);
 	//Optimization();
 	//(*cgalObj->cgalPoly) = P2;
 	//	test calculatoin of volume
@@ -149,7 +153,8 @@ void QGLClass::wheelEvent(QWheelEvent *event) {
 void QGLClass::draw()
 {
 	//	qglColor(Qt::red);
-	renderFoldModel(cgalObj->foldM);
+	//renderFoldModel(cgalObj->inputM);
 	//rendercgalPoly(cgalObj->foldPoly);
 	rendercgalPoly(cgalObj->cgalPoly);
+	renderModelCluster(cgalObj->inputM);
 }

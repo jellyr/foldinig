@@ -1,16 +1,8 @@
-﻿2016/10/19 21:35:58 にビルドを開始しました。
+﻿2016/10/26 3:56:54 にビルドを開始しました。
      1>ノード 2 上のプロジェクト "C:\Users\miyato\Desktop\Folding\Folding\Folding.vcxproj" (Build ターゲット)。
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /IC:\Eigens\eigen /I.\GeneratedFiles /I. /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include /I.\GeneratedFiles\Release /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include\QtCore /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include\QtGui /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include\QtOpenGL /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include\QtWidgets /I"C:\local\CGAL-4.7\auxiliary\gmp\include" /I"C:\local\CGAL-4.7\build\include" /I"C:\local\CGAL-4.7\include" /IC:\local\boost_1_58_0 /nologo /W1 /WX- /O2 /D UNICODE /D WIN32 /D WIN64 /D QT_DLL /D QT_NO_DEBUG /D NDEBUG /D QT_CORE_LIB /D QT_GUI_LIB /D QT_OPENGL_LIB /D QT_WIDGETS_LIB /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Release\\" /Fd"x64\Release\vc120.pdb" /Gd /TP /errorReport:prompt GeneratedFiles\Release\moc_Render.cpp GeneratedFiles\Release\moc_folding.cpp Render.cpp apps\metro\metro.cpp cgal_MeshControle.cpp main.cpp optimization.cpp
-         moc_Render.cpp
-         moc_folding.cpp
-         Render.cpp
-         metro.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /IC:\Eigens\eigen /I.\GeneratedFiles /I. /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include /I.\GeneratedFiles\Release /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include\QtCore /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include\QtGui /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include\QtOpenGL /IC:\Qt\Qt5.5.1\5.5\msvc2013_64\include\QtWidgets /I"C:\local\CGAL-4.7\auxiliary\gmp\include" /I"C:\local\CGAL-4.7\build\include" /I"C:\local\CGAL-4.7\include" /IC:\local\boost_1_58_0 /nologo /W1 /WX- /O2 /D UNICODE /D WIN32 /D WIN64 /D QT_DLL /D QT_NO_DEBUG /D NDEBUG /D QT_CORE_LIB /D QT_GUI_LIB /D QT_OPENGL_LIB /D QT_WIDGETS_LIB /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Release\\" /Fd"x64\Release\vc120.pdb" /Gd /TP /errorReport:prompt cgal_MeshControle.cpp
          cgal_MeshControle.cpp
-         main.cpp
-         optimization.cpp
-         コードを生成中...
-     1>c:\users\miyato\desktop\folding\folding\apps\metro\metro.cpp(368): warning C4700: 初期化されていないローカル変数 'n_samples_per_area_unit' が使用されます
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\miyato\Desktop\Folding\x64\Release\\Folding.exe" /NOLOGO /LIBPATH:C:\Qt\Qt5.5.1\5.5\msvc2013_64\lib /LIBPATH:"C:/local/CGAL-4.7/build/lib" /LIBPATH:"C:/local/CGAL-4.7/build/lib/Release" /LIBPATH:"C:/local/boost_1_58_0/lib64-msvc-12.0" /LIBPATH:"C:/local/boost_1_58_0/lib64-msvc-12.0/Release" qtmain.lib Qt5Core.lib Qt5Gui.lib Qt5OpenGL.lib opengl32.lib glu32.lib Qt5Widgets.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib "C:\local\CGAL-4.7\auxiliary\gmp\lib\libmpfr-4.lib" "C:\local\CGAL-4.7\auxiliary\gmp\lib\libgmp-10.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:"C:\Users\miyato\Desktop\Folding\x64\Release\Folding.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\miyato\Desktop\Folding\x64\Release\Folding.lib" /MACHINE:X64 x64\Release\metro.obj
          x64\Release\cgal_MeshControle.obj
@@ -35,4 +27,4 @@
 
 ビルドに成功しました。
 
-経過時間 00:03:33.17
+経過時間 00:01:09.02

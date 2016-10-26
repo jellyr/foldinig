@@ -1273,6 +1273,9 @@ void COpenGL::optimization(Model *m){
 		gapN.resize((int)output.size());
 		for(int j=0; j<(int)output.size(); j++){
 			int index =eSort[j];
+			if (index < 0){
+				index *= -1;
+			}
 			evaluN[j] = evalu[index];
 			outputN[j] = output[index];
 			outputN_array_size[j] = output_array_size[index];

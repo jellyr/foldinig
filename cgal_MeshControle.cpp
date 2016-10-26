@@ -241,6 +241,231 @@ void renderFoldModel(Model *m) {
 	}
 }
 
+
+void makeRandumColorCluster(double *col){
+	//RGBのうち1つが255,1つが0,1つが0～255
+	int randumV = rand() % 256;
+	double getColor[6][3] = {
+		{ 1.0, randumV / 255.0, 0 },
+		{ 1.0, 0, randumV / 255.0 },
+		{ 0, 1.0, randumV / 255.0 },
+		{ 0, randumV / 255.0, 1.0 },
+		{ randumV / 255.0, 1.0, 0 },
+		{ randumV / 255.0, 0, 1.0 }
+	};
+	int getV = rand() % 6;
+	col[0] = getColor[getV][0];
+	col[1] = getColor[getV][1];
+	col[2] = getColor[getV][2];
+}
+
+std::vector<double*> color_cluster;
+std::vector<Vec3> dirCluster;
+std::vector<Vec3> posCluster;
+std::vector<double> curvCluster;
+std::vector<std::vector<Vec3>> pointCluster;
+std::vector<Vec2> pointPosition;
+std::vector<Vec2> betweenPosition;
+std::vector<std::vector<int>> clustValue;
+std::vector<std::vector<Vertexs*>> clustVertex;
+std::vector<Vec2> outlineBottomP;
+std::vector<int> VertexCluster;
+
+std::vector<int> cluster(std::vector<Vec2> points){
+	int clustNum = 3;
+	std::vector<int> clustIndex;
+	std::vector<Vec2> cent;
+	std::vector<Vec2> prev_cent;
+	std::vector<int> clustAmount;
+	cent.resize(clustNum);
+	clustAmount.resize(clustNum);
+
+	for (int i = 0; i < clustNum; i++) {
+		clustAmount[i] = 0;
+	}
+	for (int i = 0; i < points.size(); i++){
+		clustIndex.push_back(i % clustNum);
+		cent[i % clustNum] += points[i];
+		clustAmount[i % clustNum]++;
+	}
+	for (int i = 0; i < clustNum; i++) {
+		cent[i] = cent[i] / (double)clustAmount[i];
+	}
+
+	prev_cent = cent;
+
+	while (1) {
+		for (int i = 0; i < points.size(); i++){
+			double min = 1000000;
+			int minNum = clustIndex[i];
+			for (int j = 0; j < clustNum; j++) {
+				double leng = (cent[j] - points[i]).length();
+				if (leng < min) {
+					min = leng;
+					minNum = j;
+				}
+			}
+			clustIndex[i] = minNum;
+		}
+		for (int i = 0; i < clustNum; i++) {
+			clustAmount[i] = 0;
+		}
+		for (int i = 0; i < clustNum; i++) {
+			cent[i].set(0, 0);
+		}
+		for (int j = 0; j < clustNum; j++) {
+			for (int i = 0; i < points.size(); i++){
+				if (j == clustIndex[i]){
+					clustAmount[j]++;
+					cent[j] += points[i];
+				}
+			}
+		}
+		for (int j = 0; j < clustNum; j++) {
+			cent[j] = cent[j] / (double)clustAmount[j];
+		}
+		bool flg = false;
+		for (int i = 0; i < clustNum; i++) {
+			if ((prev_cent[i]-cent[i]).length() > 0.01) {
+				flg = true;
+				break;
+			}
+		}
+		if (!flg) {
+			break;
+		}
+		prev_cent = cent;
+	}
+
+	return clustIndex;
+}
+
+
+void renderModelCluster(Model *m) {
+	std::list<Vertexs*>::iterator it_v;
+	glPointSize(5);
+	glDisable(GL_LIGHTING);
+	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+		Vec3 p = (*it_v)->p;
+		Vec3 dirCurv = (*it_v)->normal*2*(*it_v)->curvture;
+		/*if ((*it_v)->curvture < 0){
+			glColor3d(0, 0, 1.0);
+			dirCurv = dirCurv * -2;
+		}
+		else {
+			glColor3d(1.0, 0, 0);
+		}*/
+
+		/*glBegin(GL_LINES);
+		glVertex3d(p.x, p.y, p.z);
+		glVertex3d(p.x + dirCurv.x , p.y, p.z + dirCurv.z);
+		glEnd();*/
+		Vec3 adjP = (*it_v)->adjCenter;
+		
+		Vec2 dir((*it_v)->normal);
+		dir.normalize();
+		dir *= abs((*it_v)->curvture);
+		if ((*it_v)->clusterNum == -1) {
+			glColor3d(0, 0, 0);
+			//cout << "-1 ";
+		}
+		else {
+			double *col = color_cluster[(*it_v)->clusterNum];
+			if ((*it_v)->clusterNum % 4 == 0) {
+				glColor3d(1.0, 0, 0);
+			}
+			else if ((*it_v)->clusterNum % 4 == 1){
+				glColor3d(0.0, 1.0, 0);
+			}
+			else if ((*it_v)->clusterNum % 4 == 2){
+				glColor3d(0.0, 0, 1.0);
+			}
+			else if ((*it_v)->clusterNum % 4 == 3){
+				glColor3d(1.0, 0, 1.0);
+			}
+			
+			/*if (VertexCluster[(*it_v)->num] == 0){
+				glColor3d(1.0, 0, 0);
+			}
+			else if (VertexCluster[(*it_v)->num] == 1){
+				glColor3d(0, 1.0, 0);
+			}
+			else {
+				glColor3d(0, 0, 1.0);
+			}*/
+			
+			glBegin(GL_POINTS);
+			glVertex3d(p.x, p.y, p.z);
+			glEnd();
+			
+			glBegin(GL_LINES);
+			glVertex3d(p.x, p.y, p.z);
+			glVertex3d(p.x + dir.x, p.y, p.z + dir.y);
+			glEnd();
+		}
+	}
+	glLineWidth(7);
+	for (int i = 0; i < (int)dirCluster.size(); i++) {
+		if (i % 4 == 0) {
+			glColor3d(1.0, 0, 0);
+		}
+		else if (i % 4 == 1){
+			glColor3d(0.0, 1.0, 0);
+		}
+		else if (i % 4 == 2){
+			glColor3d(0.0, 0, 1.0);
+		}
+		else if (i % 4 == 3) {
+			glColor3d(1.0, 0, 1.0);
+		}
+		Vec2 dir2D; dir2D.set(dirCluster[i].x, dirCluster[i].z);
+		dir2D.normalize();
+		/*glBegin(GL_LINES);
+		glVertex3d(posCluster[i].x, posCluster[i].y, posCluster[i].z);
+		glVertex3d(posCluster[i].x + dir2D.x, posCluster[i].y, posCluster[i].z + dir2D.y);
+		glEnd();*/
+	}
+
+	glColor3d(1.0, 1.0, 0.0);
+	glPointSize(5);
+	for (int i = 0; i < pointPosition.size(); i++){
+		Vec3 p; p.set(pointPosition[i].x, 0, pointPosition[i].y);
+		/*glBegin(GL_POINTS);
+		glVertex3d(p.x, p.y, p.z);
+		glEnd();*/
+	}
+
+	glPointSize(8);
+	for (int i = 0; i < clustVertex.size(); i++) {
+		for (int j = 0; j < clustVertex[i].size(); j++) {
+			if (clustValue[i][j] == 0) {
+				glColor3d(0.0, 1.0, 0);
+			}
+			else if (clustValue[i][j] == 1) {
+				glColor3d(1.0, 0.0, 0);
+			}
+			else{
+				glColor3d(0.0, 0.0, 1.0);
+			}
+			/*glPointSize(2*abs(clustVertex[i][j]->curvture));
+			glBegin(GL_POINTS);
+			glVertex3d(clustVertex[i][j]->p.x, clustVertex[i][j]->p.y, clustVertex[i][j]->p.z);
+			glEnd();*/
+		}
+	}
+
+	glEnable(GL_LIGHTING);
+
+	/*glBegin(GL_POLYGON);
+	for (int i = pointPosition.size()-1; i >= 0; i--){
+		Vec3 p; p.set(pointPosition[i].x, 0, pointPosition[i].y);
+		glNormal3d(0, 1, 0);
+		glVertex3d(p.x, m->fold->topPosY, p.z);
+	}
+	glEnd();*/
+
+}
+
 //	Polyhedronクラスをレンダリング
 void rendercgalPoly(Polyhedron_G *cgalPoly) {
 	for (Facet_iterator i = cgalPoly->facets_begin(); i != cgalPoly->facets_end(); ++i) {
@@ -377,17 +602,576 @@ void outputAsObj(Polyhedron_G *poly) {
 	CGAL::print_polyhedron_wavefront(ofs, (*poly));
 }
 
-void Cmodel::metropPrepar() {
-	CMesh S1,S2;
+void Cmodel::metroPrepar() {
 	inputC = new CMesh();
 	foldC = new CMesh();
-	//openMesh(inputM, S1);//CMeshへ変換
 	openMesh(inputM, inputC);//CMeshへ変換
 	openMesh(foldM, foldC);//CMeshへ変換
-	cout << "inputC.fn: " << inputC->fn << "\n";
-	cout << "foldC.fn: " << foldC->fn << "\n";
 	setMeshInfo(inputC);
 	setMeshInfo(foldC);
 	double metro = calcMetro((*inputC),(*foldC));
-	cout << "metro is " << metro << "\n";
+	cout << "first metro is " << metro << "\n";
+}
+
+void calculateCurvture(Model *m) {
+
+	std::list<Vertexs*>::iterator it_v;
+	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+		Halfedge *h = (*it_v)->halfedge;
+		Vec3 centroid; centroid.set(0, 0, 0);
+		do{
+			centroid += h->vertex->p;
+			h = h->next->pair;
+		} while (h != (*it_v)->halfedge);
+	}
+}
+
+void calcCurvture(Model *m) {
+	std::list<Vertexs*>::iterator it_v;
+	std::list<Faces*>::iterator it_f;
+
+	for (it_f = m->faces.begin(); it_f != m->faces.end(); it_f++) {
+		Vec3 Normal = (*it_f)->normal;
+		Halfedge *h = (*it_f)->halfedge;
+		Vec2 n1; n1.set(Normal.x, Normal.z);
+		do {
+			Vec2 n2;
+			n2.set(h->pair->face->normal.x, h->pair->face->normal.z);
+
+			h = h->next->pair;
+		} while (h != (*it_f)->halfedge);
+	}
+	
+}
+
+bool judgeIntersected(double ax, double ay, double bx, double by, double cx, double cy, double dx, double dy) {
+	double ta = (cx - dx) * (ay - cy) + (cy - dy) * (cx - ax);
+	double tb = (cx - dx) * (by - cy) + (cy - dy) * (cx - bx);
+	double tc = (ax - bx) * (cy - ay) + (ay - by) * (ax - cx);
+	double td = (ax - bx) * (dy - ay) + (ay - by) * (ax - dx);
+
+	return (tc * td < 0 && ta * tb < 0);
+};
+
+bool judgeIntersectedVec(Vec2 Lv1, Vec2 Lv2, Vec2 Rv1, Vec2 Rv2) {
+	
+	double ax = Lv1.x;
+	double ay = Lv1.y;
+	double bx = Lv2.x;
+	double by = Lv2.y;
+	double cx = Rv1.x;
+	double cy = Rv1.y;
+	double dx = Rv2.x;
+	double dy = Rv2.y;
+	
+	double ta = (cx - dx) * (ay - cy) + (cy - dy) * (cx - ax);
+	double tb = (cx - dx) * (by - cy) + (cy - dy) * (cx - bx);
+	double tc = (ax - bx) * (cy - ay) + (ay - by) * (ax - cx);
+	double td = (ax - bx) * (dy - ay) + (ay - by) * (ax - dx);
+
+	return (tc * td < 0 && ta * tb < 0);
+};
+
+//	天頂面の形状を決めるために頂点を分類する
+void coloring (Model *m) {
+	//	エッジの平均を取って角度を決める
+	std::list<Halfedge*>::iterator it_h;
+
+	double meanLength = 0;
+	double longest = 0;
+	for (it_h = m->halfs.begin(); it_h != m->halfs.end(); it_h++) {
+		meanLength += ((*it_h)->vertex->p - (*it_h)->next->vertex->p).length();
+	}
+
+	meanLength /= (double)m->halfs.size();
+
+	std::list<Vertexs*>::iterator it_v;
+	Vec3 centroid; centroid.set(0, 0, 0);
+	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+		centroid += (*it_v)->p;
+	}
+
+	centroid = centroid / (double)m->vertices.size();
+
+	Vec2 cent2D; cent2D.set(centroid.x, centroid.z);
+	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+		Vec2 P2D; P2D.set((*it_v)->p.x, (*it_v)->p.z);
+		double L = (centroid - (*it_v)->p).length();
+		if (longest < L) {
+			longest = L;
+		}
+	}
+	//	meanLength *= 2;
+	double alpha = (360 * meanLength) / (2 * M_PI * longest);
+	
+	int i = 0;
+
+	for (double rad = alpha; rad <= 360 + alpha; rad += alpha) { 
+		Vec3 cluster_dir; cluster_dir.set(0, 0, 0);
+		Vec3 cluster_pos; cluster_pos.set(0, 0, 0);
+		double color[3];
+		makeRandumColorCluster(color);
+		color_cluster.push_back(color);
+		Vec2 dir1; dir1.set(cos((rad / 180.0) * M_PI), sin((rad / 180.0) * M_PI)); dir1.normalize();
+		Vec2 dir2; dir2.set(cos(((rad - alpha) / 180.0) * M_PI), sin(((rad - alpha) / 180.0) * M_PI)); dir2.normalize();
+		double clusterNum = 0;
+		double curvture = 0;
+		for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+			Vec2 ver2D; ver2D.set((*it_v)->p.x, (*it_v)->p.z);
+			Vec2 dir2D = ver2D - cent2D; dir2D.normalize();
+			if (judgeIntersected(0, 0, dir2D.x, dir2D.y, dir1.x, dir1.y, dir2.x, dir2.y)) {
+				(*it_v)->clusterNum = i;
+				cluster_dir += (*it_v)->normal;
+				cluster_pos += (*it_v)->p;
+				clusterNum++;
+				curvture += (*it_v)->curvture;
+			}
+		}
+		curvture /= clusterNum;
+		cluster_dir = cluster_dir / clusterNum;
+		cluster_dir.normalize();
+		cluster_pos = cluster_pos / clusterNum;
+		dirCluster.push_back(cluster_dir);
+		posCluster.push_back(cluster_pos);
+		curvCluster.push_back(curvture);
+		i++;
+	}
+
+}
+
+void removeTopinternalPoint() {//天頂面のxy平面内に含まれる頂点をのぞく
+	//std::vector<std::vector<int>> clustValue;
+	//std::vector<std::vector<Vertexs*>> clustVertex;
+
+	Vec2 topCentroid; topCentroid.set(0, 0);
+	for (int i = 0; i < pointPosition.size() - 1; i++) {
+		topCentroid += pointPosition[i];
+	}
+
+	topCentroid = topCentroid / (double)(pointPosition.size() - 1);
+
+	for (int i = 0; i < clustVertex.size(); i++) {
+		for (int j = 0; j < clustVertex[i].size(); j++) {
+			bool flg = false;
+			for (int k = 0; k < pointPosition.size() - 1; k++) {
+				double ax, ay, bx, by;
+				double cx, cy, dx, dy;
+				ax = pointPosition[k].x;
+				ay = pointPosition[k].y;
+				bx = pointPosition[k + 1].x;
+				by = pointPosition[k + 1].y;
+				cx = topCentroid.x;
+				cy = topCentroid.y;
+				dx = clustVertex[k][j]->p.x;
+				dy = clustVertex[k][j]->p.y;
+				if (judgeIntersected(ax, ay, bx, by, cx, cy, dx, dy)) {
+					flg = true;
+					break;
+				}
+			}
+			if (!flg) {
+				clustVertex[i].erase(clustVertex[i].begin() + j);
+			}
+		}
+	}
+}
+
+void bottomPlaneIntersection(Model *m, Vec3 centroid) {
+	Vec3 topCent, bottomCent;
+	topCent = centroid; topCent.y = 100;
+	bottomCent = centroid; bottomCent.y = -100;
+	for (int i = 0; i < clustVertex.size(); i++) {
+		Vec3 between3D; between3D.set(betweenPosition[i].x, betweenPosition[i].y, 100);
+		Vec3 planeNormal = (between3D - topCent) % (bottomCent - topCent);
+		planeNormal.normalize();
+		Vec3 planeCent = (between3D + topCent + bottomCent) / 3;
+		double minY = 10000;
+		Vec2 p;
+		for (int j = 0; j < clustVertex[i].size(); j++) {
+			Halfedge *h = clustVertex[i][j]->halfedge;
+			do {
+				Vec3 A = h->vertex->p;
+				Vec3 B = h->next->vertex->p;
+				if (((A - planeCent)*planeNormal <= 0 && (B - planeCent)*planeNormal >= 0) ||
+					((A - planeCent)*planeNormal >= 0 && (B - planeCent)*planeNormal <= 0)) {
+					Vec3 crossP = A + (B - A) * (((A - planeCent)*planeNormal) / ((A - planeCent)*planeNormal + (B - planeCent)*planeNormal));
+					if (crossP.y < minY) {
+						Vec3 betPosbottom;
+						p.y = abs(m->fold->topPosY - crossP.y);
+						betPosbottom.set(betweenPosition[i].x, betweenPosition[i].y, p.y);
+						p.x = (betPosbottom - crossP).length();
+					}
+				}
+				h = h->prev->pair;
+			} while (h != clustVertex[i][j]->halfedge);
+		}
+		outlineBottomP.push_back(p);
+	}
+
+	for (int i = 1; i < outlineBottomP.size(); i++) {
+		outlineBottomP[0].y += outlineBottomP[i].y;
+	}
+	outlineBottomP[0].y /= (double)outlineBottomP.size();
+
+	for (int i = 1; i < outlineBottomP.size(); i++) {
+		outlineBottomP[i].y = outlineBottomP[0].y;
+	}
+
+	return;
+
+}
+
+void setThreeCluster(Model *m) {
+	
+	cout << "three Cluster\n";
+
+	std::list<Vertexs*>::iterator it_v;
+	std::vector<std::vector<Vertexs*>> clustVertex(3);
+	std::vector<Vec2> centroid(3);
+	std::vector<Vec2> precentroid(3);
+
+	centroid[0].set(0, 0);
+	centroid[1].set(0, 0);
+	centroid[2].set(0, 0);
+
+	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+		VertexCluster.push_back((*it_v)->num % 3);
+		clustVertex[(*it_v)->num % 3].push_back((*it_v));
+	}
+
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < clustVertex[i].size(); j++) {
+			Vec2 vec; vec.set(clustVertex[i][j]->p.y, 2*clustVertex[i][j]->normal.y);
+			centroid[i] += vec;
+		}
+		centroid[i] = centroid[i] / (double)clustVertex[i].size();
+	}
+	
+	precentroid = centroid;
+	while (1) {
+		cout << "num\n";
+		VertexCluster.clear();
+		clustVertex[0].clear();
+		clustVertex[1].clear();
+		clustVertex[2].clear();
+		//重心との距離を更新して割り当てしなおす
+		for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+			Vec2 vec; vec.set(10*(*it_v)->p.y, (*it_v)->normal.y);
+			int minN = 0;
+			double minL = 1000000;
+			for (int i = 0; i < 3; i++) {
+				if ((centroid[i] - vec).length() < minL) {
+					minL = (centroid[i] - vec).length();
+					minN = i;
+				}
+			}
+			VertexCluster.push_back(minN);
+			clustVertex[minN].push_back((*it_v));
+		}
+
+		centroid[0].set(0, 0);
+		centroid[1].set(0, 0);
+		centroid[2].set(0, 0);
+
+		//クラスタの重心座標を更新
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < clustVertex[i].size(); j++) {
+				Vec2 vec; vec.set(10*clustVertex[i][j]->p.y, clustVertex[i][j]->normal.y);
+				centroid[i] += vec;
+			}
+			centroid[i] = centroid[i] / (double)clustVertex[i].size();
+		}
+
+		bool endFlg = false;
+		for (int i = 0; i < 3; i++) {
+			if ((precentroid[i] - centroid[i]).length() > 0.01) {
+				endFlg = true;
+			}
+		}
+		if (!endFlg) break;
+
+		precentroid = centroid;
+	}
+
+	cout << "set three end\n";
+}
+
+void setCluster(Model *m) {
+	std::list<Vertexs*>::iterator it_v;
+	Vec3 centroid; centroid.set(0, 0, 0);
+	int topEdgeNum = 6;
+	std::vector<double> numCluster;
+	
+	numCluster.resize(dirCluster.size());
+	for (int i = 0; i < (int)dirCluster.size(); i++) {
+		numCluster[i] = 0;
+		for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+			if ((*it_v)->clusterNum == i) {
+				numCluster[i]++;
+			}
+		}
+	}
+	
+	while (1) {
+		double minrad = 0;
+		int combine[2];
+		for (int i = 0; i < dirCluster.size(); i++) {
+			//cout << "curvCluster] " << curvCluster[i] << "\n";
+			double cos;
+			double clusterNums = (1.0 / numCluster[i]) * (1.0 / numCluster[i]);
+			if (i == dirCluster.size() - 1) {
+				cos = dirCluster[i] * dirCluster[0];
+				clusterNums *= (1.0 / numCluster[0]) * (1.0 / numCluster[0]);
+				if ((curvCluster[i] < 0 && curvCluster[0] > 0) || 
+					(curvCluster[i] > 0 && curvCluster[0] < 0)) {
+					clusterNums *= 0.8;
+				}
+			}
+			else {
+				cos = dirCluster[i] * dirCluster[i + 1];
+				clusterNums *= (1.0 / numCluster[i + 1]) * (1.0 / numCluster[i + 1]);
+				if ((curvCluster[i] < 0 && curvCluster[i+1] > 0) ||
+					(curvCluster[i] > 0 && curvCluster[i+1] < 0)) {
+					clusterNums *= 0.8;
+				}
+			}
+			cos *= clusterNums;
+			if (minrad < abs(cos)) {
+				if (i == dirCluster.size() - 1) {
+					combine[0] = 0;
+					combine[1] = i;
+				}
+				else {
+					combine[0] = i;
+					combine[1] = i + 1;
+				}
+				minrad = abs(cos);
+			}
+		}
+
+		cout << combine[0] << "," << combine[1] << "\n";
+		dirCluster.erase(dirCluster.begin() + combine[1]);
+		posCluster.erase(posCluster.begin() + combine[1]);
+		curvCluster.erase(curvCluster.begin() + combine[1]);
+		for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {//クラスタ番号を更新
+			if ((*it_v)->clusterNum == combine[1]) {
+				(*it_v)->clusterNum = combine[0];
+			}
+			else if ((*it_v)->clusterNum > combine[1]){
+				(*it_v)->clusterNum--;
+			}
+		}
+		
+		Vec3 updateDir; updateDir.set(0, 0, 0);
+		Vec3 updatePos; updatePos.set(0, 0, 0);
+		double updateCurv = 0;
+		int count = 0;
+		for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {//クラスタ番号を更新
+			if ((*it_v)->clusterNum == combine[0]) {
+				updateDir += (*it_v)->normal;
+				updatePos += (*it_v)->p;
+				updateCurv += (*it_v)->curvture;
+				count++;
+			}
+		}
+		updateDir = updateDir / (double)count;
+		updateDir.normalize();
+		dirCluster[combine[0]] = updateDir;
+		posCluster[combine[0]] = updatePos / (double)count;
+		curvCluster[combine[0]] = updateCurv / (double)count;
+		numCluster.resize(dirCluster.size());
+		for (int i = 0; i < (int)dirCluster.size(); i++) {
+			numCluster[i] = 0;
+			for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+				if ((*it_v)->clusterNum == i) {
+					numCluster[i]++;
+				}
+			}
+		}
+
+		if (dirCluster.size() <= topEdgeNum) {
+			break;
+		}
+	}
+
+	for (int i = 0; i < dirCluster.size(); i++) {
+		Vec3 pos;
+		int nextNum = i + 1;
+		double count = 0;
+		if (i == dirCluster.size() - 1){
+			nextNum = 0;
+		}
+		std::vector<Vec2> forClustValue;
+		std::vector<Vertexs*> vers;
+		for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+			if ((*it_v)->clusterNum != i) {
+				continue;
+			}
+			Halfedge *h = (*it_v)->halfedge;
+			do {
+				if (h->next->vertex->clusterNum == nextNum) {
+					pos += ((*it_v)->p + h->next->vertex->p) / 2;
+					count++;
+				}
+				h = h->prev->pair;
+			} while (h != (*it_v)->halfedge);
+			Vec2 yCurv; yCurv.set((*it_v)->p.y, (*it_v)->normal.y*2);
+			forClustValue.push_back(yCurv);
+			vers.push_back((*it_v));
+		}
+
+		//天頂面のx-z平面にあるのは後から除いておく
+		clustVertex.push_back(vers);//縦方向のクラスタリング
+		clustValue.push_back(cluster(forClustValue));
+		Vec2 pos2D; pos2D.set(pos.x, pos.z);
+		pos2D = pos2D / count;
+		pointPosition.push_back(pos2D);
+	}
+
+	cout << "three cluster\n";
+	setThreeCluster(m);
+
+	pointPosition.push_back(pointPosition[0]);
+	
+	for (int i = 0; i < pointPosition.size() - 1; i++) {
+		betweenPosition.push_back((pointPosition[i] + pointPosition[i + 1]) / 2);
+	}
+	//一番下の座標を計算したい
+}
+
+void convertPolyToModel (Model *m) {
+
+	Polyhedron_C *cgalPoly = inputPoly_C(m);
+	HoleFill(cgalPoly);
+	cout << "start\n";
+	m->vertices.clear();
+	m->faces.clear();
+	m->halfs.clear();
+	std::vector<Vertexs*> stdV;
+	std::list<Faces*>::iterator it_f;
+	std::list<Vertexs*>::iterator it_v;
+	double top = -10000;
+	double bottom = 10000;
+	for (Vertex_iterator_C i = cgalPoly->vertices_begin(); i != cgalPoly->vertices_end(); i++) {
+		double x, y, z;
+		x = gmp_to_double(i->point().x());
+		y = gmp_to_double(i->point().y());
+		z = gmp_to_double(i->point().z());
+		i->id() = m->vertices.size();
+		Vertexs *V = new Vertexs(x, y, z, m->vertices.size());
+		m->vertices.push_back(V);
+		stdV.push_back(V);
+		if (top < y) {
+			top = y;
+		}
+		if (bottom > y) {
+			bottom = y;
+		}
+	}
+	for (Facet_iterator_C i = cgalPoly->facets_begin(); i != cgalPoly->facets_end(); ++i) {
+		Halfedge_facet_circulator_C j = i->facet_begin();
+		// Facets in polyhedral surfaces are at least triangles.
+		CGAL_assertion(CGAL::circulator_size(j) >= 3);
+		int index[3];
+		int count = 0;
+		do {
+			index[count] = j->vertex()->id();
+			
+			count++;
+		} while (++j != i->facet_begin());
+		Vec3 p[3];
+		p[0] = stdV[index[0]]->p;
+		p[1] = stdV[index[1]]->p;
+		p[2] = stdV[index[2]]->p;
+
+		Vec3 Normal = (p[1] - p[0]) % (p[2] - p[0]); Normal.normalize();
+		m->addFace(stdV[index[0]], stdV[index[1]], stdV[index[2]], m->faces.size());
+		it_f = m->faces.end(); it_f--;
+		(*it_f)->normal = Normal;
+		(*it_f)->bary = (p[0] + p[1] + p[2]) / 3;
+	}
+	
+	m->addsetH();
+	//頂点の法線
+	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++){
+		Halfedge *h = (*it_v)->halfedge;
+		int verCount = 0;
+		Vec3 vertexNormal;
+		vertexNormal.set(0, 0, 0);
+		double curv = M_PI;
+		std::vector<Vertexs*> st_v;
+		do {
+			vertexNormal += h->face->normal;
+			(*it_v)->adjCenter += h->next->vertex->p;
+			st_v.push_back(h->next->vertex);
+			verCount++;
+			cout << h->next->vertex->p.y << "\n";
+			h = h->prev->pair;
+		} while (h != (*it_v)->halfedge);
+		double min1 = 10000, min2 = 10000;
+		Vec2 p1, p2;
+		Vec3 p13, p23;
+		for (int i = 0; i < st_v.size(); i++) {
+
+			if (min1 > abs(st_v[i]->p.y - (*it_v)->p.y)) {
+				min1 = abs(st_v[i]->p.y - (*it_v)->p.y);
+				p1.set(st_v[i]->p.x, st_v[i]->p.z);
+				p13 = st_v[i]->p;
+			}
+		}
+
+		Vec2 itv; itv.set((*it_v)->p.x, (*it_v)->p.z);
+		Vec2 itvNor; itv.set((*it_v)->p.x + 10*vertexNormal.x, (*it_v)->p.z + 10*vertexNormal.z);
+
+		for (int i = 0; i < st_v.size(); i++) {
+			Vec2 v2D(st_v[i]->p.x, st_v[i]->p.z);
+			if (!judgeIntersectedVec(p1, v2D, itv, itvNor)) { continue; }
+			if (min1 < abs(st_v[i]->p.y - (*it_v)->p.y) && min2 > abs(st_v[i]->p.y - (*it_v)->p.y)) {
+				min2 = abs(st_v[i]->p.y - (*it_v)->p.y);
+				p2.set(st_v[i]->p.x, st_v[i]->p.z);
+				p23 = st_v[i]->p;
+			}
+		}
+
+		cout << p13.y << "," << p23.y << "," << (*it_v)->p.y << "\n";
+		vertexNormal.normalize();
+		(*it_v)->normal = vertexNormal;
+		(*it_v)->adjCenter = (*it_v)->adjCenter / (double)verCount;
+		//x-zの二次元上の曲率を計算する
+		Vec2 ver2D, adj2D, normal2D;
+		normal2D.set(vertexNormal.x, vertexNormal.z); normal2D.normalize();
+		ver2D.set((*it_v)->p.x, (*it_v)->p.z);
+		adj2D.set((*it_v)->adjCenter.x, (*it_v)->adjCenter.z);
+		p1 = p1 - (*it_v)->p; p1.normalize();
+		p2 = p2 - (*it_v)->p; p2.normalize();
+		double rad = acos(p1*p2);
+		(*it_v)->curvture = 0.3 / rad;//maxRad;// (ver2D - adj2D).length();
+
+		cout << "(*it_v)->curvture: " << rad << "," << (180 * rad) / M_PI << "\n";
+		if (normal2D * (adj2D-ver2D) > 0) {
+			(*it_v)->curvture *= -1;
+		}
+
+		// ここでy軸方向の曲率も計算しておく
+		if (vertexNormal.x < vertexNormal.z) {
+			ver2D.set(vertexNormal.x, vertexNormal.y);
+			normal2D.set(vertexNormal.x, vertexNormal.y); normal2D.normalize();
+			adj2D.set((*it_v)->adjCenter.x, (*it_v)->adjCenter.y);
+		}
+		else{
+			ver2D.set(vertexNormal.z, vertexNormal.y);
+			normal2D.set(vertexNormal.z, vertexNormal.y); normal2D.normalize();
+			adj2D.set((*it_v)->adjCenter.z, (*it_v)->adjCenter.y);
+		}
+
+		(*it_v)->curvtureY = (ver2D - adj2D).length();
+
+
+		if (normal2D * (adj2D - ver2D) > 0) {
+			(*it_v)->curvtureY *= -1;
+		}
+	}
+	m->fold = new foldmethod();
+	m->fold->topPosY = top;
+	m->fold->bottomPosY = bottom;
 }

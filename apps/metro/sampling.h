@@ -267,7 +267,7 @@ void Sampling<MetroMesh>::VertexSampling()
     int   cnt = 0;
     float error;
 
-    printf("Vertex sampling\n");
+    //printf("Vertex sampling\n");
     VertexIterator vi;
         typename std::vector<VertexPointer>::iterator vif;
     for(vi=S1.vert.begin();vi!=S1.vert.end();++vi)
@@ -282,10 +282,11 @@ void Sampling<MetroMesh>::VertexSampling()
         if(Flags & SamplingFlags::SAVE_ERROR)  (*vi).Q() = error;
 
         // print progress information
-        if(!(++cnt % print_every_n_elements))
-            printf("Sampling vertices %d%%\r", (100 * cnt/S1.vn));
+		if (!(++cnt % print_every_n_elements)){
+			//printf("Sampling vertices %d%%\r", (100 * cnt / S1.vn));
+		}
     }
-    printf("                       \r");
+    //printf("                       \r");
 }
 
 
@@ -314,7 +315,7 @@ void Sampling<MetroMesh>::EdgeSampling()
 		typedef std::pair<VertexPointer, VertexPointer> pvv;
 		std::vector< pvv > Edges;
 
-	printf("Edge sampling\n");
+	//printf("Edge sampling\n");
 
     // compute edge list.
     FaceIterator fi;
@@ -346,10 +347,11 @@ void Sampling<MetroMesh>::EdgeSampling()
 		n_samples_decimal -= (double) n_samples;
 
         // print progress information
-        if(!(++cnt % print_every_n_elements))
-            printf("Sampling edge %lu%%\r", (100 * cnt/Edges.size()));
+		if (!(++cnt % print_every_n_elements)){
+			//printf("Sampling edge %lu%%\r", (100 * cnt / Edges.size()));
+		}
     }
-    printf("                     \r");
+    //printf("                     \r");
 }
 
 
@@ -393,7 +395,7 @@ void Sampling<MetroMesh>::MontecarloFaceSampling()
     FaceIterator fi;
 
     srand(clock());
- //   printf("Montecarlo face sampling\n");
+ //   //printf("Montecarlo face sampling\n");
     for(fi=S1.face.begin(); fi != S1.face.end(); fi++)
         if(!(*fi).IsD())
     {
@@ -409,9 +411,9 @@ void Sampling<MetroMesh>::MontecarloFaceSampling()
 
         // print progress information
 //        if(!(++cnt % print_every_n_elements))
- //           printf("Sampling face %d%%\r", (100 * cnt/S1.fn));
+ //           //printf("Sampling face %d%%\r", (100 * cnt/S1.fn));
     }
- //   printf("                     \r");
+ //   //printf("                     \r");
 }
 
 
@@ -468,7 +470,7 @@ void Sampling<MetroMesh>::SubdivFaceSampling()
     double  n_samples_decimal = 0.0;
     typename MetroMesh::FaceIterator fi;
 
-    printf("Subdivision face sampling\n");
+    //printf("Subdivision face sampling\n");
     for(fi=S1.face.begin(); fi != S1.face.end(); fi++)
     {
         // compute # samples in the current face.
@@ -484,10 +486,11 @@ void Sampling<MetroMesh>::SubdivFaceSampling()
         n_samples_decimal -= (double) n_samples;
 
         // print progress information
-        if(!(++cnt % print_every_n_elements))
-            printf("Sampling face %d%%\r", (100 * cnt/S1.fn));
+		if (!(++cnt % print_every_n_elements)){
+		//	printf("Sampling face %d%%\r", (100 * cnt / S1.fn));
+		}
     }
-    printf("                     \r");
+    //printf("                     \r");
 }
 
 
@@ -517,26 +520,27 @@ void Sampling<MetroMesh>::SimilarFaceSampling()
     double  n_samples_decimal = 0.0;
     FaceIterator fi;
 
-    printf("Similar Triangles face sampling\n");
-    for(fi=S1.face.begin(); fi != S1.face.end(); fi++)
-    {
-        // compute # samples in the current face.
-        n_samples_decimal += 0.5*DoubleArea(*fi) * n_samples_per_area_unit;
-        n_samples          = (int) n_samples_decimal;
-        if(n_samples)
-        {
-            // face sampling.
-            n_samples_per_edge = (int)((sqrt(1.0+8.0*(double)n_samples) +5.0)/2.0);
-            n_samples = 0;
-            SimilarTriangles((*fi).V(0)->cP(), (*fi).V(1)->cP(), (*fi).V(2)->cP(), n_samples_per_edge);
-        }
-        n_samples_decimal -= (double) n_samples;
+    //printf("Similar Triangles face sampling\n");
+	for (fi = S1.face.begin(); fi != S1.face.end(); fi++)
+	{
+		// compute # samples in the current face.
+		n_samples_decimal += 0.5*DoubleArea(*fi) * n_samples_per_area_unit;
+		n_samples = (int)n_samples_decimal;
+		if (n_samples)
+		{
+			// face sampling.
+			n_samples_per_edge = (int)((sqrt(1.0 + 8.0*(double)n_samples) + 5.0) / 2.0);
+			n_samples = 0;
+			SimilarTriangles((*fi).V(0)->cP(), (*fi).V(1)->cP(), (*fi).V(2)->cP(), n_samples_per_edge);
+		}
+		n_samples_decimal -= (double)n_samples;
 
-        // print progress information
-        if(!(++cnt % print_every_n_elements))
-            printf("Sampling face %d%%\r", (100 * cnt/S1.fn));
+		// print progress information
+		if (!(++cnt % print_every_n_elements)){
+			//printf("Sampling face %d%%\r", (100 * cnt / S1.fn));
+		}
     }
-    printf("                     \r");
+    //printf("                     \r");
 }
 
 

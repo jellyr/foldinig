@@ -89,7 +89,7 @@ void InputData(std::string filename, GLData *data){
 
 Model *InputData(){
 
-	ifstream openfile("inputData_2.txt");
+	ifstream openfile("final1.txt");
 	string token(BUFSIZ, '\0');//サイズはBUFSIZE、すべてを\0で初期化
 
 	Model *now_m;
@@ -114,11 +114,9 @@ Model *InputData(){
 			now_o = out;
 			openfile.ignore(BUFSIZ,'\n');
 		}else if(token == "pointPosition"){
-			cout << "point\n";
 			now_o = nullptr;
 			readDataKind = 0;
 		}else if(token == "betweenPosition"){
-			cout << "betWeenPostion\n";
 			now_o = nullptr;
 			readDataKind = 1;
 		}else{
@@ -150,7 +148,7 @@ Model *InputData(){
 	}
 	
 	foldmethod *fold;
-	now_m->fold->topPosY = 128.645;
+	now_m->fold->topPosY = 171.975;
 	fold = now_m->fold;
 	double lines = (double)fold->outlinepoints.size();//全部あわせたやつを出力する
 	int row_num = (int)sqrt(lines);
@@ -173,6 +171,7 @@ Model *InputData(){
 		fold->outlinepoints[j]->maxY = abs(outline[0].y - outline[(int)outline.size()-1].y);
 	}
 	now_m->angle.set(0,0,0);
+	cout << "end\n";
 	return now_m;
 	
 }
@@ -243,7 +242,7 @@ void InputData(Model *m){
 	}
 
 	foldmethod *fold;
-	now_m->fold->topPosY = 1.0;
+	now_m->fold->topPosY = 141.0;
 	fold = now_m->fold;
 	double lines = (double)fold->outlinepoints.size();//全部あわせたやつを出力する
 	int row_num = (int)sqrt(lines);
@@ -266,4 +265,8 @@ void InputData(Model *m){
 		fold->outlinepoints[j]->maxY = abs(outline[0].y - outline[(int)outline.size() - 1].y);
 	}
 	now_m->angle.set(0, 0, 0);
+}
+
+void clusterOptimization(Model *m) {
+
 }
