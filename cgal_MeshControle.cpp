@@ -1,4 +1,4 @@
-#ifndef CGAL_DEFINEDATA_H
+ï»¿#ifndef CGAL_DEFINEDATA_H
 #include "cgal_defineData.h"
 #endif
 #include <CGAL/boost/graph/graph_traits_Polyhedron_3.h>
@@ -18,7 +18,7 @@ typedef Polyhedron_G::Vertex_iterator	Vertex_iterator;
 typedef Polyhedron_G::Halfedge_around_facet_circulator Halfedge_facet_circulator;
 
 
-//	addFace‚Ì‘‚«Š·‚¦
+//	addFaceã®æ›¸ãæ›ãˆ
 Faces *generateFace(Vertexs *v0, Vertexs *v1, Vertexs *v2, int f) {
 
 	Halfedge* he0 = new Halfedge(v0);
@@ -39,19 +39,19 @@ Faces *generateFace(Vertexs *v0, Vertexs *v1, Vertexs *v2, int f) {
 	return face;
 }
 
-// gmp‚ğdouble•û‚É•ÏŠ·‚·‚é
+// gmpã‚’doubleæ–¹ã«å¤‰æ›ã™ã‚‹
 double gmp_to_double(CGAL::Gmpq val) {
 	return (val.numerator().to_double() / val.denominator().to_double());
 }
 
-//	–Ê‚ÌW‡î•ñ‚©‚çCGAL—p‚ÌƒƒbƒVƒ…î•ñ‚ğ¶¬
+//	é¢ã®é›†åˆæƒ…å ±ã‹ã‚‰CGALç”¨ã®ãƒ¡ãƒƒã‚·ãƒ¥æƒ…å ±ã‚’ç”Ÿæˆ
 void inputMesh(Model *m) {
 	/*
 	std::list<Faces*>::iterator it_f;
 	std::list<Vertexs*>::iterator it_v;
 	std::vector<vertex_descriptor> vContainer;
 
-	//	cgal‚ÌmeshƒIƒuƒWƒFƒNƒg‚É’¸“_‚ğ‘}“ü
+	//	cgalã®meshã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«é ‚ç‚¹ã‚’æŒ¿å…¥
 	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
 		vertex_descriptor u = m->add_vertex(G_Kernel::Point_3(0, 1, 0));
 		vertex_descriptor v = cgalM->add_vertex(G_Kernel::Point_3(0, 0, 0));
@@ -61,7 +61,7 @@ void inputMesh(Model *m) {
 		vContainer.push_back(w);
 	}
 
-	//	–ÊƒIƒuƒWƒFƒNƒg‚ğ‘}“ü
+	//	é¢ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’æŒ¿å…¥
 	for (it_f = m->faces.begin(); it_f != m->faces.end(); it_f++) {
 		int p0 = (*it_f)->halfedge->vertex->num;
 		int p1 = (*it_f)->halfedge->next->vertex->num;
@@ -72,7 +72,7 @@ void inputMesh(Model *m) {
 }
 
 
-//	–Ê‚ÌW‡î•ñ‚©‚çCGAL—p‚Ì‘½ŠpŒ`î•ñ‚ğ¶¬
+//	é¢ã®é›†åˆæƒ…å ±ã‹ã‚‰CGALç”¨ã®å¤šè§’å½¢æƒ…å ±ã‚’ç”Ÿæˆ
 Polyhedron_C *inputPoly_C(Model *m){
 
 	std::list<Faces*>::iterator it_f;
@@ -81,12 +81,12 @@ Polyhedron_C *inputPoly_C(Model *m){
 	std::vector<Vertexs*> vecV;
 	
 
-	//	cgal‚ÌmeshƒIƒuƒWƒFƒNƒg‚É’¸“_‚ğ‘}“ü
+	//	cgalã®meshã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«é ‚ç‚¹ã‚’æŒ¿å…¥
 	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
 		vecV.push_back((*it_v));
 	}
 
-	//	–ÊƒIƒuƒWƒFƒNƒg‚ğ‘}“ü
+	//	é¢ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’æŒ¿å…¥
 	for (it_f = m->faces.begin(); it_f != m->faces.end(); it_f++) {
 		vecF.push_back((*it_f));
 	}
@@ -98,7 +98,7 @@ Polyhedron_C *inputPoly_C(Model *m){
 	return P;
 }
 
-//	Simple_cartician‚Ìpolyhedron‚©‚çGmq‚Ìpolyhedron‚Ö•ÏŠ·‚·‚é
+//	Simple_carticianã®polyhedronã‹ã‚‰Gmqã®polyhedronã¸å¤‰æ›ã™ã‚‹
 Polyhedron_G *PolyC_to_Poly_G(Polyhedron_C *poly_c){
 
 	std::vector<Faces*> vecF;
@@ -133,7 +133,7 @@ Polyhedron_G *PolyC_to_Poly_G(Polyhedron_C *poly_c){
 	return P;
 }
 
-//	–Ê‚ÌW‡î•ñ‚©‚çCGAL—p‚Ì‘½ŠpŒ`î•ñ(Gmp)‚ğ¶¬
+//	é¢ã®é›†åˆæƒ…å ±ã‹ã‚‰CGALç”¨ã®å¤šè§’å½¢æƒ…å ±(Gmp)ã‚’ç”Ÿæˆ
 Polyhedron_G *inputPoly_Gnew(Model *m){
 
 	std::list<Faces*>::iterator it_f;
@@ -141,12 +141,12 @@ Polyhedron_G *inputPoly_Gnew(Model *m){
 	std::vector<Faces*> vecF;
 	std::vector<Vertexs*> vecV;
 
-	//	cgal‚ÌmeshƒIƒuƒWƒFƒNƒg‚É’¸“_‚ğ‘}“ü
+	//	cgalã®meshã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«é ‚ç‚¹ã‚’æŒ¿å…¥
 	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
 		vecV.push_back((*it_v));
 	}
 
-	//	–ÊƒIƒuƒWƒFƒNƒg‚ğ‘}“ü
+	//	é¢ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’æŒ¿å…¥
 	for (it_f = m->faces.begin(); it_f != m->faces.end(); it_f++) {
 		vecF.push_back((*it_f));
 	}
@@ -158,7 +158,7 @@ Polyhedron_G *inputPoly_Gnew(Model *m){
 	return P;
 }
 
-//	–Ê‚ÌW‡î•ñ‚©‚çCGAL—p‚Ì‘½ŠpŒ`î•ñ(Gmp)‚ğ¶¬
+//	é¢ã®é›†åˆæƒ…å ±ã‹ã‚‰CGALç”¨ã®å¤šè§’å½¢æƒ…å ±(Gmp)ã‚’ç”Ÿæˆ
 Polyhedron_G inputPoly_G(Model *m){
 
 	std::list<Faces*>::iterator it_f;
@@ -166,12 +166,12 @@ Polyhedron_G inputPoly_G(Model *m){
 	std::vector<Faces*> vecF;
 	std::vector<Vertexs*> vecV;
 	//cout << " vertex size: " << m->vertices.size() << "Face size" << m->faces.size() << "\n";
-	//	cgal‚ÌmeshƒIƒuƒWƒFƒNƒg‚É’¸“_‚ğ‘}“ü
+	//	cgalã®meshã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«é ‚ç‚¹ã‚’æŒ¿å…¥
 	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
 		vecV.push_back((*it_v));
 	}
 
-	//	–ÊƒIƒuƒWƒFƒNƒg‚ğ‘}“ü
+	//	é¢ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’æŒ¿å…¥
 	for (it_f = m->faces.begin(); it_f != m->faces.end(); it_f++) {
 		vecF.push_back((*it_f));
 	}
@@ -188,11 +188,11 @@ typedef Polyhedron_C::Facet_handle       Facet_handle;
 typedef Polyhedron_C::Vertex_handle      Vertex_handle;
 
 
-//	“ü—Íƒ‚ƒfƒ‹‚ğ•ªŠ„‚·‚é‚ÆŒŠ‚ª‹ó‚­‚Ì‚ÅA‘ÌÏŒvZ‚Ì‚½‚ßŒŠ‚ğ‚Ó‚³‚¢‚Å‚¨‚­
+//	å…¥åŠ›ãƒ¢ãƒ‡ãƒ«ã‚’åˆ†å‰²ã™ã‚‹ã¨ç©´ãŒç©ºãã®ã§ã€ä½“ç©è¨ˆç®—ã®ãŸã‚ç©´ã‚’ãµã•ã„ã§ãŠã
 void HoleFill (Polyhedron_C *poly){
 
 	if (poly->empty()) {
-		cout << "CGAL::Polyhedron‚ª‹ó‚Å‚·\n";
+		cout << "CGAL::PolyhedronãŒç©ºã§ã™\n";
 		return;
 	}
 	// Incrementally fill the holes
@@ -223,7 +223,7 @@ void HoleFill (Polyhedron_C *poly){
 void renderCgalMesh() {
 
 }
-//	ModelƒNƒ‰ƒX‚ğƒŒƒ“ƒ_ƒŠƒ“ƒO
+//	Modelã‚¯ãƒ©ã‚¹ã‚’ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°
 void renderFoldModel(Model *m) {
 	std::list<Faces*>::iterator it_f;
 	for (it_f = m->faces.begin(); it_f != m->faces.end(); it_f++) {
@@ -243,7 +243,7 @@ void renderFoldModel(Model *m) {
 
 
 void makeRandumColorCluster(double *col){
-	//RGB‚Ì‚¤‚¿1‚Â‚ª255,1‚Â‚ª0,1‚Â‚ª0`255
+	//RGBã®ã†ã¡1ã¤ãŒ255,1ã¤ãŒ0,1ã¤ãŒ0ï½255
 	int randumV = rand() % 256;
 	double getColor[6][3] = {
 		{ 1.0, randumV / 255.0, 0 },
@@ -270,6 +270,9 @@ std::vector<std::vector<int>> clustValue;
 std::vector<std::vector<Vertexs*>> clustVertex;
 std::vector<Vec2> outlineBottomP;
 std::vector<int> VertexCluster;
+std::vector<Vec2> centVer;
+std::vector<Vec2> faceNormalL;
+std::vector<Vec2> faceNormalR;
 
 std::vector<int> cluster(std::vector<Vec2> points){
 	int clustNum = 3;
@@ -343,18 +346,22 @@ std::vector<int> cluster(std::vector<Vec2> points){
 
 void renderModelCluster(Model *m) {
 	std::list<Vertexs*>::iterator it_v;
+	std::list<Faces*>::iterator it_f;
 	glPointSize(5);
 	glDisable(GL_LIGHTING);
+	glColor3d(1.0, 0, 1.0);
+	for (it_f = m->faces.begin(); it_f!=m->faces.end(); it_f++) {
+
+		/*glBegin(GL_LINES);
+		glVertex3d((*it_f)->bary.x, (*it_f)->bary.y, (*it_f)->bary.z);
+		glVertex3d((*it_f)->bary.x + 0.9*(*it_f)->normal.x, (*it_f)->bary.y, (*it_f)->bary.z + 0.9*(*it_f)->normal.z);
+		glEnd();*/
+	}
+
 	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
 		Vec3 p = (*it_v)->p;
 		Vec3 dirCurv = (*it_v)->normal*2*(*it_v)->curvture;
-		/*if ((*it_v)->curvture < 0){
-			glColor3d(0, 0, 1.0);
-			dirCurv = dirCurv * -2;
-		}
-		else {
-			glColor3d(1.0, 0, 0);
-		}*/
+		
 
 		/*glBegin(GL_LINES);
 		glVertex3d(p.x, p.y, p.z);
@@ -393,20 +400,26 @@ void renderModelCluster(Model *m) {
 			else {
 				glColor3d(0, 0, 1.0);
 			}*/
-			
+			/*glPointSize(7);
 			glBegin(GL_POINTS);
 			glVertex3d(p.x, p.y, p.z);
 			glEnd();
-			
-			// ((*it_v)->num == 0 || (*it_v)->num == 1) {
-				glBegin(GL_LINES);
-				glVertex3d(p.x, p.y, p.z);
-				glVertex3d(p.x + dir.x, p.y, p.z + dir.y);
-				glEnd();
-			//}
+			glLineWidth(2);*/
+
+			/*if ((*it_v)->curvture < 0) {
+				glColor3d(0.5, 0.0, 1.0);
+			}
+			else {
+				glColor3d(1.0, 0.0, 0.5);
+			}
+			glBegin(GL_LINES);
+			glVertex3d(p.x, p.y, p.z);
+			glVertex3d(p.x + dir.x, p.y, p.z + dir.y);
+			glEnd();*/
+		
 		}
 	}
-	glLineWidth(7);
+	
 	for (int i = 0; i < (int)dirCluster.size(); i++) {
 		if (i % 4 == 0) {
 			glColor3d(1.0, 0, 0);
@@ -449,26 +462,26 @@ void renderModelCluster(Model *m) {
 			else{
 				glColor3d(0.0, 0.0, 1.0);
 			}
-			/*glPointSize(2*abs(clustVertex[i][j]->curvture));
+			//glPointSize(2*abs(clustVertex[i][j]->curvture));
 			glBegin(GL_POINTS);
 			glVertex3d(clustVertex[i][j]->p.x, clustVertex[i][j]->p.y, clustVertex[i][j]->p.z);
-			glEnd();*/
+			glEnd();
 		}
 	}
 
 	glEnable(GL_LIGHTING);
 
-	/*glBegin(GL_POLYGON);
+	glBegin(GL_POLYGON);
 	for (int i = pointPosition.size()-1; i >= 0; i--){
 		Vec3 p; p.set(pointPosition[i].x, 0, pointPosition[i].y);
 		glNormal3d(0, 1, 0);
 		glVertex3d(p.x, m->fold->topPosY, p.z);
 	}
-	glEnd();*/
+	glEnd();
 
 }
 
-//	PolyhedronƒNƒ‰ƒX‚ğƒŒƒ“ƒ_ƒŠƒ“ƒO
+//	Polyhedronã‚¯ãƒ©ã‚¹ã‚’ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°
 void rendercgalPoly(Polyhedron_G *cgalPoly) {
 	for (Facet_iterator i = cgalPoly->facets_begin(); i != cgalPoly->facets_end(); ++i) {
 		Halfedge_facet_circulator j = i->facet_begin();
@@ -504,7 +517,7 @@ double SignedVolumeOfTriangle(Vec3 p1, Vec3 p2, Vec3 p3) {
 	return (1.0 / 6.0)*(-v321 + v231 + v312 - v132 - v213 + v123);
 }
 
-//	modelƒNƒ‰ƒX‚Ì‘ÌÏ‚ğŒvZ
+//	modelã‚¯ãƒ©ã‚¹ã®ä½“ç©ã‚’è¨ˆç®—
 double calcVolume(Model *m) {
 	std::list<Faces*>::iterator it_f;
 	double volumeSum = 0;
@@ -518,7 +531,7 @@ double calcVolume(Model *m) {
 	return volumeSum;
 }
 
-//	Polyhedron_GƒNƒ‰ƒX‚Ì‘ÌÏ‚ğŒvZ
+//	Polyhedron_Gã‚¯ãƒ©ã‚¹ã®ä½“ç©ã‚’è¨ˆç®—
 double calcVolume(Polyhedron_G cgalPoly) {
 	double volumeSum = 0;
 	
@@ -564,26 +577,26 @@ double calculateDiff(Polyhedron_G P1, Nef_polyhedron_3 P2, Polyhedron_G *P2_){
 		volumeDiff = abs(P1Vol - P2Vol);
 	}*/
 	Polyhedron_G D1,D2;
-	D1 = boolDiff_P1_P2(P1, P2, true); // —§‘Ì-ƒEƒTƒM
-	D2 = boolDiff_P1_P2(P1, P2, false); //	ƒEƒTƒM-—§‘Ì
+	D1 = boolDiff_P1_P2(P1, P2, true); // ç«‹ä½“-ã‚¦ã‚µã‚®
+	D2 = boolDiff_P1_P2(P1, P2, false); //	ã‚¦ã‚µã‚®-ç«‹ä½“
 	double refeModelVolume = calcVolume((*P2_));
 	double V1 = calcVolume(D1);
 	double V2 = calcVolume(D2);
-	if (V2 > refeModelVolume){//	ƒEƒTƒM“à•”‚Éƒ‚ƒfƒ‹‚ª‚ ‚é‚Æ‘ÌÏ‚ÌŒvZ‚ª‚¨‚©‚µ‚­‚È‚é
+	if (V2 > refeModelVolume){//	ã‚¦ã‚µã‚®å†…éƒ¨ã«ãƒ¢ãƒ‡ãƒ«ãŒã‚ã‚‹ã¨ä½“ç©ã®è¨ˆç®—ãŒãŠã‹ã—ããªã‚‹
 		V2 = refeModelVolume - calcVolume(P1);
 	}
-	double V3 = calcVolume((*P2_));//	ƒEƒTƒM‘S‘Ì‚Ì‘ÌÏ
+	double V3 = calcVolume((*P2_));//	ã‚¦ã‚µã‚®å…¨ä½“ã®ä½“ç©
 	//cout << "V1:" << V1 << ", V2: " << V2 << ", V3: " << V3 << "\n";
 	//cout << "V3 / (V1 - V2): " << V3 / (V1 - V2) << "\n";
-	//cout << "ƒEƒTƒM: " << refeModelVolume << "—§‘Ì: " << calcVolume(P1) << "\n";
-	//cout << "V1(—§‘Ì-ƒEƒTƒM): " << V1 << ",V2(ƒEƒTƒM-—§‘Ì): " << V2 << "\n";
+	//cout << "ã‚¦ã‚µã‚®: " << refeModelVolume << "ç«‹ä½“: " << calcVolume(P1) << "\n";
+	//cout << "V1(ç«‹ä½“-ã‚¦ã‚µã‚®): " << V1 << ",V2(ã‚¦ã‚µã‚®-ç«‹ä½“): " << V2 << "\n";
 	double volumeDiff = V1 + V2;
 	//cout << "volumeDiff:" << volumeDiff << "\n";
 	return volumeDiff / refeModelVolume;
 }
 
 
-Polyhedron_G *holeFillAndConvertPolyG(Model *m){//	ŒŠ‚ğ‚Ó‚³‚¢‚ÅPolu_G‚Ö•ÏŠ·‚·‚é
+Polyhedron_G *holeFillAndConvertPolyG(Model *m){//	ç©´ã‚’ãµã•ã„ã§Polu_Gã¸å¤‰æ›ã™ã‚‹
 	Polyhedron_C *holeModel = inputPoly_C(m);
 	HoleFill(holeModel);
 	return PolyC_to_Poly_G(holeModel);
@@ -607,8 +620,8 @@ void outputAsObj(Polyhedron_G *poly) {
 void Cmodel::metroPrepar() {
 	inputC = new CMesh();
 	foldC = new CMesh();
-	openMesh(inputM, inputC);//CMesh‚Ö•ÏŠ·
-	openMesh(foldM, foldC);//CMesh‚Ö•ÏŠ·
+	openMesh(inputM, inputC);//CMeshã¸å¤‰æ›
+	openMesh(foldM, foldC);//CMeshã¸å¤‰æ›
 	setMeshInfo(inputC);
 	setMeshInfo(foldC);
 	double metro = calcMetro((*inputC),(*foldC));
@@ -674,9 +687,9 @@ bool judgeIntersectedVec(Vec2 Lv1, Vec2 Lv2, Vec2 Rv1, Vec2 Rv2) {
 	return (tc * td < 0 && ta * tb < 0);
 };
 
-//	“V’¸–Ê‚ÌŒ`ó‚ğŒˆ‚ß‚é‚½‚ß‚É’¸“_‚ğ•ª—Ş‚·‚é
+//	å¤©é ‚é¢ã®å½¢çŠ¶ã‚’æ±ºã‚ã‚‹ãŸã‚ã«é ‚ç‚¹ã‚’åˆ†é¡ã™ã‚‹
 void coloring (Model *m) {
-	//	ƒGƒbƒW‚Ì•½‹Ï‚ğæ‚Á‚ÄŠp“x‚ğŒˆ‚ß‚é
+	//	ã‚¨ãƒƒã‚¸ã®å¹³å‡ã‚’å–ã£ã¦è§’åº¦ã‚’æ±ºã‚ã‚‹
 	std::list<Halfedge*>::iterator it_h;
 
 	double meanLength = 0;
@@ -741,7 +754,7 @@ void coloring (Model *m) {
 
 }
 
-void removeTopinternalPoint() {//“V’¸–Ê‚Ìxy•½–Ê“à‚ÉŠÜ‚Ü‚ê‚é’¸“_‚ğ‚Ì‚¼‚­
+void removeTopinternalPoint() {//å¤©é ‚é¢ã®xyå¹³é¢å†…ã«å«ã¾ã‚Œã‚‹é ‚ç‚¹ã‚’ã®ãã
 	//std::vector<std::vector<int>> clustValue;
 	//std::vector<std::vector<Vertexs*>> clustVertex;
 
@@ -856,7 +869,7 @@ void setThreeCluster(Model *m) {
 		clustVertex[0].clear();
 		clustVertex[1].clear();
 		clustVertex[2].clear();
-		//dS‚Æ‚Ì‹——£‚ğXV‚µ‚ÄŠ„‚è“–‚Ä‚µ‚È‚¨‚·
+		//é‡å¿ƒã¨ã®è·é›¢ã‚’æ›´æ–°ã—ã¦å‰²ã‚Šå½“ã¦ã—ãªãŠã™
 		for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
 			Vec2 vec; vec.set(10*(*it_v)->p.y, (*it_v)->normal.y);
 			int minN = 0;
@@ -875,7 +888,7 @@ void setThreeCluster(Model *m) {
 		centroid[1].set(0, 0);
 		centroid[2].set(0, 0);
 
-		//ƒNƒ‰ƒXƒ^‚ÌdSÀ•W‚ğXV
+		//ã‚¯ãƒ©ã‚¹ã‚¿ã®é‡å¿ƒåº§æ¨™ã‚’æ›´æ–°
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < clustVertex[i].size(); j++) {
 				Vec2 vec; vec.set(10*clustVertex[i][j]->p.y, clustVertex[i][j]->normal.y);
@@ -922,18 +935,18 @@ void setCluster(Model *m) {
 			double cos;
 			double clusterNums = (1.0 / numCluster[i]) * (1.0 / numCluster[i]);
 			if (i == dirCluster.size() - 1) {
-				cos = dirCluster[i] * dirCluster[0];
+				cos = (dirCluster[i] * dirCluster[0]) * (dirCluster[i] * dirCluster[0]);
 				clusterNums *= (1.0 / numCluster[0]) * (1.0 / numCluster[0]);
-				if ((curvCluster[i] < 0 && curvCluster[0] > 0) || 
+				if ((curvCluster[i] < 0 && curvCluster[0] > 0) ||
 					(curvCluster[i] > 0 && curvCluster[0] < 0)) {
 					clusterNums *= 0.8;
 				}
 			}
 			else {
-				cos = dirCluster[i] * dirCluster[i + 1];
+				cos = (dirCluster[i] * dirCluster[i + 1]) * (dirCluster[i] * dirCluster[i + 1]);
 				clusterNums *= (1.0 / numCluster[i + 1]) * (1.0 / numCluster[i + 1]);
-				if ((curvCluster[i] < 0 && curvCluster[i+1] > 0) ||
-					(curvCluster[i] > 0 && curvCluster[i+1] < 0)) {
+				if ((curvCluster[i] < 0 && curvCluster[i + 1] > 0) ||
+					(curvCluster[i] > 0 && curvCluster[i + 1] < 0)) {
 					clusterNums *= 0.8;
 				}
 			}
@@ -955,7 +968,7 @@ void setCluster(Model *m) {
 		dirCluster.erase(dirCluster.begin() + combine[1]);
 		posCluster.erase(posCluster.begin() + combine[1]);
 		curvCluster.erase(curvCluster.begin() + combine[1]);
-		for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {//ƒNƒ‰ƒXƒ^”Ô†‚ğXV
+		for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {//ã‚¯ãƒ©ã‚¹ã‚¿ç•ªå·ã‚’æ›´æ–°
 			if ((*it_v)->clusterNum == combine[1]) {
 				(*it_v)->clusterNum = combine[0];
 			}
@@ -968,7 +981,7 @@ void setCluster(Model *m) {
 		Vec3 updatePos; updatePos.set(0, 0, 0);
 		double updateCurv = 0;
 		int count = 0;
-		for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {//ƒNƒ‰ƒXƒ^”Ô†‚ğXV
+		for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {//ã‚¯ãƒ©ã‚¹ã‚¿ç•ªå·ã‚’æ›´æ–°
 			if ((*it_v)->clusterNum == combine[0]) {
 				updateDir += (*it_v)->normal;
 				updatePos += (*it_v)->p;
@@ -1022,8 +1035,8 @@ void setCluster(Model *m) {
 			vers.push_back((*it_v));
 		}
 
-		//“V’¸–Ê‚Ìx-z•½–Ê‚É‚ ‚é‚Ì‚ÍŒã‚©‚çœ‚¢‚Ä‚¨‚­
-		clustVertex.push_back(vers);//c•ûŒü‚ÌƒNƒ‰ƒXƒ^ƒŠƒ“ƒO
+		//å¤©é ‚é¢ã®x-zå¹³é¢ã«ã‚ã‚‹ã®ã¯å¾Œã‹ã‚‰é™¤ã„ã¦ãŠã
+		clustVertex.push_back(vers);//ç¸¦æ–¹å‘ã®ã‚¯ãƒ©ã‚¹ã‚¿ãƒªãƒ³ã‚°
 		clustValue.push_back(cluster(forClustValue));
 		Vec2 pos2D; pos2D.set(pos.x, pos.z);
 		pos2D = pos2D / count;
@@ -1038,7 +1051,7 @@ void setCluster(Model *m) {
 	for (int i = 0; i < pointPosition.size() - 1; i++) {
 		betweenPosition.push_back((pointPosition[i] + pointPosition[i + 1]) / 2);
 	}
-	//ˆê”Ô‰º‚ÌÀ•W‚ğŒvZ‚µ‚½‚¢
+	//ä¸€ç•ªä¸‹ã®åº§æ¨™ã‚’è¨ˆç®—ã—ãŸã„
 }
 
 void convertPolyToModel (Model *m) {
@@ -1094,106 +1107,158 @@ void convertPolyToModel (Model *m) {
 	}
 	
 	m->addsetH();
-	//’¸“_‚Ì–@ü
+	//é ‚ç‚¹ã®æ³•ç·š
+	Vec3 topDir; topDir.set(0, 1, 0);
 	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++){
 		Halfedge *h = (*it_v)->halfedge;
 		int verCount = 0;
 		Vec3 vertexNormal;
 		vertexNormal.set(0, 0, 0);
-		double curv = M_PI;
-		std::vector<Vec2> st_v;
-		Vec2 st; st.set(0, 0);
-		double radD = 0;
+		std::vector<Vec2> faceBary;
+		std::vector<Vec2> faceNormal;
 		do {
 			vertexNormal += h->face->normal;
 			(*it_v)->adjCenter += h->next->vertex->p;
-			Vec2 ver2D(h->next->vertex->p);
-			st_v.push_back(ver2D);
 			verCount++;
-			Vec2 dir1(h->next->vertex->p - (*it_v)->p); dir1.normalize();
-			Vec2 dir2(h->prev->vertex->p - (*it_v)->p); dir2.normalize();
-			radD += acos(dir1*dir2);
-			st += ver2D;
-			//cout << h->next->vertex->p.y << "\n";
+			
+			Vec2 bary(h->face->bary);     faceBary.push_back(bary);
+			Vec2 normal(h->face->normal); normal.normalize();  faceNormal.push_back(normal);
 			h = h->prev->pair;
 		} while (h != (*it_v)->halfedge);
-		st = st / (double)verCount;
 
 		(*it_v)->normal = vertexNormal / (double)verCount;
 		Vec2 normal2D((*it_v)->normal); normal2D.normalize();
 		Vec2 v2D((*it_v)->p);
-		std::vector<Vec2> left;
-		std::vector<Vec2> right;
-		for (int i = 0; i < st_v.size(); i++) {
-			if (normal2D % (st_v[i] - v2D) > 0) {//¶‰E‚É•ª—Ş
-				left.push_back(st_v[i]);
+
+		(*it_v)->adjCenter = (*it_v)->adjCenter / (double)verCount;
+
+		std::vector<int> left;
+		std::vector<int> right;
+		for (int i = 0; i < faceBary.size(); i++) {
+			if (normal2D % (faceBary[i] - v2D) > 0) {//å·¦å³ã«åˆ†é¡
+				left.push_back(i);
 			}
 			else{
-				right.push_back(st_v[i]);
+				right.push_back(i);
 			}
 		}
-		if ((*it_v)->num == 0 || (*it_v)->num == 1) {
-			cout << "leftSize: " << left.size() << ", rightSize: " << right.size() << "\n";
+		
+		Vec2 leftNormal; leftNormal.set(0, 0);
+		Vec2 rightNormal; rightNormal.set(0, 0);
+		for (int i = 0; i < left.size(); i++) {//left,rightã§æˆã™è§’ãŒæœ€å¤§ã«æˆã‚‹ã‚‚ã®ã‚’æ±‚ã‚ã‚‹
+			leftNormal += faceNormal[left[i]];
 		}
-		double maxRad = 0;
-		double radSum;
-		int leftMax = 0, rightMax = 0;
-		for (int i = 0; i < left.size(); i++) {//left,right‚Å¬‚·Šp‚ªÅ‘å‚É¬‚é‚à‚Ì‚ğ‹‚ß‚é
-			Vec2 dir = (left[i] - v2D); dir.normalize();
-			double rad = acos(normal2D * dir);
-			if (rad > M_PI / 2.0) {
-				rad = M_PI - rad;
-			}
-			if ((*it_v)->num == 0 || (*it_v)->num == 1) {
-				cout << "rad: " << (rad * 180) / M_PI << " ";
-			}
-			if (rad > maxRad) {
-				maxRad = rad;
-				leftMax = i;
-			}
-		}
-		if ((*it_v)->num == 0 || (*it_v)->num == 1) {
-			cout << "Max left rad: " << (maxRad * 180) / M_PI << "\n";
-		}
-		radSum = maxRad;
-		maxRad = 0;
-		for (int i = 0; i < right.size(); i++) {//left,right‚Å¬‚·Šp‚ªÅ‘å‚É¬‚é‚à‚Ì‚ğ‹‚ß‚é
-			Vec2 dir = (right[i] - v2D); dir.normalize();
-			double rad = acos(normal2D * dir);
-			if (rad > M_PI/2.0) {
-				rad = M_PI - rad;
-			}
-			if ((*it_v)->num == 0 || (*it_v)->num == 1) {
-				cout << "rad: " << (rad * 180) / M_PI << " ";
-			}
-			if (rad > maxRad) {
-				maxRad = rad;
-				rightMax = i;
-			}
-		}
-		if ((*it_v)->num == 0 || (*it_v)->num == 1) {
-			cout << "Max right rad: " << (maxRad * 180) / M_PI << "\n";
-			cout << leftMax << ", " << rightMax << "\n";
 
+		leftNormal = leftNormal / (double)left.size();
+		leftNormal.normalize();
+
+		for (int i = 0; i < right.size(); i++) {//left,rightã§æˆã™è§’ãŒæœ€å¤§ã«æˆã‚‹ã‚‚ã®ã‚’æ±‚ã‚ã‚‹
+			rightNormal += faceNormal[right[i]];
 		}
-		radSum += maxRad;
-		Vec2 rightDir, leftDir;
-		rightDir = right[rightMax] - (*it_v)->p; rightDir.normalize();
-		leftDir =  left[leftMax] - (*it_v)->p;    leftDir.normalize();
-		cout << "calc rad: " << (acos(rightDir*leftDir) * 180) / M_PI << "\n";
-		Vec2 ver2((*it_v)->p);
-		Vec2 normalver2((*it_v)->normal);  normalver2.normalize();
-		Vec2 calcDir;
-		if ((st - ver2)*normalver2 < 0) {
-			calcDir = ver2 - st;
+
+		rightNormal = rightNormal / (double)right.size();
+		rightNormal.normalize();
+
+		faceNormalL.push_back(leftNormal);
+		faceNormalR.push_back(rightNormal);
+		Vec3 dirCent = (*it_v)->adjCenter - (*it_v)->p; dirCent.normalize();
+		Vec2 verNormal((*it_v)->normal);
+		(*it_v)->curvture = verNormal.length() * verNormal.length() * (2 * acos(rightNormal * leftNormal));
+		cout << "curv: " << (*it_v)->curvture << "\n";
+
+		if (rightNormal % leftNormal < 0) {
+			(*it_v)->curvture *= -1;
 		}
-		else{
-			calcDir = st - ver2;
-		}
-		(*it_v)->curvture = sqrt(calcDir*normalver2);
+		
+
 		(*it_v)->curvtureY = 0;
 
+		
+
+		//æ³•ç·šãŒä¸Šã®æ–¹å‘ã®é¢ã ã‘è¦‹ã‚‹
+
 	}
+	
+	
+	/*for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++){
+		Halfedge *h = (*it_v)->halfedge;
+		int verCount = 0;
+		Vec3 vertexNormal;
+		vertexNormal.set(0, 0, 0);
+		double curv = M_PI;
+		std::vector<Vertexs*> st_v;
+		do {
+			vertexNormal += h->face->normal;
+			(*it_v)->adjCenter += h->next->vertex->p;
+			st_v.push_back(h->next->vertex);
+			verCount++;
+			cout << h->next->vertex->p.y << "\n";
+			h = h->prev->pair;
+		} while (h != (*it_v)->halfedge);
+		double min1 = 10000, min2 = 10000;
+		Vec2 p1, p2;
+		Vec3 p13, p23;
+		for (int i = 0; i < st_v.size(); i++) {
+
+			if (min1 > abs(st_v[i]->p.y - (*it_v)->p.y)) {
+				min1 = abs(st_v[i]->p.y - (*it_v)->p.y);
+				p1.set(st_v[i]->p.x, st_v[i]->p.z);
+				p13 = st_v[i]->p;
+			}
+		}
+
+		Vec2 itv; itv.set((*it_v)->p.x, (*it_v)->p.z);
+		Vec2 itvNor; itv.set((*it_v)->p.x + 10 * vertexNormal.x, (*it_v)->p.z + 10 * vertexNormal.z);
+
+		for (int i = 0; i < st_v.size(); i++) {
+			Vec2 v2D(st_v[i]->p.x, st_v[i]->p.z);
+			if (!judgeIntersectedVec(p1, v2D, itv, itvNor)) { continue; }
+			if (min1 < abs(st_v[i]->p.y - (*it_v)->p.y) && min2 > abs(st_v[i]->p.y - (*it_v)->p.y)) {
+				min2 = abs(st_v[i]->p.y - (*it_v)->p.y);
+				p2.set(st_v[i]->p.x, st_v[i]->p.z);
+				p23 = st_v[i]->p;
+			}
+		}
+
+		cout << p13.y << "," << p23.y << "," << (*it_v)->p.y << "\n";
+		vertexNormal.normalize();
+		(*it_v)->normal = vertexNormal;
+		(*it_v)->adjCenter = (*it_v)->adjCenter / (double)verCount;
+		//x-zï¿½Ì“ñŸŒï¿½ï¿½ï¿½Ì‹È—ï¿½ï¿½ï¿½vï¿½Zï¿½ï¿½ï¿½ï¿½
+		Vec2 ver2D, adj2D, normal2D;
+		normal2D.set(vertexNormal.x, vertexNormal.z); normal2D.normalize();
+		ver2D.set((*it_v)->p.x, (*it_v)->p.z);
+		adj2D.set((*it_v)->adjCenter.x, (*it_v)->adjCenter.z);
+		p1 = p1 - (*it_v)->p; p1.normalize();
+		p2 = p2 - (*it_v)->p; p2.normalize();
+		double rad = acos(p1*p2);
+		(*it_v)->curvture = 0.3 / rad;//maxRad;// (ver2D - adj2D).length();
+
+		cout << "(*it_v)->curvture: " << rad << "," << (180 * rad) / M_PI << "\n";
+		if (normal2D * (adj2D - ver2D) > 0) {
+			(*it_v)->curvture *= -1;
+		}
+
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½yï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‹È—ï¿½ï¿½ï¿½vï¿½Zï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
+		if (vertexNormal.x < vertexNormal.z) {
+			ver2D.set(vertexNormal.x, vertexNormal.y);
+			normal2D.set(vertexNormal.x, vertexNormal.y); normal2D.normalize();
+			adj2D.set((*it_v)->adjCenter.x, (*it_v)->adjCenter.y);
+		}
+		else{
+			ver2D.set(vertexNormal.z, vertexNormal.y);
+			normal2D.set(vertexNormal.z, vertexNormal.y); normal2D.normalize();
+			adj2D.set((*it_v)->adjCenter.z, (*it_v)->adjCenter.y);
+		}
+
+		(*it_v)->curvtureY = (ver2D - adj2D).length();
+
+
+		if (normal2D * (adj2D - ver2D) > 0) {
+			(*it_v)->curvtureY *= -1;
+		}
+	}*/
+
 	m->fold = new foldmethod();
 	m->fold->topPosY = top;
 	m->fold->bottomPosY = bottom;
