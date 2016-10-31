@@ -850,18 +850,37 @@ void COpenGL::Trim(GLData *data){
 
 void COpenGL::Trim(Model *m){
 	std::vector<TrimPoints> returnData;
-	double setSize = 0.01;
-	//double setSize = 1.0;
+	//double setSize = 0.01;
+	double setSize = 1.0;
 	m->fold->trimPoint.clear();
 	m->face_cen.clear();
 	m->nor.clear();
 
 	foldmethod *f = m->fold;
-	m->fold->trimPoint = getPointsForAnimation(m->fold->pointPosition, m->fold->betweenPosition,m->fold->outlinepoints);
+	/*cout << "pointPosition\n";
+	for (int i = 0; i < m->fold->pointPosition.size(); i++) {
+		cout << i << ": " << m->fold->pointPosition[i].x << "," << m->fold->pointPosition[i].y << "\n";
+	}
+	cout << "betweenPosition\n";
+	for (int i = 0; i < m->fold->betweenPosition.size(); i++) {
+		cout << i << ": " << m->fold->betweenPosition[i].x << "," << m->fold->betweenPosition[i].y << "\n";
+	}
+	for (int i = 0; i < m->fold->outlinepoints.size(); i++) {
+		cout << "outline: " << i << "\n";
+		for (int j = 0; j < m->fold->outlinepoints[i]->points.size(); j++) {
+			cout << m->fold->outlinepoints[i]->points[j].x << "," << m->fold->outlinepoints[i]->points[j].y << "\n";
+		}
+	}*/
+
+	/*std::reverse(m->fold->pointPosition.begin(), m->fold->pointPosition.end());
+	std::reverse(m->fold->betweenPosition.begin(), m->fold->betweenPosition.end());
+	std::reverse(m->fold->outlinepoints.begin(), m->fold->outlinepoints.end());
+*/
+	m->fold->trimPoint = getPointsForAnimation(m->fold->pointPosition, m->fold->betweenPosition, m->fold->outlinepoints);
+	
 	Vec3 cent = Vec3(0,0,0);
 	int count_=0;
 	int count_1=0;
-
 	///////////////////////////////
 	Vec3 cent_; cent.set(0,0,0); double cent_count=0;
 	for(int j=0; j<(int)f->pointPosition.size(); j++){
@@ -1061,7 +1080,7 @@ void COpenGL::Trim(Model *m){
 			}
 		}
 	}
-	
+
 }
 
 //ç≈ìKâª
@@ -3951,7 +3970,7 @@ void COpenGL::outputObj(){
 
 void COpenGL::convertFoldingToMesh(Model *m){
 	//cout << "convert\n";
-	double setSize = 0.01;
+	double setSize = 1.0;
 	m->vertices.clear();
 	m->faces.clear();
 	m->halfs.clear();
@@ -3979,7 +3998,7 @@ void COpenGL::convertFoldingToMesh(Model *m){
 	c[6] = 0.0; c[7] = 0.0; c[8] = 0.0;
 	c[9] = 0.0; c[10] = 1.0; c[11] = 0.0;
 	c[12] = 0.0;
-	c[13] = 1.0; c[14] = 0.0; c[15] = 0.0;
+	c[13] = 0.0; c[14] = 0.0; c[15] = 0.0;
 	//ìVí∏ñ 
 	int count = 1;
 
@@ -3990,7 +4009,6 @@ void COpenGL::convertFoldingToMesh(Model *m){
 	std::vector<std::vector<int>> right_id;
 	std::vector<std::vector<int>> left_id;
 	std::vector<Vertexs*> tmp_vec;
-
 	//for(int i=outlinePoints.size()-1;i>=0;i--){//ë§ñ 
 	for (int i = 0; i<(int)outlinePoints.size(); i++){//ë§ñ 
 		//cout << "outline: " << i << "\n";
@@ -4055,7 +4073,7 @@ void COpenGL::convertFoldingToMesh(Model *m){
 					pCount++;
 				}
 				else {
-					V = new Vertexs(pp.x + c[12], pp.y + c[13], pp.z + c[14], m->vertices.size());
+					V = new Vertexs(pp.x + c[12], pp.y + c[13] + m->fold->topPosY*setSize, pp.z + c[14], m->vertices.size());
 					//cout << "outline: " << outlinePoints[i]->points[pCount].x << "," << outlinePoints[i]->points[pCount].y << "\n";
 					//cout << V->p.x << "," << V->p.y << "," << V->p.z << "\n";
 					pCount++;
@@ -4132,7 +4150,10 @@ void COpenGL::convertFoldingToMesh(Model *m){
 	}
 	Top_center = Top_center / ((double)pointPosition.size() - 1.0);
 
+
+
 	for (int i = 0; i<(int)pointPosition.size() - 1; i++) {
+
 		std::vector<Vertexs*> left;
 		std::vector<Vertexs*> right;
 		std::vector<int> lId;
@@ -4279,6 +4300,8 @@ void COpenGL::convertFoldingToMesh(Model *m){
 		}
 	}
 
+
+
 	for (int i = 0; i<convert2Di.size(); i++) {
 		std::vector<Vec2i> points_;
 		points_ = triangulate(convert2Di[i]);
@@ -4294,6 +4317,7 @@ void COpenGL::convertFoldingToMesh(Model *m){
 	m->vertices.push_back(top_v);
 	Vertexs *bottom_v = new Vertexs(bottom_center.x, bottom_center.y, bottom_center.z, m->vertices.size());
 	m->vertices.push_back(bottom_v);
+
 
 
 	//	ìVí∏ñ 
@@ -4325,6 +4349,8 @@ void COpenGL::convertFoldingToMesh(Model *m){
 		Halfedge *h_next = (*it_f)->halfedge->next;
 		Halfedge *h_prev = (*it_f)->halfedge->prev;
 	}
+
+
 }
 
 void COpenGL::changeVertexPos(Model *m){

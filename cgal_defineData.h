@@ -11,6 +11,9 @@
 #include <CGAL/Exact_integer.h>
 #include <CGAL/Homogeneous.h>
 #include <CGAL/Nef_polyhedron_3.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Polygon_2.h>
+#include <CGAL/Polyline_simplification_2/simplify.h>
 #include "defineData.h"
 #include "apps/metro/metro.h"
 
@@ -25,6 +28,9 @@ typedef Polyhedron_C::HalfedgeDS HalfedgeDS_C;
 typedef CGAL::Nef_polyhedron_3<G_Kernel>              Nef_polyhedron_3;
 typedef G_Kernel::Point_3                             Point_3;
 typedef CGAL::Polyhedron_3<G_Kernel>                  Poly_nef;
+
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K2D;
+typedef CGAL::Polygon_2<K2D>                   Polygon_2;
 
 
 class Cmodel;
@@ -119,5 +125,8 @@ std::vector<int> cluster(std::vector<Vec2> points);
 void removeTopinternalPoint();
 void bottomPlaneIntersection(Model *m, Vec3 centroid);
 void setThreeCluster(Model *m);//è„ÅAë§ñ ÅAíÍñ Ç…ï™ÇØÇÈ
-
+void Convex(std::list<Hullf*> ff, Model* model, std::list<Hullv*> hulv);
+void convexhull(std::vector<Vec3> ver, Model *model);
+std::vector<Vec2> convertTo2D(Model *m);
+void reductionTopPolygon(Model *m);
 #endif

@@ -18,6 +18,9 @@ class optimize_data;
 class Vec2i;
 class Vec2D;
 class line;
+class Hullf;
+class Hullv;
+class S_ver;
 
 
 class Vec3 {
@@ -44,7 +47,7 @@ public:
 	void cross( const Vec3& v);
 	void cross(const double& xi, const double& yi, const double& zi);
 	double dot( const Vec3& v);
-
+	bool num;
 	bool eq(Vec3 a){
 		if(a.x == x && a.y == y && a.z == z){
 			return true;
@@ -312,6 +315,38 @@ public:
 		}
 	}
 };
+class S_ver{
+
+public:
+	Vec3 p;
+	S_ver *next;
+	S_ver *snap;
+	//std::vector<Vec3*> p_list;
+	Vec3 B;
+	bool select;
+	double col[3];
+	Faces *f;
+	double t;
+	double u;
+	double v;
+	double s;
+	double e;
+	int f_num;
+	double move_value;
+
+	S_ver(double x, double y, double z){
+		p.x = x;
+		p.y = y;
+		p.z = z;
+		next = NULL;
+		snap = nullptr;
+		col[0] = 255.0;
+		col[1] = 0;
+		col[2] = 0;
+		select = false;
+	}
+
+};
 
 class dR{
 public:
@@ -326,6 +361,8 @@ public:
 	Vec3 adjCenter;
 	unsigned int num;
 	unsigned int clusterNum;
+	int sideClustNum;
+	int threeClust;
 	double curvture;
 	double curvtureY;
 	std::vector<Halfedge*> v_half;
@@ -337,6 +374,7 @@ public:
 		halfedge = NULL;
 		num = _num;
 		clusterNum = -1;
+		sideClustNum = -1;
 		adjCenter.set(0, 0, 0);
 	}
 
@@ -567,6 +605,23 @@ public:	//ÉÇÉfÉãÇ»Ç«ÇÃèÓïÒ
 		plane_cent_Top = Vec3(0,0,0);
 	}
 
+};
+
+class Hullf{
+public:
+
+	Faces *f;
+	std::list<Vec3> v;
+	std::list<Hullv*> Hulv;
+};
+
+class Hullv{
+public:
+	Vec3 p;
+	Faces *f;
+	Hullv(){
+		f = NULL;
+	}
 };
 
 float returnDepth(int x, int y);

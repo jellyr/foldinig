@@ -132,32 +132,36 @@ void Model::setAABB(){//ƒ|ƒŠƒSƒ“‚²‚Æ‚ÌAABB‚ğì‚é
 	//cout << "end polygon AABB\n";
 }
 void Model::addsetH(){
+
 	int num = vertices.size() * vertices.size();
 	int vernum = vertices.size();
-	
-	std::map<string,Halfedge*> Hmap;
+
+	std::map<string, Halfedge*> Hmap;
 	std::list<Faces*>::iterator face;
 	std::list<Halfedge*>::iterator half;
-//	
-	//cout << "halfs.size: " << halfs.size() << "\n";
-	for(half=halfs.begin();half!=halfs.end();half++){
+	std::vector<Vertexs*> stack_v;
+	std::list<Vertexs*>::iterator it_v;
 
+	for (it_v = vertices.begin(); it_v != vertices.end(); it_v++){
+		stack_v.push_back((*it_v));
+	}
+
+	for (half = halfs.begin(); half != halfs.end(); half++){
 		std::string hash = std::to_string((long double)(*half)->vertex->num) + "," + std::to_string((long double)(*half)->next->vertex->num);
-		Hmap.insert(map<string,Halfedge*>::value_type(hash,(*half)));
+		Hmap.insert(map<string, Halfedge*>::value_type(hash, (*half)));
 	}
 
-	for(face=faces.begin();face!=faces.end();face++){
+	for (face = faces.begin(); face != faces.end(); face++){
 		Halfedge *he = (*face)->halfedge;
-		 do{
-			
-			 std::string hash = std::to_string((long double)he->next->vertex->num) + "," + std::to_string((long double)he->vertex->num);
-			 he->pair = Hmap[hash];
+		do{
+
+			std::string hash = std::to_string((long double)he->next->vertex->num) + "," + std::to_string((long double)he->vertex->num);
+			he->pair = Hmap[hash];
 			he = he->next;
-		} while(he != (*face)->halfedge);
+
+		} while (he != (*face)->halfedge);
 	}
 
-	//cout << "end halfedge\n";
-	//free(p);
 }
 void Model::addFace( Vertexs *v0, Vertexs *v1, Vertexs *v2, int f) {
 		

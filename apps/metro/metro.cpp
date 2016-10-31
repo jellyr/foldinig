@@ -68,7 +68,7 @@ double calcMetro(CMesh &S1, CMesh &S2)
 
     // default parameters
     flags = SamplingFlags::VERTEX_SAMPLING |
-          //SamplingFlags::EDGE_SAMPLING |
+          SamplingFlags::EDGE_SAMPLING |
           SamplingFlags::FACE_SAMPLING |
           SamplingFlags::SIMILAR_SAMPLING;
 
@@ -82,6 +82,7 @@ double calcMetro(CMesh &S1, CMesh &S2)
         NumberOfSamples = true;
         n_samples_target = max(S1.fn,S2.fn);// take 10 samples per face
     }
+	//cout << "n_smaples_target: " << n_samples_target << "\n";
     // set Bounding Box.
 	Box3<CMesh::ScalarType> bbox, tmp_bbox_M1=S1.bbox, tmp_bbox_M2=S2.bbox;
     bbox.Add(S1.bbox);

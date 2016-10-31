@@ -111,6 +111,7 @@ public:
 	void outputObj();//	triangualation‚µ‚Äobj‚É‚µ‚Äo—Í
 	void convertFoldingToMesh(Model *m);
 	void changeVertexPos(Model *m);
+	
 	//’f–Êü‚ğ
 
 public:

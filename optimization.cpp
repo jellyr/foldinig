@@ -26,7 +26,7 @@ void setJacobian(Eigen::MatrixXd &jacobian, Eigen::VectorXd setP, Eigen::VectorX
 Eigen::MatrixXd ComputeNumericalJacobian(Cmodel *cm, COpenGL *fObj, int variableNum, int constraintNum) {
 	Model *foldM = cm->foldM;
 	Eigen::MatrixXd jacobian(variableNum, constraintNum);
-	double DELTA = 1.0e-7;
+	double DELTA = 1.0e-5;
 	double invDelta = 1.0 / DELTA;
 	Eigen::VectorXd fx_tmp = -invDelta * eachPenalty(cm, fObj);
 	int pointLastNum = foldM->fold->pointPosition.size() - 1;
@@ -187,9 +187,9 @@ double penalty(Cmodel *cm, COpenGL *fObj) {
 	}
 	fObj->Trim(foldM);
 	fObj->convertFoldingToMesh(foldM);//	メッシュデータへと変換
-	//Polyhedron_G P = inputPoly_G(foldM);//	Polyhedron_Gへと変換
-	//double Diff = calculateDiff(P, inputP_, inputP);
-	double Diff = metro(foldM, cm->inputC, cm->foldC);//	metroへ変換
+	Polyhedron_G P = inputPoly_G(foldM);//	Polyhedron_Gへと変換
+	double Diff = calculateDiff(P, inputP_, inputP);
+	//double Diff = metro(foldM, cm->inputC, cm->foldC);//	metroへ変換
 	/*if (Diff == 0) {
 		for (int i = 0; i < foldM->fold->pointPosition.size(); i++){
 		//cout << "pointsPos: " << foldM->fold->pointPosition[i].x << "," << foldM->fold->pointPosition[i].y << "\n";
@@ -206,6 +206,9 @@ double penalty(Cmodel *cm, COpenGL *fObj) {
 		}
 		return 1000000;
 		}*/
+	if (Diff == -1) {
+		Diff = 0;
+	}
 	return Diff;
 }
 
@@ -237,9 +240,9 @@ Eigen::VectorXd eachPenalty(Cmodel *cm, COpenGL *fObj) {
 	Eigen::VectorXd penaltyValue(constraintsNum);
 	//	outputFolding(foldM);
 	penaltyValue(0) = 100*penalty(cm, fObj);
-	penaltyValue(1) = topConvex_area(foldM);
+	penaltyValue(1) = 0;//topConvex_area(foldM);
 	penaltyValue(2) = 0;//topSmoothing(foldM);
-	penaltyValue(3) = 0.1*foldingGap(foldM);
+	penaltyValue(3) = 0;// 0.1*foldingGap(foldM);
 	//cout << "penaltyValue: \n" << penaltyValue << "\n";
 	return penaltyValue;
 }
@@ -528,7 +531,7 @@ double metro(Model *m, CMesh *input, CMesh *fold) {
 		CMesh::VertexPointer vi = &fold->vert[i];
 		////cout << vi->P().X /*<< "," << vi->P().Y << "," << vi->P().Z*/ << "\n";
 	}
-	changeVertexPos(m, fold);//foldModelの頂点座標を更新する
+	openMesh(m, fold);//foldModelの頂点座標を更新する
 	//cout << "\n\n";
 	for (int i = 0; i < fold->VN(); i++) {
 		CMesh::VertexPointer vi = &fold->vert[i];
@@ -592,7 +595,7 @@ Polyhedron_G Optimization(Cmodel *cm, COpenGL *fObj) {
 	double prevCost = test.squaredNorm() / 2;
 	double firstCost = prevCost;
 	double difference;
-	int itr = 1000;
+	int itr = 10;
 	int count = 0;
 	int variableNum = 1;
 	int constraintNum = 4;//	制約の数 近似項、凸近似項、スムージング項
@@ -613,39 +616,34 @@ Polyhedron_G Optimization(Cmodel *cm, COpenGL *fObj) {
 	Eigen::VectorXd grad(variableNum);
 
 	for (int i = 0; i < itr; i++) {
-		Eigen::VectorXd penaltyS = eachPenalty(cm, fObj);
-		prevCost = penaltyS.squaredNorm() / 2;
+		Eigen::VectorXd penaltyS;
+		while (1) {
+			penaltyS = eachPenalty(cm, fObj);
+			//if (penaltyS.squaredNorm() / 2.0 <= prevCost) {
+				prevCost = penaltyS.squaredNorm() / 2.0;
+				break;
+			//}
+			cout << prevCost << "," << (penaltyS.squaredNorm() / 2.0) << "\n";
+		}
 		Eigen::VectorXd grad = Eigen::VectorXd::Zero(variableNum);
 		Eigen::VectorXd gradJ = Eigen::VectorXd(variableNum);
-		//cout << "calculate: " << i << "\n";
 		jacobian = ComputeNumericalJacobian(cm, fObj, variableNum, constraintNum);
-		//cout << "jacobian:\n" << jacobian << "\n";
 		for (int j = 0; j < constraintNum; j++) {
 			double value = penaltyS[j];
-			//cout << "j: " << j << "value: " << value << "\n";
 			for (int k = 0; k < variableNum; k++) {
 				gradJ(k) += value * jacobian(k, j);
-				////cout << "( " << k << "," << jacobian(k, j) << ") ";
 			}
-			//cout << "\n";
 		}
-		////cout << "gradJ \n";
-		////cout << gradJ << "\n";
 		hessian = jacobian * jacobian.transpose();
-		////cout << "jacobian:\n" << jacobian << "\n";
 		double topPos = foldM->fold->topPosY;
-		//return P;
 		grad = Eigen::VectorXd::Zero(variableNum);
 		grad = -gradJ;
 		double Max = 0;
 		for (int ii = 0; ii < variableNum; ii++) {
-			//cout << abs(grad(ii)) << " ";
 			if (abs(grad(ii)) > Max) {
 				Max = abs(grad(ii));
 			}
 		}
-		//cout << "Max: " << Max << "\n";
-		//cout << "Max pow: " << (pow(10, (int)log10(abs(Max)))) << "\n";
 		double Maxval = Max;
 		if (Max < 1.0) {
 			Max = pow(10, (int)log10(abs(Max))) * 0.1;
@@ -654,25 +652,21 @@ Polyhedron_G Optimization(Cmodel *cm, COpenGL *fObj) {
 			Max = pow(10, (int)log10(abs(Max)));
 		}
 
-		//cout << "Max pow: " << Max << "\n";
 		for (int ii = 0; ii < variableNum; ii++) {
-			//cout << grad(ii) << " , ";
 			if (Maxval > 10.0) {
 				if (abs(grad(ii)) > 10.0) grad(ii) = grad(ii) / Max;
 			}
 			else {
 				grad(ii) = grad(ii) / Max;
 			}
-			//cout << grad(ii) << "\n";
+			cout << grad(ii) << "\n";
 		}
 		while (1) {
 			count++;
 			//Eigen::MatrixXd A = computeLambda(hessian, lambda, variableNum);
-			
 			/*for (int ii = 0; ii < 5; ii++) {
 				grad = retunDelta(A, grad, gradJ, variableNum);
 			}*/
-
 			//grad = A.colPivHouseholderQr().solve(-1*gradJ);
 			//	grad = retunDelta(A, grad, -penalty(foldM, fObj, inputP, inputP_)*jacobian);
 			//backUp position
@@ -681,28 +675,19 @@ Polyhedron_G Optimization(Cmodel *cm, COpenGL *fObj) {
 			}
 			pointPosition_tmp = foldM->fold->pointPosition;
 
-			/*grad = -jacobian.col(0);
-			
-			//cout << "updateParam: " << "\n";
-			//cout << "lambda: " << lambda << "\n";
-			////cout << "grad:\n" << grad << "\n";
-			//	パラメータをアップデート
-			//grad = -jacobian.col(0);*/
-
-			updateParam(foldM, grad);
-			double cost = eachPenalty(cm, fObj).squaredNorm() / 2;
-			//cout << "lambda << " << lambda << "\n";
-			//cout << "prevCost: " << prevCost << "\n";
-			//cout << "cost: " << cost << "\n";
-			//return P;
+			updateParam(foldM, 0.01*grad);
+			double cost = eachPenalty(cm, fObj).squaredNorm() / 2.0;
+			if (cost <= 0) {
+				cost = prevCost + 100000;
+			}
+			cout << "prevCost: " << prevCost << "\n";
+			cout << "cost: " << cost << "\n";
 			outputFolding(foldM);
 			if (cost < prevCost) {
 				difference = prevCost - cost;
 				prevCost = cost;
 				outlinepoints_tmp.clear();
 				pointPosition_tmp.clear();
-				////cout << "\n\nbreak: diff" << difference << "\n\n";
-				//	break;
 			}
 			else {
 				// 退避したものを戻す
@@ -729,13 +714,11 @@ Polyhedron_G Optimization(Cmodel *cm, COpenGL *fObj) {
 			}*/
 	}
 
-	//cout << "first cost: " << firstCost << "\n";
+	cout << "first cost: " << firstCost << "\n";
 
 	outputFolding(foldM);
-
 	fObj->convertFoldingToMesh(foldM);//	メッシュデータへと変換
 	P = inputPoly_G(foldM);//	Polyhedron_Gへと変換
-
 	return P;
 }
 

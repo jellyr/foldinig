@@ -7,7 +7,6 @@ std::vector<TrimPoints> getPointsForAnimation(std::vector<Vec2> pointPosition, s
 	std::vector<TrimPoints> trimPoint;
 
 	int size = (int)outlinepoints.size();
-	cout << "size: " << size << "\n";
 	for(int i=0; i<size; i++){
 
 		int iRight = (i+1)%size;
@@ -76,7 +75,6 @@ std::vector<TrimPoints> getPointsForAnimation(std::vector<Vec2> pointPosition, s
 				}
 			}
 		}
-
 		//¶‘¤‚ÌƒgƒŠƒ€ˆ—
 		for(int j=0; j<(int)outlinepoints[i]->points.size()-1; j++){
 			for(int k=0; k<(int)outlinepoints[iLeft]->points.size(); k++){

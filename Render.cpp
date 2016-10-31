@@ -15,7 +15,7 @@ const GLfloat lightPosition[] = { 10, 10, 10, 0 };
 void QGLClass::initFold() {
 	fObj = new COpenGL();
 	cgalObj = new Cmodel();
-	cgalObj->inputM = fObj->readOBJ("bunny\\body_fixed.obj", true);//	普通のメッシュデータ
+	cgalObj->inputM = fObj->readOBJ("bunny\\head.obj", true);//	普通のメッシュデータ
 	cgalObj->inputM->reducepolygon(500);
 	cgalObj->cgalPoly = holeFillAndConvertPolyG(cgalObj->inputM);//	穴をふさいでpolyhedronへ変換
 	cgalObj->cgalPoly_Nef = convert_Poly_NefPoly((*cgalObj->cgalPoly));//	polyhedron→Nef_polyhedronへ変換
@@ -25,21 +25,28 @@ void QGLClass::initFold() {
 	fObj->Trim(cgalObj->foldM);//	トリム処理
 	cout << "foldingGap(Model *foldM): " << foldingGap(cgalObj->foldM) << "\n";
 	fObj->convertFoldingToMesh(cgalObj->foldM);//	折りたたみモデルをメッシュデータに変換
-	cgalObj->foldPoly = inputPoly_Gnew(cgalObj->foldM);//	折りたたみモデルをcgaのPolyhedronに変換
+	//cgalObj->foldPoly = inputPoly_Gnew(cgalObj->foldM);//	折りたたみモデルをcgaのPolyhedronに変換
+	
 	convertPolyToModel(cgalObj->inputM);
-	coloring(cgalObj->inputM);
+	//天頂面をつくる
+	fObj->Quickhull(convertTo2D(cgalObj->inputM), cgalObj->inputM);
+	reductionTopPolygon(cgalObj->inputM);
+	
+	//側面をつくる
 	setCluster(cgalObj->inputM);
-	draw();
-	//cgalObj->metroPrepar();
-	//	最適化の計算をします
-	//cgalObj->metroPrepar();
-	//(*cgalObj->foldPoly) = TestMesh(cgalObj->foldPoly, cgalObj->cgalPoly_Nef, false);
-	//(*cgalObj->foldPoly) = Optimization(cgalObj, fObj);
-	//Optimization();
-	//(*cgalObj->cgalPoly) = P2;
-	//	test calculatoin of volume
-	//testVolumeCalculation(cgalObj->foldM);
-	//cout << "volume:" << calcVolume((*cgalObj->foldPoly)) << "\n";
+	fObj->Trim(cgalObj->inputM);
+	fObj->convertFoldingToMesh(cgalObj->inputM);
+	cgalObj->foldM = cgalObj->inputM;
+
+	//折りたたみ可能にする
+	fObj->optimization(cgalObj->foldM);
+	
+	//適化の計算をします
+	cgalObj->foldPoly = inputPoly_Gnew(cgalObj->foldM);
+	cgalObj->metroPrepar();
+
+//	(*cgalObj->foldPoly) = Optimization(cgalObj, fObj);
+
 }
 
 void QGLClass::startAllProcess() {
@@ -88,6 +95,7 @@ void QGLClass::initializeGL()
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
 void QGLClass::paintGL()
@@ -153,7 +161,7 @@ void QGLClass::wheelEvent(QWheelEvent *event) {
 void QGLClass::draw()
 {
 	//	qglColor(Qt::red);
-	//renderFoldModel(cgalObj->inputM);
+	renderFoldModel(cgalObj->inputM);
 	//rendercgalPoly(cgalObj->foldPoly);
 	rendercgalPoly(cgalObj->cgalPoly);
 	renderModelCluster(cgalObj->inputM);
