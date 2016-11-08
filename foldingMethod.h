@@ -108,7 +108,7 @@ public:
 
 	void SetPlane(Model *m);
 	void CalculateVolume(Model *m);
-	void outputObj();//	triangualation‚µ‚Äobj‚É‚µ‚Äo—Í
+	void outputObj(Model *m);//	triangualation‚µ‚Äobj‚É‚µ‚Äo—Í
 	void convertFoldingToMesh(Model *m);
 	void changeVertexPos(Model *m);
 	

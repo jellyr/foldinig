@@ -295,6 +295,7 @@ public:
 	std::vector<Vec2> pointPosition;
 	std::vector<Vec2> betweenPosition;
 	std::vector<TrimPoints> trimPoint;
+	std::vector<Vec3> psuedoDiff;
 	std::vector<std::vector<PointH>> vec_point;
 	std::vector<outline*> outline_first;
 
@@ -495,6 +496,13 @@ public:
 
 	std::vector<Vec3> nor;
 	std::vector<Vec3> face_cen;
+	std::vector<Vec3> pseudoVolumeDi;
+	std::vector<Vec3> pseudoVolumeP;
+	//テスト用
+	std::vector<std::vector<Vec2>> dis2D;
+	std::vector<Vec3> planeNormal;
+	std::vector<std::vector<Vec2>> Ncurve;
+	std::vector<std::vector<Vec2>> outlineSemiPoints;
 
 	float color[3];
 	float bbox[2][3];
@@ -535,6 +543,9 @@ public:
 	
 	std::vector<std::vector<double>> length;
 	std::vector<std::vector<Halfedge*>> null_edges;
+	std::vector<Vec3> nullEdgeCenter;
+	std::vector<Vec3> nullEdgeNormal;
+
 private:
 	void setHalfedgePair( Halfedge *he );
 

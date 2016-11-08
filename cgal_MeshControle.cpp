@@ -9,6 +9,7 @@
 #include <CGAL/IO/print_wavefront.h>
 #include <QtOpenGL>
 #include "boolean.h"
+#include "Optimization/SteepDescent.h"
 typedef Mesh::Vertex_index vertex_descriptor;
 typedef Mesh::Face_index face_descriptor;
 typedef Polyhedron_C::Vertex_iterator	Vertex_iterator_C;
@@ -18,11 +19,18 @@ typedef Polyhedron_G::Facet_iterator	Facet_iterator;
 typedef Polyhedron_G::Vertex_iterator	Vertex_iterator;
 typedef Polyhedron_G::Halfedge_around_facet_circulator Halfedge_facet_circulator;
 typedef Polygon_2::Vertex_iterator	Vertex_iterator_2D;
+
 namespace PS = CGAL::Polyline_simplification_2;
 using namespace std;
 
 typedef PS::Stop_below_count_threshold Stop;
-typedef PS::Squared_distance_cost            Cost;
+typedef PS::Squared_distance_cost      Cost;
+
+
+std::vector<Vec3> pseudoVolumeDi;
+std::vector<Vec3> pseudoVolumeP;
+
+std::vector<Vec3> vToPlaneNormal;
 
 void convexhull(std::vector<Vec3> ver, Model *model){
 	//セグメントを入れる
@@ -583,7 +591,7 @@ void renderFoldModel(Model *m) {
 		Vec3 p1 = (*it_f)->halfedge->next->vertex->p;
 		Vec3 p2 = (*it_f)->halfedge->prev->vertex->p;
 		Vec3 Normal = (p1 - p0) % (p2 - p0); Normal.normalize();
-		Normal = Normal * 100;
+		Normal = Normal * 10;
 		glBegin(GL_TRIANGLES);
 		glNormal3d(Normal.x, Normal.y, Normal.z);
 		glVertex3d(p0.x, p0.y, p0.z);
@@ -591,6 +599,18 @@ void renderFoldModel(Model *m) {
 		glVertex3d(p2.x, p2.y, p2.z);
 		glEnd();
 	}
+
+	glDisable(GL_LIGHTING);
+	glPointSize(5);
+	glColor3d(1.0, 0, 0);
+	std::list<Vertexs*>::iterator it_v;
+	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+		Vec3 p0 = (*it_v)->p;
+		glBegin(GL_POINTS);
+		glVertex3d(p0.x, p0.y, p0.z);
+		glEnd();
+	}
+	glEnable(GL_LIGHTING);
 }
 
 
@@ -623,8 +643,6 @@ std::vector<std::vector<Vertexs*>> clustVertex;
 std::vector<Vec2> outlineBottomP;
 std::vector<int> VertexCluster;
 std::vector<Vec2> centVer;
-std::vector<Vec2> faceNormalL;
-std::vector<Vec2> faceNormalR;
 std::vector<std::vector<Vec2>> betweenY;
 std::vector<std::vector<Vec2>> outlinePoints;
 std::vector<std::vector<Vec3>> outlinePoints3D;
@@ -781,6 +799,80 @@ std::vector<int> cluster(std::vector<Vec2> points, int i, std::vector<std::vecto
 	return clustIndex;
 }
 
+void renderPsuedV(Model *m) {
+	std::list<Vertexs*>::iterator it_v;
+	std::list<Faces*>::iterator it_f;
+	glPointSize(5);
+	glLineWidth(3);
+	glDisable(GL_LIGHTING);
+	glColor3d(1.0, 0, 1.0);
+	glPointSize(7);
+
+
+	glColor3d(0.7, 0.1, 0.1);
+	
+	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+		Vec3 p = (*it_v)->p;
+		int num = (*it_v)->num;
+		glPointSize(3);
+		glBegin(GL_POINTS);
+		glVertex3d(p.x, p.y, p.z);
+		glEnd();
+
+		glBegin(GL_LINES);
+		glVertex3d(p.x, p.y, p.z);
+		glVertex3d(p.x + m->fold->psuedoDiff[num].x, p.y + m->fold->psuedoDiff[num].y, p.z + m->fold->psuedoDiff[num].z);
+		glEnd();
+
+		/*p = m->pseudoVolumeP[num] + m->pseudoVolumeDi[num];
+		glBegin(GL_LINES);
+		glVertex3d(m->pseudoVolumeP[num].x, m->pseudoVolumeP[num].y, m->pseudoVolumeP[num].z);
+		glVertex3d(p.x, p.y, p.z);
+		glEnd();*/
+		//Vec2 dis2D; dis2D.x = (*it_v)->p.y; dis2D.y = distance;
+		/*glBegin(GL_LINES);
+		glVertex3d(m->pseudoVolumeP[num].x, m->pseudoVolumeP[num].y, m->pseudoVolumeP[num].z);
+		glVertex3d(p.x, p.y, p.z);
+		glEnd();*/
+	}
+	for (int i = 0; i < m->dis2D.size(); i++) {
+		Vec3 p;
+		p.x = m->fold->betweenPosition[i].x;
+		p.y = m->fold->topPosY;
+		p.z = m->fold->betweenPosition[i].y;
+		Vec3 Normal = m->planeNormal[i];
+		glColor3d(0.0,1.0, 0.0);
+		for (int j = 0; j < m->Ncurve[i].size(); j++) {
+			/*glBegin(GL_LINES);
+			glVertex3d(p.x,m->fold->topPosY - m->Ncurve[i][j].x , p.z);
+			glVertex3d(p.x + Normal.x * m->Ncurve[i][j].y, m->fold->topPosY - m->Ncurve[i][j].x, p.z + Normal.z * m->Ncurve[i][j].y);
+			glEnd();*/
+		}
+		/*glColor3d(1.0, 0, 0.0);
+		for (int j = 0; j < m->dis2D[i].size(); j++) {
+			glBegin(GL_LINES);
+			glVertex3d(p.x, m->dis2D[i][j].x, p.z);
+			glVertex3d(p.x + Normal.x * m->dis2D[i][j].y, m->dis2D[i][j].x, p.z + Normal.z * m->dis2D[i][j].y);
+			glEnd();
+		}*/
+		/*glColor3d(0.0, 0, 1.0);
+		for (int j = 0; j < m->outlineSemiPoints[i].size()-1; j++) {
+			glBegin(GL_LINES);
+			glVertex3d(p.x + Normal.x * m->outlineSemiPoints[i][j].y, m->fold->topPosY - m->outlineSemiPoints[i][j].x, p.z + Normal.z * m->outlineSemiPoints[i][j].y);
+			glVertex3d(p.x + Normal.x * m->outlineSemiPoints[i][j+1].y, m->fold->topPosY - m->outlineSemiPoints[i][j+1].x, p.z + Normal.z * m->outlineSemiPoints[i][j+1].y);
+			glEnd();
+		}
+
+		glBegin(GL_POINTS);
+		for (int j = 0; j < m->outlineSemiPoints[i].size(); j++) {
+			glVertex3d(p.x + Normal.x * m->outlineSemiPoints[i][j].y, m->fold->topPosY - m->outlineSemiPoints[i][j].x, p.z + Normal.z * m->outlineSemiPoints[i][j].y);
+		}
+		glEnd();*/
+	}
+
+	glLineWidth(1);
+	glEnable(GL_LIGHTING);
+}
 
 void renderModelCluster(Model *m) {
 	std::list<Vertexs*>::iterator it_v;
@@ -835,10 +927,10 @@ void renderModelCluster(Model *m) {
 			glVertex3d(p.x, p.y, p.z);
 			glEnd();
 			
-			glBegin(GL_LINES);
+			/*glBegin(GL_LINES);
 			glVertex3d(p.x, p.y, p.z);
 			glVertex3d(p.x - normalDir[i][j].x, p.y - normalDir[i][j].y, p.z - normalDir[i][j].z);
-			glEnd();
+			glEnd();*/
 		}
 	}
 
@@ -899,11 +991,11 @@ void renderModelCluster(Model *m) {
 			}
 			else {
 				glColor3d(1.0, 0.0, 0.5);
-			}
+			}*/
 			glBegin(GL_LINES);
 			glVertex3d(p.x, p.y, p.z);
-			glVertex3d(p.x + dir.x, p.y, p.z + dir.y);
-			glEnd();*/
+			glVertex3d(p.x + pseudoVolumeDi[(*it_v)->num].x, p.y + pseudoVolumeDi[(*it_v)->num].y, p.z + pseudoVolumeDi[(*it_v)->num].z);
+			glEnd();
 		
 		}
 	}
@@ -972,10 +1064,10 @@ void renderModelCluster(Model *m) {
 			startP.set(m->poly_p[i].x, 0, m->poly_p[i].y);
 			endP.set(m->poly_p[0].x, 0, m->poly_p[0].y);
 		}
-		glBegin(GL_LINES);
+		/*glBegin(GL_LINES);
 		glVertex3d(startP.x, startP.y, startP.z);
 		glVertex3d(endP.x, endP.y, endP.z);
-		glEnd();
+		glEnd();*/
 	}
 
 	glEnable(GL_LIGHTING);
@@ -994,6 +1086,7 @@ void renderModelCluster(Model *m) {
 
 //	Polyhedronクラスをレンダリング
 void rendercgalPoly(Polyhedron_G *cgalPoly) {
+	glColor3d(0.2, 0, 0);
 	for (Facet_iterator i = cgalPoly->facets_begin(); i != cgalPoly->facets_end(); ++i) {
 		Halfedge_facet_circulator j = i->facet_begin();
 		// Facets in polyhedral surfaces are at least triangles.
@@ -1007,7 +1100,7 @@ void rendercgalPoly(Polyhedron_G *cgalPoly) {
 			count++;
 		} while (++j != i->facet_begin());
 		Vec3 Normal = (p[1] - p[0]) % (p[2] - p[0]); Normal.normalize();
-		Normal = Normal * 100;
+		Normal = Normal * 10;
 		glBegin(GL_TRIANGLES);
 		glNormal3d(Normal.x, Normal.y, Normal.z);
 		glVertex3d(p[0].x, p[0].y, p[0].z);
@@ -1449,116 +1542,17 @@ void setThreeCluster(Model *m) {
 	cout << "set three end\n";
 }
 
-void setCluster(Model *m) {
+Model *setCluster(Model *m) {
 
 	std::list<Vertexs*>::iterator it_v;
 	Vec3 centroid; centroid.set(0, 0, 0);
 	int topEdgeNum = 4;////
 	std::vector<double> numCluster;
-	//m->fold->pointPosition.clear();
 	m->fold->betweenPosition.clear();
 	m->fold->outlinepoints.clear();
 	numCluster.resize(dirCluster.size());
 
-	//std::vector<Vec3> mV;
-	//for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
-	//	mV.push_back((*it_v)->p);
-	//}
-	//
-
-	//for (int i = 0; i < (int)dirCluster.size(); i++) {
-	//	numCluster[i] = 0;
-	//	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
-	//		if ((*it_v)->clusterNum == i) {
-	//			numCluster[i]++;
-	//		}
-	//	}
-	//}
-	//
-	//while (1) {
-	//	double minrad = 0;
-	//	int combine[2];
-	//	for (int i = 0; i < dirCluster.size(); i++) {
-	//		//cout << "curvCluster] " << curvCluster[i] << "\n";
-	//		double cos;
-	//		double clusterNums = pow((1.0 / numCluster[i]),0.5);
-	//		if (i == dirCluster.size() - 1) {
-	//			cos = (dirCluster[i] * dirCluster[0]) *(dirCluster[i] * dirCluster[0]);
-	//			clusterNums *= pow((1.0 / numCluster[0]), 0.5);
-	//			if ((curvCluster[i] < 0 && curvCluster[0] > 0) ||
-	//				(curvCluster[i] > 0 && curvCluster[0] < 0)) {
-	//				//clusterNums *= 0.8;
-	//			}
-	//		}
-	//		else {
-	//			cos = (dirCluster[i] * dirCluster[i + 1]) * (dirCluster[i] * dirCluster[i + 1]);
-	//			clusterNums *= pow((1.0 / numCluster[i + 1]),0.5);
-	//			if ((curvCluster[i] < 0 && curvCluster[i + 1] > 0) ||
-	//				(curvCluster[i] > 0 && curvCluster[i + 1] < 0)) {
-	//				//clusterNums *= 0.8;
-	//			}
-	//		}
-	//		cos *= clusterNums;
-	//		if (minrad < abs(cos)) {
-	//			if (i == dirCluster.size() - 1) {
-	//				combine[0] = 0;
-	//				combine[1] = i;
-	//			}
-	//			else {
-	//				combine[0] = i;
-	//				combine[1] = i + 1;
-	//			}
-	//			minrad = abs(cos);
-	//		}
-	//	}
-
-	//	//cout << combine[0] << "," << combine[1] << "\n";
-	//	dirCluster.erase(dirCluster.begin() + combine[1]);
-	//	posCluster.erase(posCluster.begin() + combine[1]);
-	//	curvCluster.erase(curvCluster.begin() + combine[1]);
-	//	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {//クラスタ番号を更新
-	//		if ((*it_v)->clusterNum == combine[1]) {
-	//			(*it_v)->clusterNum = combine[0];
-	//		}
-	//		else if ((*it_v)->clusterNum > combine[1]){
-	//			(*it_v)->clusterNum--;
-	//		}
-	//	}
-	//	
-	//	Vec3 updateDir; updateDir.set(0, 0, 0);
-	//	Vec3 updatePos; updatePos.set(0, 0, 0);
-	//	double updateCurv = 0;
-	//	int count = 0;
-	//	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {//クラスタ番号を更新
-	//		if ((*it_v)->clusterNum == combine[0]) {
-	//			updateDir += (*it_v)->normal;
-	//			updatePos += (*it_v)->p;
-	//			updateCurv += (*it_v)->curvture;
-	//			count++;
-	//		}
-	//	}
-	//	updateDir = updateDir / (double)count;
-	//	updateDir.normalize();
-	//	dirCluster[combine[0]] = updateDir;
-	//	posCluster[combine[0]] = updatePos / (double)count;
-	//	curvCluster[combine[0]] = updateCurv / (double)count;
-	//	numCluster.resize(dirCluster.size());
-	//	for (int i = 0; i < (int)dirCluster.size(); i++) {
-	//		numCluster[i] = 0;
-	//		for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
-	//			if ((*it_v)->clusterNum == i) {
-	//				numCluster[i]++;
-	//			}
-	//		}
-	//	}
-
-	//	if (dirCluster.size() <= topEdgeNum) {
-	//		break;
-	//	}
-	//}
-
 	std::vector<std::vector<Vec3>> betweenY3D;
-	cout << "dirCluster.size(): " << dirCluster.size() << "\n";
 	std::vector<std::vector<Vec2>> forClustValue;
 	std::vector<std::vector<Vertexs*>> vers;
 	std::vector<std::vector<std::vector<int>>> clusterS;
@@ -1601,66 +1595,21 @@ void setCluster(Model *m) {
 		std::vector<int> clustside;
 		clustside = clustValue[clustValue.size() - 1];
 		std::vector<Vec3> bet3D;
-		//ここに間を入れる
-		cout << "vers[j]->sideClustNum\n";
-	
-		/*for (int j = 0; j < clusterS.size(); j++) {
-			for (int k = 0; k < clusterS[j].size(); k++){
-				vers[clusterS[j][k]]->sideClustNum = j;
-			}
-		}*/
-
-		/*for (int kk = 0; kk < clusterS.size() - 1; kk++) {
-			double count = 0;
-			double min= 10000000, max = -10000000;
-			Vec3 minV, maxV;
-			double maxDis = 0;
-			Vec3 maxDisP;
-			for (int j = 0; j < vers.size(); j++) {
-				if (clustside[j] == kk) {
-					if (min > vers[j]->p.y) {
-						min = vers[j]->p.y;
-						minV = vers[j]->p;
-					}
-				}
-				else if (clustside[j] == kk + 1){
-					if (max < vers[j]->p.y) {
-						max = vers[j]->p.y;
-						maxV = vers[j]->p;
-					}
-				}
-				double distance = abs((vers[j]->p - cent) * Normal);
-				if (distance > maxDis) {
-					maxDis = distance;
-					maxDisP = vers[j]->p;
-				}
-			}
-			Vec3 vet3DP = (maxV + minV) / 2;
-			vet3DP.x = maxDisP.x;
-			vet3DP.z = maxDisP.z;
-			bet3D.push_back(vet3DP);
-			betCluster.push_back(vet3DP);
-		}*/
-
-		/*for (int j = 0; j < vers.size(); j++) {
-			vers[j]->sideClustNum = -1;
-		}*/
-		cout << "i in in : " << i << "\n";
-		//betweenY3D.push_back(bet3D);
 
 		Vec2 pos2D; pos2D.set(pos.x, pos.z);
 		pos2D = pos2D / count;
 		pointPosition.push_back(pos2D);
-		//m->fold->pointPosition.push_back(pos2D);
 	}
 
 	pointPosition.push_back(pointPosition[0]);
-	//m->fold->pointPosition.push_back(pointPosition[0]);
 	pointPosition = m->fold->pointPosition;
 	for (int i = 0; i < pointPosition.size() - 1; i++) {
-		cout << "i: " << i << "\n";
 		m->fold->betweenPosition.push_back((m->fold->pointPosition[i] + m->fold->pointPosition[i + 1]) / 2);
+		centroid.x += m->fold->pointPosition[i].x;
+		centroid.y += m->fold->pointPosition[i].y;
 	}
+	centroid = centroid / (double)(pointPosition.size() - 1);
+
 	betweenPosition = m->fold->betweenPosition;
 	betCluster.resize(dirCluster.size());
 	for (int i = 0; i < dirCluster.size(); i++) {
@@ -1668,11 +1617,7 @@ void setCluster(Model *m) {
 		std::vector<Vec3> normalV;
 		int nextNum = i;
 		double count = 0;
-		/*if (i == 0){
-			nextNum = pointPosition.size() - 2;
-		}*/
-		cout << "nextNum: " << nextNum << "\n";
-
+	
 		Vec3 p1; p1.set(pointPosition[nextNum].x, m->fold->topPosY, pointPosition[nextNum].y);
 		Vec3 p2; p2.set(pointPosition[nextNum + 1].x, m->fold->topPosY, pointPosition[nextNum + 1].y);
 		Vec3 p3; p3.set(pointPosition[nextNum].x, m->fold->bottomPosY, pointPosition[nextNum].y);
@@ -1680,7 +1625,6 @@ void setCluster(Model *m) {
 		Vec3 Normal = (p2 - p3) % (p1 - p3); Normal.normalize();//平面のていぎ
 
 		Vec3 pos;
-		//betCluster.push_back(cent);
 		std::vector<Vec3> plane;
 		plane.push_back(p1);
 		plane.push_back(p2);
@@ -1750,15 +1694,10 @@ void setCluster(Model *m) {
 		}
 		bet3DP.push_back(dirV);
 		normalDir.push_back(normalV);
-		/*for (int j = 0; j < vers.size(); j++) {
-			vers[i][j]->sideClustNum = -1;
-		}*/
 		betweenY3D.push_back(bet3D);
 
 	}
 
-	//cout << "three cluster\n";
-	////setThreeCluster(m);
 	for (int i = 0; i < betweenY3D.size(); i++) {
 		std::vector<Vec2> outlineOne;
 		Vec2 begin; begin.set(0, 0);
@@ -1794,26 +1733,60 @@ void setCluster(Model *m) {
 		vCluster[(*it_v)->clusterNum].push_back((*it_v)->p);
 	}
 
-	for (int i = 0; i < m->fold->outlinepoints.size(); i++) {
-		for (int j = 0; j < m->fold->outlinepoints[i]->points.size(); j++) {
-			cout << m->fold->outlinepoints[i]->points[j].x << "," << m->fold->outlinepoints[i]->points[j].y << "\n";
+
+	Vec2 topCent; topCent.set(0, 0);
+	for (int i = 0; i < m->fold->pointPosition.size() - 1; i++) {
+		topCent += m->fold->pointPosition[i];
+	}
+
+	topCent = topCent / (double)(m->fold->pointPosition.size() - 1);
+	
+	//距離のヒストグラムを作る
+	m->dis2D.resize(m->fold->betweenPosition.size());
+	double reducePos; reducePos = m->fold->topPosY - (m->fold->topPosY - m->fold->bottomPosY) / 10.0;
+	for (int i = 0; i < dirCluster.size(); i++) {
+		std::vector<Vec3> dirV;
+		std::vector<Vec3> normalV;
+		int nextNum = i;
+		double count = 0;
+
+		Vec3 p1; p1.set(pointPosition[nextNum].x, m->fold->topPosY, pointPosition[nextNum].y);
+		Vec3 p2; p2.set(pointPosition[nextNum + 1].x, m->fold->topPosY, pointPosition[nextNum + 1].y);
+		Vec3 p3; p3.set(pointPosition[nextNum].x, m->fold->bottomPosY, pointPosition[nextNum].y);
+		Vec3 cent = (p1 + p2 + p3) / 3.0;
+		Vec3 Normal = (p2 - p3) % (p1 - p3); Normal.normalize();//平面のていぎ
+		if ((m->fold->betweenPosition[i]-topCent) * Normal < 0) {
+			Normal = Normal * -1;
+		}
+		m->planeNormal.push_back(Normal);
+		for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+			if ((*it_v)->clusterNum != i) continue;
+			if (reducePos < (*it_v)->p.y) {
+				Vec3 Pos; Pos.set(betweenPosition[i].x, (*it_v)->p.y, betweenPosition[i].y);
+				m->pseudoVolumeDi.push_back(0*Normal);
+				m->pseudoVolumeP.push_back(Pos);
+				Vec2 dis2D; dis2D.x = (*it_v)->p.y; dis2D.y = 0;
+				m->dis2D[(*it_v)->clusterNum].push_back(dis2D);
+			}
+			else{
+				double distance = ((*it_v)->p - cent) * Normal;
+				Vec3 Pdir; Pdir = Normal; Pdir = Pdir * distance;
+				m->pseudoVolumeDi.push_back(Pdir);
+				Vec3 Pos; Pos.set(betweenPosition[i].x, (*it_v)->p.y, betweenPosition[i].y);
+				m->pseudoVolumeP.push_back(Pos);
+				Vec2 dis2D; dis2D.x = (*it_v)->p.y; dis2D.y = distance;
+				m->dis2D[(*it_v)->clusterNum].push_back(dis2D);
+			}
 		}
 	}
 
 	std::list<Faces*>::iterator it_f;
-	cout << dirCluster.size() << "\n";
 	for (int i = 0; i < dirCluster.size(); i++) {
 		Model *modelR = new Model();
-		int num = i;//+1;
+		int num = i;
+
+		convexhull(vCluster[num], modelR);//凸包作って交差を調べる
 		
-		/*if (i == dirCluster.size() - 1) {
-			num = 0;
-		}*/
-		//num = i+1;
-		convexhull(vCluster[num], modelR);//凸c包作って交差を調べる
-		if (i == 2) {
-			convexModel = modelR;
-		}
 		Vec2 planeDir;
 		Vec2 dir = pointPosition[i + 1] - pointPosition[i]; dir.normalize();
 		planeDir.x = 1; planeDir.y = -(dir.x / dir.y); planeDir.normalize();
@@ -1863,26 +1836,44 @@ void setCluster(Model *m) {
 		double Ypos = abs(m->fold->bottomPosY - m->fold->topPosY);
 		Vec2 bottomVec2; bottomVec2.set(distance, Ypos);
 		if ((m->fold->betweenPosition[i]-bottomVec2) * Normal > 0) {
-			bottomVec2.x *= -1;
+			bottomVec2.x = 0;
 		}
 		outlinePoints[i].push_back(bottomVec2); 
 		m->fold->outlinepoints[i]->points.push_back(bottomVec2);
-		//if (i == 2) {
-			//outlineDir.push_back(distance * Normal);
-		//}
 	}
-
+	/*cout << "Part 0\n";
+	cout << "TopposY: " << m->fold->topPosY << "\n";
+	
 	for (int i = 0; i < m->fold->outlinepoints.size(); i++) {
-		cout << "after outline: " << i << "\n";
+		cout << "outlinePoint " << i << "\n";
 		for (int j = 0; j < m->fold->outlinepoints[i]->points.size(); j++) {
-			cout << m->fold->outlinepoints[i]->points[j].x << "," << m->fold->outlinepoints[i]->points[j].y << "\n";
+			cout << m->fold->outlinepoints[i]->points[j].x << " " << m->fold->outlinepoints[i]->points[j].y << "\n";
 		}
 	}
-	std::reverse(m->fold->pointPosition.begin(), m->fold->pointPosition.end());
-	std::reverse(m->fold->betweenPosition.begin(), m->fold->betweenPosition.end());
-	std::reverse(m->fold->outlinepoints.begin(), m->fold->outlinepoints.end());
-	
-	//cout << "betCluster.size(): " << betCluster.size() << "\n";
+	cout << "pointPosition\n";
+	for (int i = 0; i < m->fold->pointPosition.size(); i++) {
+		cout << m->fold->pointPosition[i].x << " " << m->fold->pointPosition[i].y << "\n";
+		if (i < m->fold->pointPosition.size() - 1) {
+			m->fold->betweenPosition[i] = (m->fold->pointPosition[i] + m->fold->pointPosition[i + 1]) / 2.0;
+		}
+	}
+
+	cout << "betweenPosition\n";
+	for (int i = 0; i < m->fold->betweenPosition.size(); i++) {
+		cout << m->fold->betweenPosition[i].x << " " << m->fold->betweenPosition[i].y << "\n";
+	}*/
+
+	Model *newModel = new Model();
+	newModel->fold = new foldmethod();
+
+	newModel->fold->pointPosition = m->fold->pointPosition;
+	newModel->fold->betweenPosition = m->fold->betweenPosition;
+	newModel->fold->outlinepoints = m->fold->outlinepoints;
+	newModel->fold->topPosY = m->fold->topPosY;
+	newModel->fold->bottomPosY = m->fold->bottomPosY;
+
+	return newModel;
+
 }
 
 void convertPolyToModel (Model *m) {
@@ -1990,8 +1981,6 @@ void convertPolyToModel (Model *m) {
 		rightNormal = rightNormal / (double)right.size();
 		rightNormal.normalize();
 
-		faceNormalL.push_back(leftNormal);
-		faceNormalR.push_back(rightNormal);
 		Vec3 dirCent = (*it_v)->adjCenter - (*it_v)->p; dirCent.normalize();
 		Vec2 verNormal((*it_v)->normal);
 		(*it_v)->curvture = verNormal.length() * verNormal.length() * (2 * acos(rightNormal * leftNormal));
@@ -2246,7 +2235,7 @@ bool judgeIntersected2D(Vec2 a, Vec2 b, Vec2 c, Vec2 d) {
 }
 
 void reductionTopPolygon(Model *m) {//2Dポリゴンのsimplification
-	cout << "reduction Start\n";
+	
 	int Nth = 6;
 	std::vector<Vec2> pointPositionFirst;
 
@@ -2279,7 +2268,6 @@ void reductionTopPolygon(Model *m) {//2Dポリゴンのsimplification
 
 		line *l1 = deleteV->l1;//自分が始点
 		line *l2 = deleteV->l2;//自分が終点
-		cout << "deleteLine[0]: " << deleteLine[0] << ": deleteLine[2]: " << deleteLine[1] << "\n";
 		//つなぎなおす
 		deleteV->l1->start = deleteV->l2->start->l2->end;
 		deleteV->l2->start->l2->end->l1 = l1;
@@ -2290,31 +2278,28 @@ void reductionTopPolygon(Model *m) {//2Dポリゴンのsimplification
 			break;
 		}
 	}
-
+	Vec2 centroid_; centroid_.set(0, 0);
 	for (int i = 0; i < m->convex_line.size(); i++) {
 		Vec2 p; p.set(m->convex_line[i]->start->p.x, m->convex_line[i]->start->p.y);
 		m->poly_p.push_back(p);
 		pointPositionFirst.push_back(p);
 		m->fold->pointPosition.push_back(p);
+		centroid_ += p;
 	}
-
-	/*Point *points = new Point[m->convex_line.size()];
-	///m->fold = new foldmethod();
-	for (int i = 0; i < m->convex_line.size(); i++){
-		points[i] = Point(m->convex_line[i]->start->p.x, m->convex_line[i]->start->p.y);
+	centroid_ = centroid_ / (double)m->convex_line.size();
+	Vec3 centroid3D; centroid3D.set(centroid_.x , 0, centroid_.y);
+	Vec3 topDir; topDir.set(0, 1, 0);
+	Vec3 p1,p0;
+	p0.x = m->fold->pointPosition[0].x;
+	p0.y = 0;
+	p0.z = m->fold->pointPosition[0].y;
+	p1.x = m->fold->pointPosition[1].x;
+	p1.y = 0;
+	p1.z = m->fold->pointPosition[1].y;
+	if ((((p0-centroid3D)%(p1-centroid3D))*topDir) < 0) {
+		std::reverse(m->fold->pointPosition.begin(), m->fold->pointPosition.end());
+		std::reverse(pointPositionFirst.begin(), pointPositionFirst.end());
 	}
-
-	Polygon_2 pgn(points, points + m->convex_line.size());
-	Cost cost;
-	pgn = PS::simplify(pgn, cost, Stop(Nth));
-	Vertex_iterator_2D it_v;
-	for (it_v = pgn.vertices_begin(); it_v != pgn.vertices_end(); it_v++) {
-		Vec2 p; p.set(it_v->x(), it_v->y());
-		
-		m->poly_p.push_back(p);
-		pointPositionFirst.push_back(p);
-		m->fold->pointPosition.push_back(p);
-	}*/
 
 	std::list<Vertexs*>::iterator itV;
 	std::list<Halfedge*>::iterator it_h;
@@ -2333,18 +2318,15 @@ void reductionTopPolygon(Model *m) {//2Dポリゴンのsimplification
 	double topPosY = max - length;
 	Vec3 N(0, 1, 0);//平面の
 	Vec3 planeCent(0, topPosY, 0);
-	cout << "topPosy@ " << topPosY << "\n";
 	Vec3 centroid; centroid.set(0, 0, 0);
 	int count = 0;
 
 	std::vector<Vec2> topConvex;
-	cout << "ここ?";
 	for (it_h = m->halfs.begin(); it_h != m->halfs.end(); it_h++) {
 		Vec3 A = (*it_h)->vertex->p;
 		Vec3 B = (*it_h)->next->vertex->p;
 		//cout << "bb ";
 		if (((planeCent - A)*N >= 0 && (planeCent - B)*N <= 0) || ((planeCent - A)*N <= 0 && (planeCent - B)*N >= 0)){//交差
-			cout << "aa ";
 			Vec3 crossP;
 			crossP = A + (B - A)*(abs((planeCent - A)*N) / (abs((planeCent - A)*N) + abs((planeCent - B)*N)));
 			bool flg = false;
@@ -2359,9 +2341,7 @@ void reductionTopPolygon(Model *m) {//2Dポリゴンのsimplification
 			}
 		}
 	}
-	cout << "topConvex:" << topConvex.size() << "\n";
 	Quickhull2D(topConvex, m);	
-	cout << "convex end\n";
 
 	Vec2 pointCent; pointCent.set(0, 0);
 	for (int i = 0; i < m->fold->pointPosition.size(); i++) {
@@ -2415,6 +2395,8 @@ void reductionTopPolygon(Model *m) {//2Dポリゴンのsimplification
 			}
 		}
 	}
+
+
 	m->fold->pointPosition.push_back(m->fold->pointPosition[0]);
 	m->poly_p.clear();
 
@@ -2440,6 +2422,592 @@ void reductionTopPolygon(Model *m) {//2Dポリゴンのsimplification
 		}
 	}
 
-	
+	for (int i = 0; i < m->fold->pointPosition.size() - 1; i++) {
+		Vec2 p1 = m->fold->pointPosition[i];
+		Vec2 p2 = m->fold->pointPosition[i + 1];
+		m->fold->betweenPosition.push_back((p1 + p2) / 2.0);
+	}
 }
 
+bool TriangleIntersect(Vec3 Orig, Vec3 dir,
+	Faces *face, float *pRetT/*, float *pRetU, float *pRetV*/)
+{
+	Vec3 v0 = face->halfedge->vertex->p;
+	Vec3 v1 = face->halfedge->next->vertex->p;
+	Vec3 v2 = face->halfedge->prev->vertex->p;
+	Vec3 e1, e2, pvec, tvec, qvec;
+	float det;
+	float t, u, v;
+	float inv_det;
+
+	e1 = v1 - v0;
+	e2 = v2 - v0;
+
+	//Vec3Cross(&pvec, &dir, &e2);
+	pvec = dir % e2;
+	//det = Vec3Dot(&e1, &pvec);
+	det = e1 * pvec;
+	if (det > (1e-3)) {
+
+		//Vec3Sub(&tvec, &Orig, &v0);
+		tvec = Orig - v0;
+		//u = Vec3Dot(&tvec, &pvec);
+		u = tvec * pvec;
+		if (u < 0.0f || u > det) return false;
+
+		//Vec3Cross(&qvec, &tvec, &e1);
+		qvec = tvec % e1;
+	//	v = Vec3Dot(&dir, &qvec);
+		v = dir * qvec;
+		if (v < 0.0 || u + v > det) return false;
+	}
+	else if (det < -(1e-3)) {
+		//Vec3Sub(&tvec, &Orig, &v0);
+		tvec = Orig - v0;
+	//	u = Vec3Dot(&tvec, &pvec);
+		u = tvec * pvec;
+		if (u > 0.0 || u < det) return false;
+
+	//	Vec3Cross(&qvec, &tvec, &e1);
+		qvec = tvec % e1;
+		//v = Vec3Dot(&dir, &qvec);
+		v = dir * qvec;
+		if (v > 0.0 || u + v < det) return false;
+
+	}
+	else {
+		return false;
+	}
+
+	inv_det = 1.0f / det;
+
+	t = e2 * qvec;
+	t *= inv_det;
+	u *= inv_det;
+	v *= inv_det;
+
+	if (pRetT) *pRetT = t;
+	//if (pRetU) *pRetU = u;
+	//if (pRetV) *pRetV = v;
+
+	return true;    //hit!!
+}
+
+void pseudoVolumeDiff(Model *m , Model *bunny) {
+	cout << "pseudoVolumeDiff\n";
+	cout << "size: " << m->vertices.size() << "\n\n";
+
+	m->addsetH();
+	bunny->addsetH();
+	
+	std::list<Vertexs*>::iterator it_v;
+	std::list<Vertexs*>::iterator it_v2;
+	std::list<Faces*>::iterator it_f;
+	double allLength = 0;
+
+	for (it_v = m->vertices.begin();it_v != m->vertices.end(); it_v++) {
+		
+		Vec3 verNormal2d; verNormal2d.set((*it_v)->normal.x, (*it_v)->normal.y, (*it_v)->normal.z);
+		verNormal2d.normalize();
+		//verNormal2d = verNormal2d * 100;//頂点のx-z方向の方向ベクトル
+		double distance = 1000000;
+		Vec3 nor; nor.set(0, 0, 0);
+		
+		for (it_f = bunny->faces.begin(); it_f != bunny->faces.end(); it_f++) {
+			//面のあたり判定
+			float lengthToFace;
+			if (TriangleIntersect((*it_v)->p, verNormal2d, (*it_f), &lengthToFace)) {//ベクトルの法線が外側を向いている
+				if (verNormal2d * (*it_f)->normal > 0) {//法線ベクトル調査
+					if (distance > lengthToFace) {
+						distance = lengthToFace;
+						nor = verNormal2d;
+					}
+				}
+			}
+			else if (TriangleIntersect((*it_v)->p, -verNormal2d, (*it_f), &lengthToFace)) {
+
+				if (-verNormal2d * (*it_f)->normal < 0) {//法線ベクトル調査
+					if (distance > lengthToFace) {
+						distance = lengthToFace;
+						nor = -verNormal2d;
+					}
+				}
+			}
+
+		}//後からmetro実装してみよう
+
+		m->fold->psuedoDiff.push_back(distance * nor);
+
+		if (distance == 1000000) {
+			distance = 0;
+		}
+		allLength += abs(distance);
+	}
+	cout << "distance ; " << allLength << "\n";
+}
+
+void autoScaling(Model *m) {//最小半径が10になるようにスケーリングする
+	std::list<Vertexs*>::iterator it_v;
+
+	Vec3 centroid; centroid.set(0, 0, 0);
+	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+		centroid += (*it_v)->p;
+	}
+
+	centroid = centroid / (double)m->vertices.size();
+	double min = 100000000;
+	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+		Vec3 p = (*it_v)->p - centroid;
+		double dif = p.length();
+		if (min > dif) {
+			min = dif;
+		}
+	}
+
+	double xvalue = 10.0 / min;
+
+	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+		Vec3 dir = (*it_v)->p - centroid;
+		dir = dir * xvalue;
+		(*it_v)->p = centroid + dir;
+	}
+}
+
+double gapCalc(double *output, std::vector<Vec2> points, int size, int points_size){//outputのサイズ
+	double fold_sum = 0.0;
+	double error = 1.0;
+
+	fold_sum += points[0].x;
+	for (int i = 0; i<size; i++){
+		double len = sqrt((points[i].x - points[i + 1].x)*(points[i].x - points[i + 1].x) + (points[i].y - points[i + 1].y)*(points[i].y - points[i + 1].y));
+		if (output[i] > 0){
+			fold_sum += len;
+		}
+		else{
+			fold_sum -= len;
+		}
+		if (fold_sum + error < points[i + 1].x){
+			////cout << "false\n";
+			return false;
+		}
+	}
+	////cout << "fold_sum: " << fold_sum << ", points[points_size - 1]: " << points[points_size - 1].x << "\n";
+	return fabs(fold_sum - points[points_size - 1].x);
+}
+
+double foldingGap(std::vector<Vec2> points) {
+	double foldgapMin = 0;
+
+	//for (int i = 0; i < (int)m->fold->outlinepoints.size(); i++){
+		bool flg;
+		//std::vector<Vec2> points = m->fold->outlinepoints[i]->points;
+		std::vector<double> l;
+		Vec2 foo;
+
+		l.resize((int)points.size() - 1);
+		for (int j = 0; j < (int)points.size() - 1; j++){
+			foo = points[j] - points[j + 1];
+
+			double length = foo.length();
+			l[j] = length;
+
+		}
+
+		int *sign = new int[(int)l.size()];
+		std::vector<double*> output;
+		std::vector<double> gap;
+		gap.resize((int)pow(2.0, (int)l.size() - 2));
+		if (points[0].y > points[(int)points.size() - 1].y){
+			for (int j = 0; j < (int)points.size() / 2; j++){
+				Vec2 t = points[j];
+				points[j] = points[(int)points.size() - j - 1];
+				points[(int)points.size() - j - 1] = t;
+			}
+			for (int j = 0; j < (int)l.size(); j++){
+				double t = l[j];
+				l[j] = l[(int)l.size() - j - 1];
+				l[(int)l.size() - j - 1] = t;
+			}
+		}
+
+		std::vector<int> output_array_size;
+		std::vector<dR> output_dR;
+		output_array_size.resize((int)pow(2.0, (int)l.size() - 2));
+		output_dR.resize((int)pow(2.0, (int)l.size() - 2));
+		uninfo(0, 0, sign, l, output_dR, gap, output_array_size, 0);
+		output.resize((int)output_dR.size());
+		for (int s = 0; s < (int)output_dR.size(); s++){
+			double *tmp = new double[(int)output_dR[s].dArray.size()];
+			for (int k = 0; k < output_array_size[s]; k++){
+				tmp[k] = output_dR[s].dArray[k];
+			}
+			output[s] = tmp;
+		}
+
+		for (int j = 0; j < (int)gap.size(); j++){
+			gap[j] = gap[j] - points[(int)points.size() - 1].x + points[0].x;
+		}
+
+		double *evalu1 = new double[(int)output.size()];
+		double *evalu2 = new double[(int)output.size()];
+		double *evalu3 = new double[(int)gap.size()];
+
+		func1(output, points, evalu1);
+		func2(output, points, evalu2);
+		func3(gap, output, evalu3, output_array_size);
+
+		double *evalu = new double[(int)output.size()];
+
+		double w1 = 1.0; double w2 = 1.0; double w3 = 1.0;
+		for (int j = 0; j < (int)output.size(); j++){
+			evalu[j] = w1*evalu1[j] + w2*evalu2[j] - w3*evalu3[j];
+		}
+
+		int *eSort = new int[(int)output.size()];
+		desIndex(evalu, eSort, (int)output.size());
+		double *evaluN = new double[(int)output.size()];
+
+		std::vector<double*> outputN;
+		std::vector<int> outputN_array_size;
+		std::vector<double> gapN;
+
+		outputN.resize((int)output.size());
+		outputN_array_size.resize((int)output.size());
+		gapN.resize((int)output.size());
+		double gapMin = 100000000;
+		for (int j = 0; j < (int)output.size(); j++){
+			int index = eSort[j];
+			evaluN[j] = evalu[index];
+			outputN[j] = output[index];
+			outputN_array_size[j] = output_array_size[index];
+			gapN[j] = gap[index];
+		}
+
+		for (int j = 0; j<(int)outputN.size(); j++){
+			double L = 0;
+			double alpha;
+			for (int k = 0; k<outputN_array_size[j]; k++){
+				L += fabs(outputN[j][k]);
+			}
+			alpha = gapN[j] / L;
+			for (int k = 0; k<outputN_array_size[j]; k++){
+				double delta = 1.0;
+				if (outputN[j][k] > 0){ delta = -1.0; }
+				outputN[j][k] = (1 + delta*alpha)*(outputN[j][k]);
+			}
+
+			double gapNs = gapCalc(outputN[j], points, outputN_array_size[j], (int)points.size());
+			if (gapNs < gapMin) {
+				gapMin = gapNs;
+			}
+		}
+
+		foldgapMin += gapMin;
+
+		delete[] sign;
+		delete[] evalu;
+		delete[] evalu1;
+		delete[] evalu2;
+		delete[] evalu3;
+		delete[] evaluN;
+		delete[] eSort;
+		for (int k = 0; k < (int)output.size(); k++){
+			delete[] output[k];
+		}
+
+		return gapMin;
+	//}
+}
+
+
+void NcurveFitting(Model *m) {
+	std::vector<std::vector<Vec2>> dis2D;
+	std::vector<std::vector<Vec2>> dis2DCurve;
+	std::vector<std::vector<Vec2>> point;
+	std::vector<outline*> outlinePosition;
+	dis2D.resize(m->fold->pointPosition.size()-1);
+	m->fold->outlinepoints.clear();
+	std::list<Vertexs*>::iterator it_v;
+	int maxN = 4;//最大次数
+
+	double length = abs(m->fold->topPosY - m->fold->bottomPosY);
+	double interVal = length / 100.0;
+	dis2DCurve.resize(m->fold->betweenPosition.size());
+
+	for (int i = 0; i < dis2DCurve.size(); i++) {
+		for (double j = 0; j < 100; j++) {
+			Vec2 v; v.x = j*interVal; v.y =  0;
+			dis2DCurve[i].push_back(v);
+		}
+	}
+
+	point.resize(m->fold->betweenPosition.size());
+	dis2D = m->dis2D;
+
+	for (int i = 0; i < m->dis2D.size(); i++) {
+		for (int j = 0; j < m->dis2D[i].size(); j++) {
+			for (int k = 0; k < m->dis2D[i].size(); k++) {
+				if (j == k) continue;
+				if (m->dis2D[i][j].x < m->dis2D[i][k].x) {
+					Vec2 tmp = m->dis2D[i][j];
+					m->dis2D[i][j] = m->dis2D[i][k];
+					m->dis2D[i][k] = tmp;
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < m->dis2D.size(); i++) {
+		double max = 0;
+		for (int j = 0; j < m->dis2D[i].size(); j++) {
+			//cout << m->dis2D[i][j].x << "," << m->dis2D[i][j].y << " ";
+			if (max < m->dis2D[i][j].x) {
+				max = m->dis2D[i][j].x;
+			}
+		}
+		for (int j = 0; j < m->dis2D[i].size(); j++) {//０を基準点にする
+			m->dis2D[i][j].x -= m->fold->topPosY;
+			m->dis2D[i][j].x *= -1;
+		}
+		Vec2 begin; begin.set(0, 0);
+		m->dis2D[i].push_back(begin);
+		//曲線当てはめ
+		std::vector<double> coef = fitting(m->dis2D[i], maxN);
+		for (int j = 0; j < coef.size(); j++) {
+			cout << coef[j] << " ";
+		}
+		
+		for (int k = 0; k < dis2DCurve[i].size(); k++) {
+			dis2DCurve[i][k].y = 0;
+			for (int j = 0; j < coef.size(); j++) {
+				dis2DCurve[i][k].y += coef[j] * pow(dis2DCurve[i][k].x, j);
+			}
+		}
+
+		//極値を計算する
+		
+		//point[i].push_back(begin);
+		outline *out = new outline();
+		//out->points.push_back(begin);
+		for (int k = 1; k < dis2DCurve[i].size() - 1; k++) {
+			if ((dis2DCurve[i][k].y > dis2DCurve[i][k - 1].y && dis2DCurve[i][k].y > dis2DCurve[i][k + 1].y) || 
+				(dis2DCurve[i][k].y < dis2DCurve[i][k - 1].y && dis2DCurve[i][k].y < dis2DCurve[i][k + 1].y)) {
+				if (dis2DCurve[i][k].x < 0) continue;
+				//point[i].push_back(dis2DCurve[i][k]);
+				Vec2 newP; newP.x = dis2DCurve[i][k].y; newP.y = dis2DCurve[i][k].x;
+				//out->points.push_back(newP);
+			}
+		}
+
+		Point *points_ = new Point[dis2DCurve[i].size() ];
+		//points_[0] = Point(0, 0);
+		for (int k = 0; k < dis2DCurve[i].size(); k++){
+			points_[k] = Point(dis2DCurve[i][k].x, dis2DCurve[i][k].y);
+		}
+		Polygon_2 pgn(points_, points_ + (dis2DCurve[i].size()));
+		/////ここからgapを計算する処理
+		int maxNum = 5;
+		std::vector<Vec2> mostGood;
+		double minGap = 1000000000;
+		for (int k = 3; k <= maxNum; k++) {
+			Vertex_iterator_2D it_v2;
+			std::vector<Vec2> folding;
+			Cost cost;
+			Polygon_2 pgn_ = PS::simplify(pgn, cost, Stop(k));
+			int count = 0;
+			for (it_v2 = pgn_.vertices_begin(); count < k - 1; it_v2++, count++) {
+				Vec2 p; p.set(it_v2->y(), it_v2->x());
+				Vec2 p_; p_.set(it_v2->x(), it_v2->y());
+				if (count == 0) { p.x = 0; p.y = 0; }
+				folding.push_back(p);
+			}
+			cout << "folding.size(): " << folding.size() << "\n";
+			Vec2 p; p.x = dis2DCurve[i][dis2DCurve[i].size() - 1].y; p.y = dis2DCurve[i][dis2DCurve[i].size() - 1].x;
+			folding.push_back(p);
+			double gap = foldingGap(folding);
+			if (minGap >= gap) {
+				minGap = gap;
+				mostGood = folding;
+			}
+			cout << "k??: " << k << ", " << gap << "," << minGap<< "\n";
+		}
+		
+		
+		out->points = mostGood;
+		cout << "out->points: " << out->points.size() << "\n";
+		for (int k = 0; k < out->points.size(); k++) {
+			cout << out->points[k].x << ", " << out->points[k].y << "\n";
+		}
+		//point[i].push_back(p_);
+		outlinePosition.push_back(out);
+	}
+
+	m->Ncurve = dis2DCurve;
+	m->dis2D = dis2D;
+	m->outlineSemiPoints = point;
+	m->fold->outlinepoints = outlinePosition;
+	int pointsNum = m->fold->outlinepoints.size();
+	cout << "k??: ";
+	Vec2 bottomCent; bottomCent.set(0, 0);
+	Vec2 topCent; topCent.set(0, 0);
+	for (int i = 0; i < pointsNum; i++) {
+		Vec2 nor = m->planeNormal[i];
+		Vec2 bet = m->fold->betweenPosition[i];
+		Vec2 p = m->fold->outlinepoints[i]->points[m->fold->outlinepoints[i]->points.size() - 1];
+		bottomCent += (bet + nor * p.x);
+		topCent += m->fold->pointPosition[i];
+	}
+	cout << "k??: ";
+	bottomCent = bottomCent / (double)pointsNum;
+	topCent = topCent / (double)pointsNum;
+
+	std::vector<Vec2> tmp;
+
+	for (int i = 0; i < pointsNum; i++) {//底面を凸形状にする
+		Vec2 nor = m->planeNormal[i];
+		Vec2 bet = m->fold->betweenPosition[i];
+		int nextNum = i + 1;
+		int prevNum = i - 1;
+		if (i == pointsNum - 1) nextNum = 0;
+		if (i == 0) prevNum = pointsNum - 1;
+		Vec2 p1 = m->fold->pointPosition[nextNum];
+		Vec2 p2 = m->fold->pointPosition[prevNum];
+		Vec2 p3 = m->fold->outlinepoints[i]->points[m->fold->outlinepoints[i]->points.size() - 1];
+		Vec2 p3_ = bet + nor * p3.x;
+
+		double min = abs(distancepointline(p3_, p1, p2));
+		Vec2 minV = p3_;
+		for (int j = 0; j < pointsNum; j++) {
+			Vec2 nor_ = m->planeNormal[j];
+			Vec2 bet_ = m->fold->betweenPosition[j];
+			int nextNum_ = j + 1;
+			int prevNum_ = j - 1;
+			if (j == pointsNum - 1) nextNum_ = 0;
+			if (j == 0) prevNum_ = pointsNum - 1;
+			Vec2 p1_ = m->fold->pointPosition[nextNum_];
+			Vec2 p2_ = m->fold->pointPosition[prevNum_];
+			Vec2 p3_1 = m->fold->outlinepoints[j]->points[m->fold->outlinepoints[j]->points.size() - 1];
+			Vec2 p3__ = bet_ + nor_ * p3_1.x;
+			if (min > abs(distancepointline(p3__, p1_, p2_))) {
+				min = abs(distancepointline(p3__, p1_, p2_));
+				minV = p3__;
+			}
+		}
+		
+		p3.x += abs(min - abs(distancepointline(p3_, p1, p2))) / 2.0;
+		m->fold->outlinepoints[i]->points[m->fold->outlinepoints[i]->points.size() - 1] = p3;
+		Vec2 p3___; p3___.set(p3.y, p3.x);
+		//m->outlineSemiPoints[i][m->outlineSemiPoints[i].size() - 1] = p3___;
+	}
+
+	//for (int i = 0; i < pointsNum; i++) {
+	//	Vec2 nor = m->planeNormal[i];
+	//	Vec2 bet = m->fold->betweenPosition[i];
+	//	int nextNum = i + 1;
+	//	int prevNum = i - 1;
+	//	if (i == pointsNum - 1) nextNum = 0;
+	//	if (i == 0) prevNum = pointsNum - 1;
+	//	Vec2 p1 = m->fold->outlinepoints[nextNum]->points[m->fold->outlinepoints[nextNum]->points.size() - 1];
+	//	p1 = m->fold->betweenPosition[nextNum] + m->planeNormal[nextNum] * p1.x;
+	//	Vec2 p2 = m->fold->outlinepoints[prevNum]->points[m->fold->outlinepoints[prevNum]->points.size() - 1];
+	//	p2 = m->fold->betweenPosition[prevNum] + m->planeNormal[prevNum] * p2.x;
+	//	Vec2 p3 = m->fold->outlinepoints[i]->points[m->fold->outlinepoints[i]->points.size() - 1];
+	//	Vec2 p3_ = bet + nor * p3.x;
+	//	cout << "p: " << p3.x << ", " << p3.y << "\n";
+	//	
+	//	if (!judgeIntersected2D(p1, p2, bottomCent, p3_)){
+	//		double dis = abs(distancepointline(p3_, p1, p2));
+	//		p3.x += (dis);
+	//		//m->fold->outlinepoints[i]->points[m->fold->outlinepoints[i]->points.size() - 1] = p3;
+	//		Vec2 p3_; p3_.set(p3.y, p3.x);
+	//		//m->outlineSemiPoints[i][m->outlineSemiPoints[i].size() - 1] = p3_;
+	//	}
+	//}
+
+	cout << "\nend????\n";
+}
+
+std::vector< double > fitting(const std::vector<Vec2> data,const int maxN){
+	//Polynomial Fit
+	std::vector<double> coefficients;
+	coefficients.resize(maxN+1);
+		int i, j, k, n, N;
+		N = data.size();
+		double *x = new double[N], *y = new double[N];
+		for (i = 0; i < data.size(); i++){
+			x[i] = data[i].x;
+		}
+		for (i = 0; i < data.size(); i++){
+			y[i] = data[i].y;
+		}
+		n = maxN;                      // n is the degree of Polynomial 
+		double *X = new double[2 * n + 1];   
+		//Array that will store the values of sigma(xi),sigma(xi^2),sigma(xi^3)....sigma(xi^2n)
+		for (i = 0; i<2 * n + 1; i++)
+		{
+			X[i] = 0;
+			for (j = 0; j<N; j++)
+				X[i] = X[i] + pow(x[j], i);        //consecutive positions of the array will store N,sigma(xi),sigma(xi^2),sigma(xi^3)....sigma(xi^2n)
+		}
+		double **B = new double*[n + 1], *a = new double[n + 1];            //B is the Normal matrix(augmented) that will store the equations, 'a' is for value of the final coefficients
+		for (i = 0; i < n + 1; i++) {
+			B[i] = new double[n + 2];
+		}
+		for (i = 0; i <= n; i++){
+			for (j = 0; j <= n; j++){
+				B[i][j] = X[i + j];
+			}
+		}//Build the Normal matrix by storing the corresponding coefficients at the right positions except the last column of the matrix
+		double *Y = new double[n + 1];                    //Array to store the values of sigma(yi),sigma(xi*yi),sigma(xi^2*yi)...sigma(xi^n*yi)
+		for (i = 0; i<n + 1; i++)
+		{
+			Y[i] = 0;
+			for (j = 0; j<N; j++)
+				Y[i] = Y[i] + pow(x[j], i)*y[j];        //consecutive positions will store sigma(yi),sigma(xi*yi),sigma(xi^2*yi)...sigma(xi^n*yi)
+		}
+		for (i = 0; i <= n; i++){
+			B[i][n + 1] = Y[i];
+		}//load the values of Y as the last column of B(Normal Matrix but augmented)
+		n = n + 1;                //n is made n+1 because the Gaussian Elimination part below was for n equations, but here n is the degree of polynomial and for n degree we get n+1 equations
+		
+		for (i = 0; i < n; i++)   {                 //From now Gaussian Elimination starts(can be ignored) to solve the set of linear equations (Pivotisation)
+			for (k = i + 1; k < n; k++){
+				if (B[i][i] < B[k][i]){
+					for (j = 0; j <= n; j++)
+					{
+						double temp = B[i][j];
+						B[i][j] = B[k][j];
+						B[k][j] = temp;
+					}
+				}
+			}
+		}
+
+		for (i = 0; i < n - 1; i++){         //loop to perform the gauss elimination
+			for (k = i + 1; k < n; k++)
+			{
+				double t = B[k][i] / B[i][i];
+				for (j = 0; j <= n; j++)
+					B[k][j] = B[k][j] - t*B[i][j];    //make the elements below the pivot elements equal to zero or elimnate the variables
+			}
+		}
+		for (i = n - 1; i >= 0; i--)                //back-substitution
+		{                        //x is an array whose values correspond to the values of x,y,z..
+			a[i] = B[i][n];                //make the variable to be calculated equal to the rhs of the last equation
+			for (j = 0; j < n; j++){
+				if (j != i){            //then subtract all the lhs values except the coefficient of the variable whose value                                   is being calculated
+					a[i] = a[i] - B[i][j] * a[j];
+				}
+			}
+			a[i] = a[i] / B[i][i];            //now finally divide the rhs by the coefficient of the variable to be calculated
+		}
+		
+
+		for (i = 0; i < n + 1; i++){
+			double val = a[i];
+			coefficients[i] = val;
+		}
+
+		//cout << "end\n";
+		return coefficients;
+}

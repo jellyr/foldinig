@@ -26,7 +26,7 @@ void setJacobian(Eigen::MatrixXd &jacobian, Eigen::VectorXd setP, Eigen::VectorX
 Eigen::MatrixXd ComputeNumericalJacobian(Cmodel *cm, COpenGL *fObj, int variableNum, int constraintNum) {
 	Model *foldM = cm->foldM;
 	Eigen::MatrixXd jacobian(variableNum, constraintNum);
-	double DELTA = 1.0e-5;
+	double DELTA = 1.0e-7;
 	double invDelta = 1.0 / DELTA;
 	Eigen::VectorXd fx_tmp = -invDelta * eachPenalty(cm, fObj);
 	int pointLastNum = foldM->fold->pointPosition.size() - 1;
@@ -148,25 +148,200 @@ void Step(double *output, double gap, std::vector<Vec2> points, int size, Vec2 *
 }
 
 void outputFolding(Model *foldM){
-	//cout << "\ntopYpos: " << foldM->fold->topPosY << "\n";
+	/*cout << "\ntopYpos: " << foldM->fold->topPosY << "\n";
 
 	for (int i = 0; i < foldM->fold->outlinepoints.size(); i++){
-		//cout << "outlinePoint " << i << "\n";
+		cout << "outlinePoint " << i << "\n";
 		for (int j = 0; j < foldM->fold->outlinepoints[i]->points.size(); j++){
-			//cout << foldM->fold->outlinepoints[i]->points[j].x << " " << foldM->fold->outlinepoints[i]->points[j].y << "\n";
+			cout << foldM->fold->outlinepoints[i]->points[j].x << " " << foldM->fold->outlinepoints[i]->points[j].y << "\n";
 		}
 	}
-	//cout << "pointPosition\n";
+	cout << "pointPosition\n";
 	for (int i = 0; i < foldM->fold->pointPosition.size(); i++){
-		//cout << foldM->fold->pointPosition[i].x << " " << foldM->fold->pointPosition[i].y << "\n";
+		cout << foldM->fold->pointPosition[i].x << " " << foldM->fold->pointPosition[i].y << "\n";
 	}
 
 	updateBetweenPos(foldM);
-	//cout << "betweenPosition\n";
+	cout << "betweenPosition\n";
 	for (int i = 0; i < foldM->fold->betweenPosition.size(); i++) {
-		//cout << foldM->fold->betweenPosition[i].x << " " << foldM->fold->betweenPosition[i].y << "\n";
-	}
+		cout << foldM->fold->betweenPosition[i].x << " " << foldM->fold->betweenPosition[i].y << "\n";
+	}*/
 }
+
+double distancepointlineInOpt(Vec2 P, Vec2 A, Vec2 B){//点PからABへの最短距離
+	Vec2 ABnor = B - A; ABnor.normalize();
+	double Ax = ABnor * (P - A);
+	Vec2 x = A + (ABnor*Ax);
+
+	return (P - x).length();
+}
+
+bool TriangleIntersectInOpt(Vec3 Orig, Vec3 dir, Faces *face, float *pRetT)
+{
+	Vec3 v0 = face->halfedge->vertex->p;
+	Vec3 v1 = face->halfedge->next->vertex->p;
+	Vec3 v2 = face->halfedge->prev->vertex->p;
+	Vec3 e1, e2, pvec, tvec, qvec;
+	float det;
+	float t, u, v;
+	float inv_det;
+
+	e1 = v1 - v0;
+	e2 = v2 - v0;
+
+	pvec = dir % e2;
+	det = e1 * pvec;
+	if (det > (1e-3)) {
+
+		tvec = Orig - v0;
+		u = tvec * pvec;
+		if (u < 0.0f || u > det) return false;
+
+		qvec = tvec % e1;
+		v = dir * qvec;
+		if (v < 0.0 || u + v > det) return false;
+	}
+	else if (det < -(1e-3)) {
+		tvec = Orig - v0;
+		u = tvec * pvec;
+		if (u > 0.0 || u < det) return false;
+
+		qvec = tvec % e1;
+		v = dir * qvec;
+		if (v > 0.0 || u + v < det) return false;
+
+	}
+	else {
+		return false;
+	}
+
+	inv_det = 1.0f / det;
+
+	t = e2 * qvec;
+	t *= inv_det;
+	u *= inv_det;
+	v *= inv_det;
+
+	if (pRetT) *pRetT = t;
+
+	return true;    //hit!!
+}
+
+double psuedoVolumeDiffInOpt(Model *m, Model *bunny) {
+	std::list<Vertexs*>::iterator it_v;
+	std::list<Faces*>::iterator it_f;
+	double allLength = 0;
+
+
+	/*for (it_f = m->faces.begin(); it_f != m->faces.end(); it_f++) {
+		Vec3 v1 = (*it_f)->halfedge->ve
+	}
+*/
+	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+
+		//頂点の法線を設定する
+
+		Halfedge  *h1 = (*it_v)->halfedge;
+		int count = 0;
+		Vec3 verNormal; verNormal.set(0, 0, 0);
+		do {
+			verNormal += h1->face->normal;
+			count++;
+			h1 = h1->prev->pair;
+		} while (h1 != (*it_v)->halfedge);
+
+		(*it_v)->normal = verNormal / (double)count;
+		//cout << (*it_v)->num << ", " << (*it_v)->normal.x << " ";
+		//面を持ってくる
+		/*int clustNum = (*it_v)->clusterNum;
+		//線の向き
+		Vec2 dir; dir = m->fold->pointPosition[clustNum] - m->fold->pointPosition[clustNum + 1];// .set(pointPosition[clustNum].x - pointPosition[clustNum + 1].x, pointPosition[clustNum].y - pointPosition[clustNum + 1].y);
+
+		Vec2 planeP1; planeP1.set(m->fold->pointPosition[clustNum].x, m->fold->pointPosition[clustNum].y);
+		//線に垂直な法線の向き
+		Vec2 Normaldir; Normaldir.x = 1; Normaldir.y = (-dir.x / dir.y);
+		Normaldir.normalize();
+		Vec2 lineCenter; lineCenter = (m->fold->pointPosition[clustNum] + m->fold->pointPosition[clustNum + 1]) / 2.0;
+		if ((lineCenter - topCentroid) * (Normaldir) > 0) {
+			Normaldir *= -1;
+		}
+		Vec3 Normal3d; Normal3d.set(Normaldir.x, 0, Normaldir.y);
+		Vec2 itV2D; itV2D.set((*it_v)->p.x, (*it_v)->p.z);
+		Normaldir = Normaldir * distancepointline(itV2D, m->fold->pointPosition[clustNum], m->fold->pointPosition[clustNum + 1]);
+		Normal3d = Normal3d *  distancepointline(itV2D, m->fold->pointPosition[clustNum], m->fold->pointPosition[clustNum + 1]);
+		//vToPlaneNormal.push_back(Normal3d);
+		*/
+
+		Vec3 verNormal2d; verNormal2d.set((*it_v)->normal.x, (*it_v)->normal.y, (*it_v)->normal.z);
+		verNormal2d.normalize();
+		//verNormal2d = verNormal2d * 100;//頂点のx-z方向の方向ベクトル
+		double distance = 1000000;
+		Vec3 nor; nor.set(0, 0, 0);
+
+		for (it_f = bunny->faces.begin(); it_f != bunny->faces.end(); it_f++) {
+			//面のあたり判定
+			float lengthToFace;
+			//	cout << "(*it_f)->normal: " << (*it_f)->normal.x << "," << (*it_f)->normal.y << "\n";
+
+			if (TriangleIntersectInOpt((*it_v)->p, verNormal2d, (*it_f), &lengthToFace)) {//ベクトルの法線が外側を向いている
+				if (verNormal2d * (*it_f)->normal > 0) {//法線ベクトル調査
+					if (distance > lengthToFace) {
+						distance = lengthToFace;
+						nor = verNormal2d;
+					}
+				}
+			}
+			else if (TriangleIntersectInOpt((*it_v)->p, -verNormal2d, (*it_f), &lengthToFace)) {
+
+				if (-verNormal2d * (*it_f)->normal < 0) {//法線ベクトル調査
+					if (distance > lengthToFace) {
+						distance = lengthToFace;
+						nor = -verNormal2d;
+					}
+				}
+			}
+
+		}
+
+		if (distance == 1000000) {
+			distance = 0;
+		}
+		else{
+			//cout << "dis: " << distance << " ";
+		}
+		allLength += abs(distance);
+		//cout << (nor*distance).x << ". " << (nor*distance).y << "\n";
+		//pseudoVolumeDi.push_back(nor*distance);
+	}
+
+	return allLength;
+}
+
+/*void determineClustNumForVertex(Model *m) {
+	std::list<Vertexs*>::iterator it_v;
+
+	Vec2 centroid; centroid.set(0, 0);
+
+	for (int i = 0; i < m->fold->pointPosition.size() - 1; i++) {
+		centroid = centroid + m->fold->pointPosition[i];
+	}
+
+	centroid = centroid / (double)(m->fold->pointPosition.size() - 1.0);
+
+	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+		for (int i = 0; i < m->fold->pointPosition.size() - 1; i++) {
+			Vec2 vertex2D((*it_v)->p);	vertex2D = vertex2D - centroid; vertex2D.normalize();
+			Vec2 piTocent; piTocent = m->fold->pointPosition[i] - centroid; piTocent.normalize();
+			Vec2 pi_1Tocent; pi_1Tocent = m->fold->pointPosition[i + 1] - centroid; pi_1Tocent.normalize();
+			
+			if (acos(vertex2D * piTocent) < acos(piTocent * pi_1Tocent) && acos(vertex2D * pi_1Tocent) < acos(piTocent * pi_1Tocent)) {
+				//割り当て
+				(*it_v)->clusterNum = i;
+				break;
+			}
+		}
+	}
+}*/
 
 double penalty(Cmodel *cm, COpenGL *fObj) {
 	Model *foldM = cm->foldM;
@@ -187,8 +362,10 @@ double penalty(Cmodel *cm, COpenGL *fObj) {
 	}
 	fObj->Trim(foldM);
 	fObj->convertFoldingToMesh(foldM);//	メッシュデータへと変換
-	Polyhedron_G P = inputPoly_G(foldM);//	Polyhedron_Gへと変換
-	double Diff = calculateDiff(P, inputP_, inputP);
+	//Polyhedron_G P = inputPoly_G(foldM);//	Polyhedron_Gへと変換utpu
+	//outputFolding(cm->foldM);
+	double Diff = psuedoVolumeDiffInOpt(cm->inputM, cm->foldM);
+	//cout << "diff: " << Diff << "\n";
 	//double Diff = metro(foldM, cm->inputC, cm->foldC);//	metroへ変換
 	/*if (Diff == 0) {
 		for (int i = 0; i < foldM->fold->pointPosition.size(); i++){
@@ -239,10 +416,11 @@ Eigen::VectorXd eachPenalty(Cmodel *cm, COpenGL *fObj) {
 	int constraintsNum = 4;
 	Eigen::VectorXd penaltyValue(constraintsNum);
 	//	outputFolding(foldM);
-	penaltyValue(0) = 100*penalty(cm, fObj);
-	penaltyValue(1) = 0;//topConvex_area(foldM);
-	penaltyValue(2) = 0;//topSmoothing(foldM);
-	penaltyValue(3) = 0;// 0.1*foldingGap(foldM);
+	penaltyValue(0) = penalty(cm, fObj);
+	penaltyValue(1) = topConvex_area(foldM);
+	//penaltyValue(2) = topSmoothing(foldM);
+	penaltyValue(2) = 10.0*foldingGap(foldM);
+	penaltyValue(3) = 0;
 	//cout << "penaltyValue: \n" << penaltyValue << "\n";
 	return penaltyValue;
 }
@@ -589,20 +767,22 @@ void updateParam(Model *foldM, Eigen::VectorXd dir) {
 
 Polyhedron_G Optimization(Cmodel *cm, COpenGL *fObj) {
 	Model *foldM = cm->foldM;
-
 	double lambda = 100000;//	小さいほどガウス：ニュートン法の影響が大きい
 	Eigen::VectorXd test = eachPenalty(cm, fObj);
 	double prevCost = test.squaredNorm() / 2;
 	double firstCost = prevCost;
 	double difference;
-	int itr = 10;
+	int itr = 300;
 	int count = 0;
-	int variableNum = 1;
+	int variableNum= 1;
 	int constraintNum = 4;//	制約の数 近似項、凸近似項、スムージング項
+	double delta = 1.0;
 	Polyhedron_G P;
 	std::vector<std::vector<Vec2>> outlinepoints_tmp;
 	std::vector<Vec2> pointPosition_tmp;
 
+	cout << "first: " << firstCost << "\n";
+	outputFolding(foldM);
 	//return P;
 	variableNum += (foldM->fold->pointPosition.size() - 1) * 2 + 1;
 	for (int i = 0; i < foldM->fold->pointPosition.size() - 1; i++) {
@@ -617,16 +797,11 @@ Polyhedron_G Optimization(Cmodel *cm, COpenGL *fObj) {
 
 	for (int i = 0; i < itr; i++) {
 		Eigen::VectorXd penaltyS;
-		while (1) {
-			penaltyS = eachPenalty(cm, fObj);
-			//if (penaltyS.squaredNorm() / 2.0 <= prevCost) {
-				prevCost = penaltyS.squaredNorm() / 2.0;
-				break;
-			//}
-			cout << prevCost << "," << (penaltyS.squaredNorm() / 2.0) << "\n";
-		}
+		penaltyS = eachPenalty(cm, fObj);
+		prevCost = penaltyS.squaredNorm() / 2.0;
+
 		Eigen::VectorXd grad = Eigen::VectorXd::Zero(variableNum);
-		Eigen::VectorXd gradJ = Eigen::VectorXd(variableNum);
+		Eigen::VectorXd gradJ = Eigen::VectorXd::Zero(variableNum);
 		jacobian = ComputeNumericalJacobian(cm, fObj, variableNum, constraintNum);
 		for (int j = 0; j < constraintNum; j++) {
 			double value = penaltyS[j];
@@ -638,6 +813,7 @@ Polyhedron_G Optimization(Cmodel *cm, COpenGL *fObj) {
 		double topPos = foldM->fold->topPosY;
 		grad = Eigen::VectorXd::Zero(variableNum);
 		grad = -gradJ;
+		
 		double Max = 0;
 		for (int ii = 0; ii < variableNum; ii++) {
 			if (abs(grad(ii)) > Max) {
@@ -653,13 +829,7 @@ Polyhedron_G Optimization(Cmodel *cm, COpenGL *fObj) {
 		}
 
 		for (int ii = 0; ii < variableNum; ii++) {
-			if (Maxval > 10.0) {
-				if (abs(grad(ii)) > 10.0) grad(ii) = grad(ii) / Max;
-			}
-			else {
-				grad(ii) = grad(ii) / Max;
-			}
-			cout << grad(ii) << "\n";
+			grad(ii) = grad(ii) / Max;
 		}
 		while (1) {
 			count++;
@@ -674,26 +844,23 @@ Polyhedron_G Optimization(Cmodel *cm, COpenGL *fObj) {
 				outlinepoints_tmp.push_back(foldM->fold->outlinepoints[j]->points);
 			}
 			pointPosition_tmp = foldM->fold->pointPosition;
-
-			updateParam(foldM, 0.01*grad);
+			updateParam(foldM, delta * grad);
+			
 			double cost = eachPenalty(cm, fObj).squaredNorm() / 2.0;
-			if (cost <= 0) {
-				cost = prevCost + 100000;
-			}
-			cout << "prevCost: " << prevCost << "\n";
-			cout << "cost: " << cost << "\n";
-			outputFolding(foldM);
+			cout << "prevCost: " << prevCost << " ";
+			cout << "cost: " << cost << " ";
 			if (cost < prevCost) {
 				difference = prevCost - cost;
 				prevCost = cost;
 				outlinepoints_tmp.clear();
 				pointPosition_tmp.clear();
+				delta *= 10;
+				cout << "OK\n";
 			}
 			else {
 				// 退避したものを戻す
-				/*if (count > 50) {
-					break;
-				}*/
+				cout << "not good \n";
+				//outputFolding(foldM);
 				lambda /= 10.0;
 				for (int j = 0; j < foldM->fold->outlinepoints.size(); j++) {
 					foldM->fold->outlinepoints[j]->points = outlinepoints_tmp[j];
@@ -703,15 +870,16 @@ Polyhedron_G Optimization(Cmodel *cm, COpenGL *fObj) {
 				outlinepoints_tmp.clear();
 				pointPosition_tmp.clear();
 				updateBetweenPos(foldM);
+				delta *= 0.1;
 				break;
 			}
 		}
 		lambda *= 10;
 		//cout << "itr: " << i << "\n";
-		/*if (difference < 1.0e-5 && difference > 0) {
+		if (difference < 1.0e-3 && difference > 0) {
 			//cout << "difference: " << difference << "\n";
-			break;
-			}*/
+		//	break;
+		}
 	}
 
 	cout << "first cost: " << firstCost << "\n";

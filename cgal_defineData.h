@@ -119,7 +119,7 @@ void calcCurvture(Model *m);
 void convertPolyToModel(Model *m);
 void coloring(Model *m);
 void renderModelCluster(Model *m);
-void setCluster(Model *m);
+Model *setCluster(Model *m);
 std::vector<int> cluster(std::vector<Vec2> points);
 
 void removeTopinternalPoint();
@@ -129,4 +129,10 @@ void Convex(std::list<Hullf*> ff, Model* model, std::list<Hullv*> hulv);
 void convexhull(std::vector<Vec3> ver, Model *model);
 std::vector<Vec2> convertTo2D(Model *m);
 void reductionTopPolygon(Model *m);
+void pseudoVolumeDiff(Model *m);
+void pseudoVolumeDiff(Model *m, Model *bunny);
+void renderPsuedV(Model *m);
+void autoScaling(Model *m);
+void NcurveFitting(Model *m);
+std::vector<double> fitting(const std::vector<Vec2> data,const int maxN);
 #endif

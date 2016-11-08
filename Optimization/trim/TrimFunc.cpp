@@ -12,7 +12,6 @@ std::vector<TrimPoints> getPointsForAnimation(std::vector<Vec2> pointPosition, s
 		int iRight = (i+1)%size;
 		int iRight1 = (i+2)%size;
 		int iLeft = (i+size-1)%size;
-
 		int id = 0;
 		double alpha = 0.0;
 		double l = 0.0;

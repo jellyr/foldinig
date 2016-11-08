@@ -89,7 +89,7 @@ void InputData(std::string filename, GLData *data){
 
 Model *InputData(){
 
-	ifstream openfile("final1.txt");
+	ifstream openfile("test5.txt");
 	string token(BUFSIZ, '\0');//サイズはBUFSIZE、すべてを\0で初期化
 
 	Model *now_m;
@@ -148,7 +148,7 @@ Model *InputData(){
 	}
 	
 	foldmethod *fold;
-	now_m->fold->topPosY = 171.975;
+	now_m->fold->topPosY = 0.6479;
 	fold = now_m->fold;
 	double lines = (double)fold->outlinepoints.size();//全部あわせたやつを出力する
 	int row_num = (int)sqrt(lines);

@@ -137,7 +137,7 @@ void COpenGL::renderScene(void)//描画関数
 }
 void COpenGL::renderParts(int number, Model *m, bool flg, Vec3 move, Vec3 scale){
 	foldmethod *f = m->fold;
-	double setSize = 0.01;
+	double setSize = 1;
 
 	glColor3d(0.7,0.3,0);
 	glPointSize(8);
@@ -462,6 +462,12 @@ void COpenGL::renderParts(int number, Model *m, bool flg, Vec3 move, Vec3 scale)
 						glVertex3d(p2.x+move.x, p2.y+move.y, p2.z+move.z);
 						glVertex3d(p3.x+move.x, p3.y+move.y, p3.z+move.z);
 
+
+						glBegin(GL_POINTS);
+						glVertex3d(p2.x + move.x, p2.y + move.y, p2.z + move.z);
+						glVertex3d(p3.x + move.x, p3.y + move.y, p3.z + move.z);
+						glEnd();
+
 						/*glVertex3d(p2.x+move.x, -p2.z+move.y, p2.y+move.z);
 						glVertex3d(p3.x+move.x, -p3.z+move.y, p3.y+move.z);*/
 					glEnd();
@@ -609,7 +615,7 @@ void COpenGL::renderParts(int number, Model *m, bool flg, Vec3 move, Vec3 scale)
 void COpenGL::Trim(GLData *data){
 
 	std::vector<TrimPoints> returnData;
-	double setSize = 0.01;
+	double setSize = 1;
 
 
 	for(int i=0; i<(int)data->parts.size(); i++){
@@ -855,7 +861,6 @@ void COpenGL::Trim(Model *m){
 	m->fold->trimPoint.clear();
 	m->face_cen.clear();
 	m->nor.clear();
-
 	foldmethod *f = m->fold;
 	/*cout << "pointPosition\n";
 	for (int i = 0; i < m->fold->pointPosition.size(); i++) {
@@ -870,12 +875,12 @@ void COpenGL::Trim(Model *m){
 		for (int j = 0; j < m->fold->outlinepoints[i]->points.size(); j++) {
 			cout << m->fold->outlinepoints[i]->points[j].x << "," << m->fold->outlinepoints[i]->points[j].y << "\n";
 		}
-	}*/
-
+	}
+*/
 	/*std::reverse(m->fold->pointPosition.begin(), m->fold->pointPosition.end());
 	std::reverse(m->fold->betweenPosition.begin(), m->fold->betweenPosition.end());
-	std::reverse(m->fold->outlinepoints.begin(), m->fold->outlinepoints.end());
-*/
+	std::reverse(m->fold->outlinepoints.begin(), m->fold->outlinepoints.end());*/
+
 	m->fold->trimPoint = getPointsForAnimation(m->fold->pointPosition, m->fold->betweenPosition, m->fold->outlinepoints);
 	
 	Vec3 cent = Vec3(0,0,0);
@@ -3422,7 +3427,7 @@ void COpenGL::AutoOptimization(Model *m){
 	optimization(m);
 	Trim(m);
 }
-//底面の市場近い線同士を見つけてその交点を取る
+//底面の近い線同士を見つけてその交点を取る
 
 Halfedge* checkHalf(std::list<Halfedge*> halfs){
 
@@ -3453,6 +3458,39 @@ Halfedge* checkHalf(std::list<Halfedge*> halfs){
 	return PairNullEdge;
 }
 
+//std::vector<Vec2> pointPositionLineNormal(std::vector<Vec2> pointPosition) {
+//
+//	//天頂面の重心
+//	std::vector<Vec2> topPosNormalDir;
+//	Vec2 topCent(0, 0);
+//	for (int i = 0; i < pointPosition.size() - 1; i++) {
+//		topCent += pointPosition[i];
+//	}
+//
+//	topCent /= (double)pointPosition.size() - 1;
+//
+//
+//	for (int i = 0; i < pointPosition.size(); i++) {
+//		Vec2 p(pointPosition[i + 1] - pointPosition[i]);
+//		p.normalize();
+//		Vec2 dir; dir.x = 1; dir.y = -(p.x / p.y);
+//		if (dir * ((pointPosition[i + 1] + pointPosition[i]) / 2.0 - topCent) < 0) {
+//			dir *= -1;
+//		}
+//		dir.normalize();
+//		topPosNormalDir.push_back(dir);//天頂面を構成する線の外側向き法線方向
+//	}
+//
+//	return topPosNormalDir;
+//
+//}
+//
+//
+//void topOptimizeToConnectPlane(std::vector<Vec2> pointPosition, std::vector<Vec2> connectDir) {
+//
+//
+//}
+
 void COpenGL::SetPlane(Model *m) {
 
 	std::vector<Vec3> tmp_v;
@@ -3460,7 +3498,7 @@ void COpenGL::SetPlane(Model *m) {
 	std::list<Halfedge*> null_half_list;
 	std::list<Faces*>::iterator it_f;
 	std::vector<Vec3> cent_vector;
-	
+	//	途切れたエッジの抽出
 	Halfedge *Nulledge = nullptr;
 	for(it_f=m->faces.begin(); it_f!=m->faces.end(); it_f++){
 		Halfedge *h1 = (*it_f)->halfedge;
@@ -3512,8 +3550,8 @@ void COpenGL::SetPlane(Model *m) {
 				break;
 			}
 		}while(half != edge);
-		m->null_edges.push_back(null_edge_tmp);
-		cent_vector.push_back(cent/(double)point_count);
+		m->null_edges.push_back(null_edge_tmp);//途切れたエッジの集合
+		cent_vector.push_back(cent/(double)point_count);//途切れたエッジの中心
 		if(null_half_list.size() == 0){
 			break;
 		}else{
@@ -3521,58 +3559,34 @@ void COpenGL::SetPlane(Model *m) {
 			half = (*null_half_list.begin());
 		}
 	}
+	
+	//ここで天頂面の形状を,接続面も考慮して最適化する
 
-	Vec3 Top = TDdata->plane_cent_Top;
-	Vec3 Bottom = TDdata->plane_cent;
-	std::vector<std::vector<Vec3>> Cutted_plane_points;
-	//交点を調べる
-	for(int i=0; i<(int)m->null_edges.size(); i++){// 切断面ごと
-		std::vector<Halfedge*> halfs = m->null_edges[i];
-		std::vector<Vec3> points;
-		Vec3 N = (Top-cent_vector[i])%(Bottom-cent_vector[i]);// 平面の法線ベクトル
-		N.normalize();
-		Vec3 P = (Top+Bottom+cent_vector[i])/3.0;//平面の中心
-		std::vector<Halfedge*>::iterator it_h2;
-		//cout << "i: " << halfs.size() << "\n";
-		for(it_h2=halfs.begin(); it_h2!=halfs.end(); it_h2++){ 
-			Vec3 A = (*it_h2)->vertex->p;
-			Vec3 B = (*it_h2)->next->vertex->p;
-			if(((P-A)*N >=0 && (P-B)*N <= 0) || ((P-A)*N <=0 && (P-B)*N >= 0)){//交差
-				Vec3 crossP;
-				crossP = A + (B-A)*(abs((P-A)*N )/(abs((P-A)*N) + abs((P-B)*N)));
-				points.push_back(crossP);
-			}
-		}
-		double max = 0;
-		double min = 1000000;
-		Vec3 max_vec;
-		Vec3 min_vec;
-		//cout << "points.size(): " << points.size() << "\n";
-		for(int j=0; j<(int)points.size(); j++){
-			if(max < Distance_DotAndLine(points[j], Top, Bottom)){
-				max = Distance_DotAndLine(points[j], Top, Bottom);
-				max_vec = points[j];
-			}
-			if(min > Distance_DotAndLine(points[j], Top, Bottom)){
-				min = Distance_DotAndLine(points[j], Top, Bottom);
-				min_vec = points[j];
-			}
-			/*m->test_plane.push_back(max_vec);
-			m->test_plane.push_back(min_vec);*/
-		}
-		/*
-		m->test_plane.push_back(max_vec);
-		m->test_plane.push_back(min_vec);*/
-	}
+
+	//std::vector<Vec2> centDirs(cent_vector.size());
+	//Vec2 topCent(0, 0);
+	//for (int i = 0; i < m->fold->pointPosition.size() - 1; i++) {
+	//	topCent += m->fold->pointPosition[i];
+	//}
+
+	//topCent /= (double)m->fold->pointPosition.size() - 1;
+
+	//for (int i = 0; i < cent_vector.size(); i++) {
+	//	Vec2 p(cent_vector[i]);
+	//	p = p - topCent; p.normalize();
+	//	centDirs[i] = p;// 天頂面の中心座標から接続面の中心へのベクトル
+	//}
+
+
 }
 
 void COpenGL::CalculateVolume(Model *m) {
 	//体積を計算する処理
 }
 
-void COpenGL::outputObj(){
-		double setSize = 0.01;
-		Model *m = TDdata->parts[0];
+void COpenGL::outputObj(Model *m){
+		double setSize = 1;
+		//Model *m = TDdata->parts[0];
 		m->vertices.clear();
 		m->faces.clear();
 		std::string file = "outputFoldingModel.obj";
@@ -3969,7 +3983,6 @@ void COpenGL::outputObj(){
 }
 
 void COpenGL::convertFoldingToMesh(Model *m){
-	//cout << "convert\n";
 	double setSize = 1.0;
 	m->vertices.clear();
 	m->faces.clear();
@@ -3987,7 +4000,7 @@ void COpenGL::convertFoldingToMesh(Model *m){
 	std::vector<TrimPoints> trimPoint = m->fold->trimPoint;
 	Vec3 top_center; top_center.set(0, 0, 0);
 	Vec3 bottom_center; bottom_center.set(0, 0, 0);
-
+	//cout << pointPosition.size() << " " << betweenPosition.size() << " " << outlinePoints.size() << "\n";
 	Vec2 pFirst = outlinePoints[0]->points[0];
 	Vec2 pLast = outlinePoints[0]->points[outlinePoints[0]->points.size()-1];
 	double changeY = abs(pLast.y - pFirst.y)/2;
@@ -4015,7 +4028,7 @@ void COpenGL::convertFoldingToMesh(Model *m){
 		int ipp = (i + 1) % pointPosition.size();
 		Vec2 sweepVec = pointPosition[ipp] - pointPosition[i];
 		sweepVec.normalize();
-		Vec2 trimVec = pointPosition[ipp] - pointPosition[i];
+		Vec2 trimVec =pointPosition[ipp] - pointPosition[i];
 		trimVec.rotate(PI / 2.0);
 		trimVec.normalize();
 		bool idSwitch = true;
@@ -4149,8 +4162,6 @@ void COpenGL::convertFoldingToMesh(Model *m){
 		Top_center = Top_center + pP;
 	}
 	Top_center = Top_center / ((double)pointPosition.size() - 1.0);
-
-
 
 	for (int i = 0; i<(int)pointPosition.size() - 1; i++) {
 
@@ -4300,8 +4311,6 @@ void COpenGL::convertFoldingToMesh(Model *m){
 		}
 	}
 
-
-
 	for (int i = 0; i<convert2Di.size(); i++) {
 		std::vector<Vec2i> points_;
 		points_ = triangulate(convert2Di[i]);
@@ -4343,19 +4352,13 @@ void COpenGL::convertFoldingToMesh(Model *m){
 		}
 	}
 
-	std::list<Faces*>::iterator it_f;
-	for (it_f = m->faces.begin(); it_f != m->faces.end(); it_f++) {
-		Halfedge *h = (*it_f)->halfedge;
-		Halfedge *h_next = (*it_f)->halfedge->next;
-		Halfedge *h_prev = (*it_f)->halfedge->prev;
-	}
-
+	m->addsetH();
 
 }
 
 void COpenGL::changeVertexPos(Model *m){
 	
-		double setSize = 0.01;
+		double setSize = 1;
 
 		std::vector<Vec2> pointPosition = m->fold->pointPosition;
 		std::vector<Vec2> betweenPosition = m->fold->betweenPosition;

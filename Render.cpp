@@ -11,12 +11,16 @@ const GLfloat lightDiffuse[] = { 1, 1, 1, 1 };
 const GLfloat materialDiffuseFront[] = { 0, 1.0, 0, 1 };
 const GLfloat materialDiffuseBack[] = { 1.0, 1.0, 0, 1 };
 const GLfloat lightPosition[] = { 10, 10, 10, 0 };
+Model *bunny = new Model();
+Polyhedron_G *afterOpt = new Polyhedron_G();
 
 void QGLClass::initFold() {
 	fObj = new COpenGL();
 	cgalObj = new Cmodel();
-	cgalObj->inputM = fObj->readOBJ("bunny\\head.obj", true);//	普通のメッシュデータ
+	cgalObj->inputM = fObj->readOBJ("bunny\\body_fixed.obj", true);//	普通のメッシュデータ
+	autoScaling(cgalObj->inputM);
 	cgalObj->inputM->reducepolygon(500);
+
 	cgalObj->cgalPoly = holeFillAndConvertPolyG(cgalObj->inputM);//	穴をふさいでpolyhedronへ変換
 	cgalObj->cgalPoly_Nef = convert_Poly_NefPoly((*cgalObj->cgalPoly));//	polyhedron→Nef_polyhedronへ変換
 
@@ -25,26 +29,39 @@ void QGLClass::initFold() {
 	fObj->Trim(cgalObj->foldM);//	トリム処理
 	cout << "foldingGap(Model *foldM): " << foldingGap(cgalObj->foldM) << "\n";
 	fObj->convertFoldingToMesh(cgalObj->foldM);//	折りたたみモデルをメッシュデータに変換
-	//cgalObj->foldPoly = inputPoly_Gnew(cgalObj->foldM);//	折りたたみモデルをcgaのPolyhedronに変換
+	cgalObj->foldPoly = inputPoly_Gnew(cgalObj->foldM);//	折りたたみモデルをcgaのPolyhedronに変換
 	
 	convertPolyToModel(cgalObj->inputM);
+	(*bunny) = (*cgalObj->inputM);
+	
 	//天頂面をつくる
 	fObj->Quickhull(convertTo2D(cgalObj->inputM), cgalObj->inputM);
 	reductionTopPolygon(cgalObj->inputM);
-	
+
 	//側面をつくる
-	setCluster(cgalObj->inputM);
-	fObj->Trim(cgalObj->inputM);
-	fObj->convertFoldingToMesh(cgalObj->inputM);
-	cgalObj->foldM = cgalObj->inputM;
+	Model *m = setCluster(cgalObj->inputM);
+	NcurveFitting(cgalObj->inputM);
 
-	//折りたたみ可能にする
-	fObj->optimization(cgalObj->foldM);
-	
-	//適化の計算をします
+	m->fold->outlinepoints = cgalObj->inputM->fold->outlinepoints;
+
+	fObj->Trim(m);
+	fObj->convertFoldingToMesh(m);
+	cgalObj->foldM = m;
 	cgalObj->foldPoly = inputPoly_Gnew(cgalObj->foldM);
-	cgalObj->metroPrepar();
-
+	
+	pseudoVolumeDiff(bunny , cgalObj->foldM);
+	////折りたたみ可能にする
+	//fObj->optimization(cgalObj->foldM);
+	//(*cgalObj->foldPoly) = Optimization(cgalObj, fObj);
+	//
+	////適化の計算をします
+	//cgalObj->foldPoly = inputPoly_Gnew(cgalObj->foldM);
+	//cgalObj->metroPrepar();
+	//最適化
+	//(*afterOpt) = Optimization(cgalObj, fObj);
+	cout << "foldingGap(Model *foldM): " << foldingGap(cgalObj->foldM) << "\n";
+	//fObj->optimization(cgalObj->foldM);
+	cout << "foldingGap(Model *foldM): " << foldingGap(cgalObj->foldM) << "\n";
 //	(*cgalObj->foldPoly) = Optimization(cgalObj, fObj);
 
 }
@@ -161,8 +178,12 @@ void QGLClass::wheelEvent(QWheelEvent *event) {
 void QGLClass::draw()
 {
 	//	qglColor(Qt::red);
-	renderFoldModel(cgalObj->inputM);
+	renderFoldModel(cgalObj->foldM);
+	//renderPsuedV(cgalObj->inputM);
+	//renderPsuedV(bunny);
+	//renderFoldModel(cgalObj->inputM);
 	//rendercgalPoly(cgalObj->foldPoly);
+	//rendercgalPoly(afterOpt);
 	rendercgalPoly(cgalObj->cgalPoly);
-	renderModelCluster(cgalObj->inputM);
+//	renderModelCluster(bunny);
 }
