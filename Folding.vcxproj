@@ -140,6 +140,7 @@
     <ClCompile Include="apps\metro\metro.cpp" />
     <ClCompile Include="cgal_MeshControle.cpp" />
     <ClCompile Include="defineData.cpp" />
+    <ClCompile Include="folding.cpp" />
     <ClCompile Include="foldingMethod.cpp" />
     <ClCompile Include="GeneratedFiles\Debug\moc_folding.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -159,14 +160,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_folding.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_Render.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_folding.cpp" />
+    <ClCompile Include="GeneratedFiles\Release\moc_Render.cpp" />
     <ClCompile Include="InputFile\InputFile.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Model_function.cpp" />

@@ -49,4 +49,5 @@ void setJacobian(Eigen::MatrixXd &jacobian, Eigen::VectorXd setP, Eigen::VectorX
 void Step(double *output, double gap, std::vector<Vec2> points, int size, Vec2 *pointsN, bool One);
 void outputFolding(Model *foldM);
 double gapcalc(double *output, Vec2 *points, int size, int points_size);
+double foldingGapDisp(Model *foldM);
 #endif

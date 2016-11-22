@@ -6,36 +6,136 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>400</height>
+    <width>591</width>
+    <height>576</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Folding</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QOpenGLWidget" name="QGLClass">
-    <property name="geometry">
-     <rect>
-      <x>-20</x>
-      <y>0</y>
-      <width>601</width>
-      <height>341</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>75</width>
-      <height>23</height>
+      <width>581</width>
+      <height>511</height>
      </rect>
     </property>
-    <property name="text">
-     <string>start</string>
-    </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_inputFille2">
+           <property name="text">
+            <string>inputFileFold : </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_inputFile">
+           <property name="text">
+            <string>inputFileObj : </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Expanding</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>60</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="objFileName">
+           <property name="styleSheet">
+            <string notr="true">QLabel { 
+	background-color : white; 
+	color : black;
+	border: 2px solid darkgray;
+ }</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="foldFileName">
+           <property name="styleSheet">
+            <string notr="true">QLabel { 
+	background-color : white; 
+	color : black;
+	border: 2px solid darkgray;
+ }</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Preferred</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>150</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>9</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QTableWidget" name="tableWidget"/>
+       </item>
+      </layout>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -43,7 +143,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>600</width>
+     <width>591</width>
      <height>24</height>
     </rect>
    </property>
@@ -51,9 +151,47 @@
     <property name="title">
      <string>file</string>
     </property>
-    <addaction name="actionStart"/>
+    <widget class="QMenu" name="menuImport">
+     <property name="title">
+      <string>Import</string>
+     </property>
+     <addaction name="actionFolding_import"/>
+     <addaction name="actionObj_import"/>
+    </widget>
+    <widget class="QMenu" name="menuOutput">
+     <property name="title">
+      <string>Output</string>
+     </property>
+     <addaction name="actionFolding_output"/>
+     <addaction name="actionObj_output"/>
+    </widget>
+    <addaction name="menuImport"/>
+    <addaction name="menuOutput"/>
+   </widget>
+   <widget class="QMenu" name="menuTool">
+    <property name="title">
+     <string>tool</string>
+    </property>
+    <widget class="QMenu" name="menuOptimization">
+     <property name="title">
+      <string>Optimization</string>
+     </property>
+     <addaction name="actionOutlines"/>
+     <addaction name="actionWhole"/>
+    </widget>
+    <addaction name="menuOptimization"/>
+    <addaction name="actionInitialize"/>
+    <addaction name="actionSegmentation"/>
+   </widget>
+   <widget class="QMenu" name="menuDebug">
+    <property name="title">
+     <string>debug</string>
+    </property>
+    <addaction name="actionFoldingData"/>
    </widget>
    <addaction name="menuStart"/>
+   <addaction name="menuTool"/>
+   <addaction name="menuDebug"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -64,9 +202,54 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="actionStart">
+  <action name="actionFoldiding">
    <property name="text">
-    <string>start</string>
+    <string>Folding</string>
+   </property>
+  </action>
+  <action name="actionOutlines">
+   <property name="text">
+    <string>outlines</string>
+   </property>
+  </action>
+  <action name="actionInitialize">
+   <property name="text">
+    <string>initialize</string>
+   </property>
+  </action>
+  <action name="actionSegmentation">
+   <property name="text">
+    <string>Segmentation</string>
+   </property>
+  </action>
+  <action name="actionFolding_output">
+   <property name="text">
+    <string>FoldingData</string>
+   </property>
+  </action>
+  <action name="actionObj_output">
+   <property name="text">
+    <string>Obj</string>
+   </property>
+  </action>
+  <action name="actionWhole">
+   <property name="text">
+    <string>whole</string>
+   </property>
+  </action>
+  <action name="actionFoldingData">
+   <property name="text">
+    <string>foldingData</string>
+   </property>
+  </action>
+  <action name="actionFolding_import">
+   <property name="text">
+    <string>Folding</string>
+   </property>
+  </action>
+  <action name="actionObj_import">
+   <property name="text">
+    <string>Obj</string>
    </property>
   </action>
  </widget>
@@ -74,5 +257,58 @@
  <resources>
   <include location="folding.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>actionFolding_import</sender>
+   <signal>triggered(bool)</signal>
+   <receiver>FoldingClass</receiver>
+   <slot>openFileDialogFold()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>289</x>
+     <y>287</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionObj_import</sender>
+   <signal>triggered(bool)</signal>
+   <receiver>FoldingClass</receiver>
+   <slot>openFileDialogObj()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>289</x>
+     <y>287</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tableWidget</sender>
+   <signal>cellClicked(int,int)</signal>
+   <receiver>FoldingClass</receiver>
+   <slot>openFileDialogObj()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>411</x>
+     <y>291</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>295</x>
+     <y>287</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>openFileDialogFold()</slot>
+  <slot>openFileDialogObj()</slot>
+ </slots>
 </ui>

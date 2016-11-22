@@ -38,20 +38,8 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_folding.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_folding.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\qrc_folding.cpp">
       <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_Render.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_Render.cpp">
-      <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="Render.cpp">
       <Filter>Source Files</Filter>
@@ -89,10 +77,25 @@
     <ClCompile Include="optimization.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cgal_MeshControle.cpp">
+    <ClCompile Include="apps\metro\metro.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="apps\metro\metro.cpp">
+    <ClCompile Include="GeneratedFiles\Debug\moc_folding.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_Render.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_folding.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_Render.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="cgal_MeshControle.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="folding.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -111,9 +114,6 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GeneratedFiles\ui_folding.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
     <ClInclude Include="foldingMethod.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -161,6 +161,9 @@
     </ClInclude>
     <ClInclude Include="apps\metro\metro.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_folding.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

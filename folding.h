@@ -17,7 +17,12 @@ class Folding : public QMainWindow
 public:
 	explicit Folding(QWidget *parent = 0);
 	~Folding();
-
+public slots:
+	//slots
+	void openFileDialogFold();
+	void openFileDialogObj();
+signals:
+	void triggered();
 private:
 	Ui::FoldingClass ui;
 };

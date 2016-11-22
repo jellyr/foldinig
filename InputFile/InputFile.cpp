@@ -87,9 +87,81 @@ void InputData(std::string filename, GLData *data){
 	
 }
 
+foldmethod InputFold(std::string path) {
+	ifstream openfile(path.c_str());
+
+	string token(BUFSIZ, '\0');//サイズはBUFSIZE、すべてを\0で初期化
+
+	foldmethod fold;
+	fold.topPosY = 0;
+	outline *now_o;
+	int readDataKind = -1;
+	srand((unsigned int)time(NULL));//初期化
+
+	Vec2 cent;
+	while (!(openfile >> token).fail()){
+		if (token == "Part"){//新しいモデルを生成
+			openfile.ignore(BUFSIZ, '\n');
+		}
+		else if (token == "TopposY:"){
+			double posY;
+			openfile >> posY;
+			fold.topPosY = posY;
+			openfile.ignore(BUFSIZ, '\n');
+		}
+		else if (token == "outlinePoint"){//新しいアウトラインを生成
+			outline *out = new outline();
+			makeRandumColor(out->color);
+			//色を自動的に生成
+			fold.outlinepoints.push_back(out);
+			now_o = out;
+			openfile.ignore(BUFSIZ, '\n');
+		}
+		else if (token == "pointPosition"){
+			now_o = nullptr;
+			readDataKind = 0;
+		}
+		else if (token == "betweenPosition"){
+			now_o = nullptr;
+			readDataKind = 1;
+		}
+		else{
+			if (now_o != nullptr){
+				Vec2 addPoints;
+				double x, y;
+				openfile >> y;
+				std::stringstream ss(token);
+				ss >> x;
+				addPoints.set(x, y);
+				now_o->points.push_back(addPoints);
+				now_o->first_points.push_back(addPoints);
+			}
+			else{
+				if (readDataKind == 0){
+					Vec2 posV;
+					std::stringstream ss(token);
+					ss >> posV.x;
+					openfile >> posV.y;
+					fold.pointPosition.push_back(posV);
+				}
+				else if (readDataKind == 1){
+					Vec2 posV;
+					std::stringstream ss(token);
+					ss >> posV.x;
+					openfile >> posV.y;
+					fold.betweenPosition.push_back(posV);
+				}
+			}
+		}
+	}
+
+	return fold;
+}
+
 Model *InputData(){
 
-	ifstream openfile("test5.txt");
+	ifstream openfile("bunny\\bunny_first\\ear_.txt");
+	cout << "??\n";
 	string token(BUFSIZ, '\0');//サイズはBUFSIZE、すべてを\0で初期化
 
 	Model *now_m;
@@ -101,12 +173,23 @@ Model *InputData(){
 
 	while(! (openfile >> token).fail()){
 		if(token == "Part"){//新しいモデルを生成
+			cout << "Part\n";
 			Model *m = new Model();
 			now_m = m;
 			now_m->scale.set(1,1,1);
 			now_m->fold = new foldmethod();
 			openfile.ignore(BUFSIZ,'\n');
-		}else if(token == "outlinePoint"){//新しいアウトラインを生成
+		}
+		else if (token == "TopposY"){
+			cout << "topPosy\n";
+			double posY;
+			openfile >> posY;
+			now_m->fold->topPosY = posY;
+			cout << "topPosy " << posY << "\n";
+			openfile.ignore(BUFSIZ, '\n');
+		}
+		else if (token == "outlinePoint"){//新しいアウトラインを生成
+			cout << "out\n";
 			outline *out = new outline();
 			makeRandumColor(out->color);
 			//色を自動的に生成
@@ -148,7 +231,7 @@ Model *InputData(){
 	}
 	
 	foldmethod *fold;
-	now_m->fold->topPosY = 0.6479;
+	//now_m->fold->topPosY = 18.5368;
 	fold = now_m->fold;
 	double lines = (double)fold->outlinepoints.size();//全部あわせたやつを出力する
 	int row_num = (int)sqrt(lines);

@@ -591,11 +591,31 @@ void renderFoldModel(Model *m) {
 		Vec3 p1 = (*it_f)->halfedge->next->vertex->p;
 		Vec3 p2 = (*it_f)->halfedge->prev->vertex->p;
 		Vec3 Normal = (p1 - p0) % (p2 - p0); Normal.normalize();
-		Normal = Normal * 10;
+		Normal = Normal;
+		
 		glBegin(GL_TRIANGLES);
+		//cout << (*it_f)->halfedge->vertex->minDis << " ";
 		glNormal3d(Normal.x, Normal.y, Normal.z);
+		if ((*it_f)->halfedge->vertex->minDis < 0) {
+			glColor3d(100, 1.0 - abs((*it_f)->halfedge->vertex->minDis), (*it_f)->halfedge->vertex->minDis);
+		}
+		else{
+			glColor3d((*it_f)->halfedge->vertex->minDis, 1.0 - abs((*it_f)->halfedge->vertex->minDis), 0);
+		}
 		glVertex3d(p0.x, p0.y, p0.z);
+		if ((*it_f)->halfedge->next->vertex->minDis < 0) {
+			glColor3d(0, 1.0 - abs((*it_f)->halfedge->next->vertex->minDis), (*it_f)->halfedge->next->vertex->minDis);
+		}
+		else{
+			glColor3d((*it_f)->halfedge->next->vertex->minDis, 1.0 - abs((*it_f)->halfedge->next->vertex->minDis), 0);
+		}
 		glVertex3d(p1.x, p1.y, p1.z);
+		if ((*it_f)->halfedge->prev->vertex->minDis < 0) {
+			glColor3d(0, 1.0 - abs((*it_f)->halfedge->prev->vertex->minDis), (*it_f)->halfedge->prev->vertex->minDis);
+		}
+		else{
+			glColor3d((*it_f)->halfedge->prev->vertex->minDis, 1.0 - abs((*it_f)->halfedge->prev->vertex->minDis), 0);
+		}
 		glVertex3d(p2.x, p2.y, p2.z);
 		glEnd();
 	}
@@ -606,9 +626,22 @@ void renderFoldModel(Model *m) {
 	std::list<Vertexs*>::iterator it_v;
 	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
 		Vec3 p0 = (*it_v)->p;
-		glBegin(GL_POINTS);
+		Vec3 p1 = (*it_v)->dir;
+		if ((*it_v)->minDis < 0) {
+			glColor3d(0, 1.0 - abs((*it_v)->minDis), abs((*it_v)->minDis));
+		}
+		else{
+			glColor3d((*it_v)->minDis, 1.0 - (*it_v)->minDis, 0);
+		}
+		/*glBegin(GL_POINTS);
 		glVertex3d(p0.x, p0.y, p0.z);
-		glEnd();
+		glEnd();*/
+		if ((*it_v)->minDis != 0) {
+			glBegin(GL_LINES);
+			glVertex3d(p0.x, p0.y, p0.z);
+			glVertex3d(p1.x, p1.y, p1.z);
+			glEnd();
+		}
 	}
 	glEnable(GL_LIGHTING);
 }
@@ -1100,7 +1133,7 @@ void rendercgalPoly(Polyhedron_G *cgalPoly) {
 			count++;
 		} while (++j != i->facet_begin());
 		Vec3 Normal = (p[1] - p[0]) % (p[2] - p[0]); Normal.normalize();
-		Normal = Normal * 10;
+		Normal = Normal;
 		glBegin(GL_TRIANGLES);
 		glNormal3d(Normal.x, Normal.y, Normal.z);
 		glVertex3d(p[0].x, p[0].y, p[0].z);
@@ -1212,14 +1245,14 @@ void outputAsObj(Polyhedron_G *poly) {
 }
 
 void Cmodel::metroPrepar() {
-	inputC = new CMesh();
-	foldC = new CMesh();
-	openMesh(inputM, inputC);//CMeshへ変換
-	openMesh(foldM, foldC);//CMeshへ変換
-	setMeshInfo(inputC);
-	setMeshInfo(foldC);
-	double metro = calcMetro((*inputC),(*foldC));
-	cout << "first metro is " << metro << "\n";
+	//inputC = new CMesh();
+	//foldC = new CMesh();
+	//openMesh(inputM, inputC);//CMeshへ変換
+	//openMesh(foldM, foldC);//CMeshへ変換
+	//setMeshInfo(inputC);
+	//setMeshInfo(foldC);
+	//double metro = calcMetro((*inputC),(*foldC));
+	//cout << "first metro is " << metro << "\n";
 }
 
 void calculateCurvture(Model *m) {
@@ -1548,7 +1581,7 @@ Model *setCluster(Model *m) {
 	Vec3 centroid; centroid.set(0, 0, 0);
 	int topEdgeNum = 4;////
 	std::vector<double> numCluster;
-	m->fold->betweenPosition.clear();
+	//m->fold->betweenPosition.clear();
 	m->fold->outlinepoints.clear();
 	numCluster.resize(dirCluster.size());
 
@@ -1561,7 +1594,7 @@ Model *setCluster(Model *m) {
 	vers.resize(dirCluster.size());
 	betweenY.resize(dirCluster.size());
 	clusterS.resize(dirCluster.size());
-
+	/*
 	for (int i = 0; i < dirCluster.size(); i++) {
 
 		Vec3 pos;
@@ -1733,26 +1766,25 @@ Model *setCluster(Model *m) {
 		vCluster[(*it_v)->clusterNum].push_back((*it_v)->p);
 	}
 
-
+	*/
 	Vec2 topCent; topCent.set(0, 0);
 	for (int i = 0; i < m->fold->pointPosition.size() - 1; i++) {
 		topCent += m->fold->pointPosition[i];
 	}
 
 	topCent = topCent / (double)(m->fold->pointPosition.size() - 1);
-	
 	//距離のヒストグラムを作る
 	m->dis2D.resize(m->fold->betweenPosition.size());
 	double reducePos; reducePos = m->fold->topPosY - (m->fold->topPosY - m->fold->bottomPosY) / 10.0;
-	for (int i = 0; i < dirCluster.size(); i++) {
+	for (int i = 0; i < m->fold->pointPosition.size() - 1; i++) {
 		std::vector<Vec3> dirV;
 		std::vector<Vec3> normalV;
 		int nextNum = i;
 		double count = 0;
-
-		Vec3 p1; p1.set(pointPosition[nextNum].x, m->fold->topPosY, pointPosition[nextNum].y);
-		Vec3 p2; p2.set(pointPosition[nextNum + 1].x, m->fold->topPosY, pointPosition[nextNum + 1].y);
-		Vec3 p3; p3.set(pointPosition[nextNum].x, m->fold->bottomPosY, pointPosition[nextNum].y);
+		cout << "!! " << m->fold->topPosY << " " << m->fold->bottomPosY << "\n";
+		Vec3 p1; p1.set(m->fold->pointPosition[nextNum].x, m->fold->topPosY, m->fold->pointPosition[nextNum].y);
+		Vec3 p2; p2.set(m->fold->pointPosition[nextNum + 1].x, m->fold->topPosY, m->fold->pointPosition[nextNum + 1].y);
+		Vec3 p3; p3.set(m->fold->pointPosition[nextNum].x, m->fold->bottomPosY, m->fold->pointPosition[nextNum].y);
 		Vec3 cent = (p1 + p2 + p3) / 3.0;
 		Vec3 Normal = (p2 - p3) % (p1 - p3); Normal.normalize();//平面のていぎ
 		if ((m->fold->betweenPosition[i]-topCent) * Normal < 0) {
@@ -1762,7 +1794,7 @@ Model *setCluster(Model *m) {
 		for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
 			if ((*it_v)->clusterNum != i) continue;
 			if (reducePos < (*it_v)->p.y) {
-				Vec3 Pos; Pos.set(betweenPosition[i].x, (*it_v)->p.y, betweenPosition[i].y);
+				Vec3 Pos; Pos.set(m->fold->betweenPosition[i].x, (*it_v)->p.y, m->fold->betweenPosition[i].y);
 				m->pseudoVolumeDi.push_back(0*Normal);
 				m->pseudoVolumeP.push_back(Pos);
 				Vec2 dis2D; dis2D.x = (*it_v)->p.y; dis2D.y = 0;
@@ -1772,7 +1804,7 @@ Model *setCluster(Model *m) {
 				double distance = ((*it_v)->p - cent) * Normal;
 				Vec3 Pdir; Pdir = Normal; Pdir = Pdir * distance;
 				m->pseudoVolumeDi.push_back(Pdir);
-				Vec3 Pos; Pos.set(betweenPosition[i].x, (*it_v)->p.y, betweenPosition[i].y);
+				Vec3 Pos; Pos.set(m->fold->betweenPosition[i].x, (*it_v)->p.y, m->fold->betweenPosition[i].y);
 				m->pseudoVolumeP.push_back(Pos);
 				Vec2 dis2D; dis2D.x = (*it_v)->p.y; dis2D.y = distance;
 				m->dis2D[(*it_v)->clusterNum].push_back(dis2D);
@@ -1781,7 +1813,7 @@ Model *setCluster(Model *m) {
 	}
 
 	std::list<Faces*>::iterator it_f;
-	for (int i = 0; i < dirCluster.size(); i++) {
+	/*for (int i = 0; i < dirCluster.size(); i++) {
 		Model *modelR = new Model();
 		int num = i;
 
@@ -1841,8 +1873,9 @@ Model *setCluster(Model *m) {
 		outlinePoints[i].push_back(bottomVec2); 
 		m->fold->outlinepoints[i]->points.push_back(bottomVec2);
 	}
-	/*cout << "Part 0\n";
-	cout << "TopposY: " << m->fold->topPosY << "\n";
+	*/
+	cout << "Part 0\n";
+	/*cout << "TopposY: " << m->fold->topPosY << "\n";
 	
 	for (int i = 0; i < m->fold->outlinepoints.size(); i++) {
 		cout << "outlinePoint " << i << "\n";
@@ -1868,7 +1901,7 @@ Model *setCluster(Model *m) {
 
 	newModel->fold->pointPosition = m->fold->pointPosition;
 	newModel->fold->betweenPosition = m->fold->betweenPosition;
-	newModel->fold->outlinepoints = m->fold->outlinepoints;
+	//newModel->fold->outlinepoints = m->fold->outlinepoints;
 	newModel->fold->topPosY = m->fold->topPosY;
 	newModel->fold->bottomPosY = m->fold->bottomPosY;
 
@@ -2001,7 +2034,7 @@ void convertPolyToModel (Model *m) {
 	m->fold = new foldmethod();
 	m->fold->topPosY = top;
 	m->fold->bottomPosY = bottom;
-	setThreeCluster(m);
+	//setThreeCluster(m);
 }
 
 std::vector<Vec2> convertTo2D(Model *m) {
@@ -2496,7 +2529,7 @@ bool TriangleIntersect(Vec3 Orig, Vec3 dir,
 void pseudoVolumeDiff(Model *m , Model *bunny) {
 	cout << "pseudoVolumeDiff\n";
 	cout << "size: " << m->vertices.size() << "\n\n";
-
+	m->fold->psuedoDiff.clear();
 	m->addsetH();
 	bunny->addsetH();
 	
@@ -2504,6 +2537,32 @@ void pseudoVolumeDiff(Model *m , Model *bunny) {
 	std::list<Vertexs*>::iterator it_v2;
 	std::list<Faces*>::iterator it_f;
 	double allLength = 0;
+	double max = 0;
+	
+	/*for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+		double minDis = 10000000;
+		Vertexs *P;
+		for (it_v2 = bunny->vertices.begin(); it_v2 != bunny->vertices.end(); it_v2++) {
+			double len = ((*it_v)->p - (*it_v2)->p).length();
+			if (minDis > len) {
+				minDis = len;
+				P = (*it_v2);
+			}
+		}
+		(*it_v)->minDis = minDis;
+		(*it_v)->dir = P->p;
+		if (((*it_v)->p - P->p) * (*it_v)->normal > 0) {
+			(*it_v)->minDis *= -1;
+		}
+		if (max < minDis) {
+			max = minDis;
+		}
+		allLength += minDis;
+	}
+
+	for (it_v = m->vertices.begin(); it_v != m->vertices.end(); it_v++) {
+		(*it_v)->minDis /= max;
+	}*/
 
 	for (it_v = m->vertices.begin();it_v != m->vertices.end(); it_v++) {
 		
@@ -2515,32 +2574,48 @@ void pseudoVolumeDiff(Model *m , Model *bunny) {
 		
 		for (it_f = bunny->faces.begin(); it_f != bunny->faces.end(); it_f++) {
 			//面のあたり判定
-			float lengthToFace;
-			if (TriangleIntersect((*it_v)->p, verNormal2d, (*it_f), &lengthToFace)) {//ベクトルの法線が外側を向いている
+			float lengthToFace1 = -10000;
+			float lengthToFace2 = -10000;
+			Vec3 nor1, nor2;
+			if (TriangleIntersect((*it_v)->p, verNormal2d, (*it_f), &lengthToFace1)) {//ベクトルの法線が外側を向いている
 				if (verNormal2d * (*it_f)->normal > 0) {//法線ベクトル調査
-					if (distance > lengthToFace) {
+					/*if (distance > lengthToFace1) {
 						distance = lengthToFace;
 						nor = verNormal2d;
-					}
+					}*/
+					nor1 = verNormal2d;
 				}
 			}
-			else if (TriangleIntersect((*it_v)->p, -verNormal2d, (*it_f), &lengthToFace)) {
-
+			if (TriangleIntersect((*it_v)->p, -verNormal2d, (*it_f), &lengthToFace2)) {
 				if (-verNormal2d * (*it_f)->normal < 0) {//法線ベクトル調査
-					if (distance > lengthToFace) {
+					/*if (distance > lengthToFace2) {
 						distance = lengthToFace;
 						nor = -verNormal2d;
-					}
+					}*/
+					nor2 = -verNormal2d;
+				}
+			}
+			if (abs(lengthToFace1) < abs(lengthToFace2)) {
+				if (distance > abs(lengthToFace1)) {
+					distance = abs(lengthToFace1);
+					nor = nor1;
+				}
+			}
+			else{
+				if (distance > abs(lengthToFace2)) {
+					distance = abs(lengthToFace2);
+					nor = nor2;
 				}
 			}
 
-		}//後からmetro実装してみよう
+		}
 
 		m->fold->psuedoDiff.push_back(distance * nor);
 
 		if (distance == 1000000) {
 			distance = 0;
 		}
+
 		allLength += abs(distance);
 	}
 	cout << "distance ; " << allLength << "\n";
@@ -2588,7 +2663,7 @@ double gapCalc(double *output, std::vector<Vec2> points, int size, int points_si
 		}
 		if (fold_sum + error < points[i + 1].x){
 			////cout << "false\n";
-			return false;
+			return -1;
 		}
 	}
 	////cout << "fold_sum: " << fold_sum << ", points[points_size - 1]: " << points[points_size - 1].x << "\n";
@@ -2697,11 +2772,14 @@ double foldingGap(std::vector<Vec2> points) {
 			}
 
 			double gapNs = gapCalc(outputN[j], points, outputN_array_size[j], (int)points.size());
-			if (gapNs < gapMin) {
+			if (gapNs < gapMin && gapNs != -1) {
 				gapMin = gapNs;
 			}
+			/*if (gapMin > abs(alpha)) {
+				gapMin = abs(alpha);
+			}*/
 		}
-
+		 
 		foldgapMin += gapMin;
 
 		delete[] sign;
@@ -2714,7 +2792,6 @@ double foldingGap(std::vector<Vec2> points) {
 		for (int k = 0; k < (int)output.size(); k++){
 			delete[] output[k];
 		}
-
 		return gapMin;
 	//}
 }
@@ -2847,7 +2924,6 @@ void NcurveFitting(Model *m) {
 	m->outlineSemiPoints = point;
 	m->fold->outlinepoints = outlinePosition;
 	int pointsNum = m->fold->outlinepoints.size();
-	cout << "k??: ";
 	Vec2 bottomCent; bottomCent.set(0, 0);
 	Vec2 topCent; topCent.set(0, 0);
 	for (int i = 0; i < pointsNum; i++) {
@@ -2857,7 +2933,6 @@ void NcurveFitting(Model *m) {
 		bottomCent += (bet + nor * p.x);
 		topCent += m->fold->pointPosition[i];
 	}
-	cout << "k??: ";
 	bottomCent = bottomCent / (double)pointsNum;
 	topCent = topCent / (double)pointsNum;
 
@@ -2893,11 +2968,33 @@ void NcurveFitting(Model *m) {
 				minV = p3__;
 			}
 		}
-		
+
 		p3.x += abs(min - abs(distancepointline(p3_, p1, p2))) / 2.0;
 		m->fold->outlinepoints[i]->points[m->fold->outlinepoints[i]->points.size() - 1] = p3;
 		Vec2 p3___; p3___.set(p3.y, p3.x);
 		//m->outlineSemiPoints[i][m->outlineSemiPoints[i].size() - 1] = p3___;
+	}
+
+	cout << "Part 0\n";
+	cout << "TopposY: " << m->fold->topPosY << "\n";
+
+	for (int i = 0; i < m->fold->outlinepoints.size(); i++) {
+		cout << "outlinePoint " << i << "\n";
+		for (int j = 0; j < m->fold->outlinepoints[i]->points.size(); j++) {
+			cout << m->fold->outlinepoints[i]->points[j].x << " " << m->fold->outlinepoints[i]->points[j].y << "\n";
+		}
+	}
+	cout << "pointPosition\n";
+	for (int i = 0; i < m->fold->pointPosition.size(); i++) {
+		cout << m->fold->pointPosition[i].x << " " << m->fold->pointPosition[i].y << "\n";
+		if (i < m->fold->pointPosition.size() - 1) {
+			m->fold->betweenPosition[i] = (m->fold->pointPosition[i] + m->fold->pointPosition[i + 1]) / 2.0;
+		}
+	}
+
+	cout << "betweenPosition\n";
+	for (int i = 0; i < m->fold->betweenPosition.size(); i++) {
+		cout << m->fold->betweenPosition[i].x << " " << m->fold->betweenPosition[i].y << "\n";
 	}
 
 	//for (int i = 0; i < pointsNum; i++) {
@@ -3010,4 +3107,24 @@ std::vector< double > fitting(const std::vector<Vec2> data,const int maxN){
 
 		//cout << "end\n";
 		return coefficients;
+}
+
+void outputFolding_(Model *foldM){
+	cout << "\nTopposY " << foldM->fold->topPosY << "\n";
+
+	for (int i = 0; i < foldM->fold->outlinepoints.size(); i++){
+		cout << "outlinePoint " << i << "\n";
+		for (int j = 0; j < foldM->fold->outlinepoints[i]->points.size(); j++){
+			cout << foldM->fold->outlinepoints[i]->points[j].x << " " << foldM->fold->outlinepoints[i]->points[j].y << "\n";
+		}
+	}
+	cout << "pointPosition\n";
+	for (int i = 0; i < foldM->fold->pointPosition.size(); i++){
+		cout << foldM->fold->pointPosition[i].x << " " << foldM->fold->pointPosition[i].y << "\n";
+	}
+
+	cout << "betweenPosition\n";
+	for (int i = 0; i < foldM->fold->betweenPosition.size(); i++) {
+		cout << foldM->fold->betweenPosition[i].x << " " << foldM->fold->betweenPosition[i].y << "\n";
+	}
 }

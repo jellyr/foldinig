@@ -1338,6 +1338,7 @@ void COpenGL::optimization(Model *m){
 				}
 				
 			//	//cout << "\n";
+				cout << "OK!!\n";
 				break;
 			}else{
 				flg = false;
@@ -1352,7 +1353,7 @@ void COpenGL::optimization(Model *m){
 					}*/
 				
 				}
-				////cout << "optimized error\n";
+				cout << "\n\noptimized error\n\n";
 			}
 		}
 
@@ -3589,7 +3590,7 @@ void COpenGL::outputObj(Model *m){
 		//Model *m = TDdata->parts[0];
 		m->vertices.clear();
 		m->faces.clear();
-		std::string file = "outputFoldingModel.obj";
+		std::string file = "outputFoldingModel_al.obj";
 		ofstream output(file);
 		output << "Part 0\n";
 

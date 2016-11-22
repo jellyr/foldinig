@@ -1,5 +1,6 @@
 #include <QtWidgets>
 #include <QtOpenGL>
+#include <QGLWidget>
 #include <iostream>
 
 #include "Render.h"
@@ -13,75 +14,87 @@ const GLfloat materialDiffuseBack[] = { 1.0, 1.0, 0, 1 };
 const GLfloat lightPosition[] = { 10, 10, 10, 0 };
 Model *bunny = new Model();
 Polyhedron_G *afterOpt = new Polyhedron_G();
+Polyhedron_G *pol = new Polyhedron_G();
 
-void QGLClass::initFold() {
+void QGLClass::inputata() {
+
+}
+
+void QGLClass::initFold(int p1, int p2) {
 	fObj = new COpenGL();
 	cgalObj = new Cmodel();
 	cgalObj->inputM = fObj->readOBJ("bunny\\body_fixed.obj", true);//	普通のメッシュデータ
 	autoScaling(cgalObj->inputM);
-	cgalObj->inputM->reducepolygon(500);
+	if (cgalObj->inputM->faces.size() > 500) {
+		cgalObj->inputM->reducepolygon(500);
+	}
 
 	cgalObj->cgalPoly = holeFillAndConvertPolyG(cgalObj->inputM);//	穴をふさいでpolyhedronへ変換
 	cgalObj->cgalPoly_Nef = convert_Poly_NefPoly((*cgalObj->cgalPoly));//	polyhedron→Nef_polyhedronへ変換
 
 	cgalObj->foldM = InputData();//	六角形の折りたたみモデルを入力
-	//fObj->optimization(cgalObj->foldM);//	最適化
+	fObj->optimization(cgalObj->foldM);//	最適化
 	fObj->Trim(cgalObj->foldM);//	トリム処理
-	cout << "foldingGap(Model *foldM): " << foldingGap(cgalObj->foldM) << "\n";
+	cout << "foldingGap(Model *foldM): " << foldingGapDisp(cgalObj->foldM) << "\n";
 	fObj->convertFoldingToMesh(cgalObj->foldM);//	折りたたみモデルをメッシュデータに変換
 	cgalObj->foldPoly = inputPoly_Gnew(cgalObj->foldM);//	折りたたみモデルをcgaのPolyhedronに変換
-	
+	pol = inputPoly_Gnew(cgalObj->foldM);
 	convertPolyToModel(cgalObj->inputM);
 	(*bunny) = (*cgalObj->inputM);
-	
+	cgalObj->bunny = bunny;
 	//天頂面をつくる
 	fObj->Quickhull(convertTo2D(cgalObj->inputM), cgalObj->inputM);
 	reductionTopPolygon(cgalObj->inputM);
-
+	pseudoVolumeDiff(cgalObj->inputM, cgalObj->foldM);
 	//側面をつくる
 	Model *m = setCluster(cgalObj->inputM);
 	NcurveFitting(cgalObj->inputM);
 
-	m->fold->outlinepoints = cgalObj->inputM->fold->outlinepoints;
-
+	m->fold = cgalObj->inputM->fold;
+	cout << "Trim??\n";
 	fObj->Trim(m);
 	fObj->convertFoldingToMesh(m);
-	cgalObj->foldM = m;
-	cgalObj->foldPoly = inputPoly_Gnew(cgalObj->foldM);
+	cout << "Trim??\n";
 	
-	pseudoVolumeDiff(bunny , cgalObj->foldM);
-	////折りたたみ可能にする
-	//fObj->optimization(cgalObj->foldM);
-	//(*cgalObj->foldPoly) = Optimization(cgalObj, fObj);
-	//
-	////適化の計算をします
-	//cgalObj->foldPoly = inputPoly_Gnew(cgalObj->foldM);
-	//cgalObj->metroPrepar();
+	cgalObj->foldM = m;
+	
+	cgalObj->foldPoly = inputPoly_Gnew(cgalObj->foldM);
+	cout << "Trim??\n";
+	//double volumeDiffFirst = calculateDiff((*cgalObj->foldPoly), cgalObj->cgalPoly_Nef, cgalObj->cgalPoly);
 	//最適化
+	//double firstFoldGap = foldingGapDisp(cgalObj->foldM);
+	//cout << " before \n";
+	//outputFolding(cgalObj->foldM);
+	//cout << "firstFap: " << firstFoldGap << "\n";
+	//cout << "foldingGap(Model *foldM): " << foldingGapDisp(cgalObj->foldM) << "\n";
+	//clock_t start = clock();
 	//(*afterOpt) = Optimization(cgalObj, fObj);
-	cout << "foldingGap(Model *foldM): " << foldingGap(cgalObj->foldM) << "\n";
+	//clock_t end = clock();
+	//std::cout << "duration = " << (double)(end - start) / CLOCKS_PER_SEC << "sec.\n";
+	//cout << "foldingGap(Model *foldM): " << "fisst " << firstFoldGap << "afterfoldgap: " << foldingGapDisp(cgalObj->foldM) << "\n";
 	//fObj->optimization(cgalObj->foldM);
-	cout << "foldingGap(Model *foldM): " << foldingGap(cgalObj->foldM) << "\n";
+	//fObj->convertFoldingToMesh(cgalObj->foldM);
+	//fObj->Trim(cgalObj->foldM);//	トリム処理
+	//cgalObj->foldPoly = inputPoly_Gnew(cgalObj->foldM);
+	//pseudoVolumeDiff(cgalObj->inputM, cgalObj->foldM);
+	//cout << "optimized folding gap: " << foldingGapDisp(cgalObj->foldM) << "\n";
+	//double afterVolumeDiff = calculateDiff((*cgalObj->foldPoly), cgalObj->cgalPoly_Nef, cgalObj->cgalPoly);
+	//cout << "volumeDiff: first " << volumeDiffFirst << "after: " << afterVolumeDiff << "\n";
+	//pseudoVolumeDiff(bunny, cgalObj->foldM);
+	//fObj->outputObj(cgalObj->foldM);
+	cout << " after \n";
+	outputFolding_(cgalObj->foldM);
 //	(*cgalObj->foldPoly) = Optimization(cgalObj, fObj);
 
 }
 
 void QGLClass::startAllProcess() {
-	
-}
 
-QGLClass::QGLClass(QWidget *parent)
-	: QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
-{
-	xRot = 0;
-	yRot = 0;
-	zRot = 0;
-	zoomValue = 100;
 }
 
 QGLClass::~QGLClass()
 {
-	initFold();//	モデルを入力、穴をふさぐ
+//	initFold();//	モデルを入力、穴をふさぐ
 }
 
 QSize QGLClass::minimumSizeHint() const
@@ -104,7 +117,7 @@ static void qNormalizeAngle(int &angle)
 
 void QGLClass::initializeGL()
 {
-	qglClearColor(Qt::white);
+	//qglClearColor(Qt::white);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
@@ -165,25 +178,26 @@ void QGLClass::mouseMoveEvent(QMouseEvent *event)
 	}
 
 	lastPos = event->pos();
-	updateGL();//	書かないとupdateされない
+	//updateGL();//	書かないとupdateされない
 	paintGL();
 }
 
 void QGLClass::wheelEvent(QWheelEvent *event) {
 	zoomValue += (event->angleDelta().y() / 300);
-	updateGL();//	書かないとupdateされない
+	//updateGL();//	書かないとupdateされない
 	paintGL();
 }
 
 void QGLClass::draw()
 {
 	//	qglColor(Qt::red);
-	renderFoldModel(cgalObj->foldM);
+	//renderFoldModel(cgalObj->foldM);
+	//renderFoldModel(bunny);
 	//renderPsuedV(cgalObj->inputM);
 	//renderPsuedV(bunny);
 	//renderFoldModel(cgalObj->inputM);
-	//rendercgalPoly(cgalObj->foldPoly);
+	//rendercgalPoly(pol);
 	//rendercgalPoly(afterOpt);
-	rendercgalPoly(cgalObj->cgalPoly);
+	//rendercgalPoly(cgalObj->foldPoly);
 //	renderModelCluster(bunny);
 }

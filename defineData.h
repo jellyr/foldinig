@@ -366,6 +366,8 @@ public:
 	int threeClust;
 	double curvture;
 	double curvtureY;
+	double minDis;
+	Vec3 dir;
 	std::vector<Halfedge*> v_half;
 
 	Vertexs(double _x, double _y, double _z,unsigned int _num) {
@@ -377,6 +379,7 @@ public:
 		clusterNum = -1;
 		sideClustNum = -1;
 		adjCenter.set(0, 0, 0);
+		minDis = 0;
 	}
 
 

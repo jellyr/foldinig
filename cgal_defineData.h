@@ -40,17 +40,10 @@ public:
 	Mesh *cgalM; //	CGALのメッシュ
 	Model *foldM;//	折りたたみデータ
 	Model *inputM;//　リファレンスモデル
+	Model *bunny;
 	Polyhedron_G *cgalPoly;//	inputModelをcgalのPolyhedronに変換
 	Polyhedron_G *foldPoly;//	foldModelをcgalのPolyhedronに変換
-	Polyhedron_G *diffPoly;//	foldPoly - cgalPoly;
 	Nef_polyhedron_3 cgalPoly_Nef;
-	CMesh *inputC;
-	CMesh *foldC;
-	Cmodel() {
-		cgalM = new Mesh();
-		cgalPoly = new Polyhedron_G();
-		diffPoly = new Polyhedron_G();
-	}
 	void metroPrepar();
 };
 
@@ -124,7 +117,6 @@ std::vector<int> cluster(std::vector<Vec2> points);
 
 void removeTopinternalPoint();
 void bottomPlaneIntersection(Model *m, Vec3 centroid);
-void setThreeCluster(Model *m);//上、側面、底面に分ける
 void Convex(std::list<Hullf*> ff, Model* model, std::list<Hullv*> hulv);
 void convexhull(std::vector<Vec3> ver, Model *model);
 std::vector<Vec2> convertTo2D(Model *m);
@@ -135,4 +127,5 @@ void renderPsuedV(Model *m);
 void autoScaling(Model *m);
 void NcurveFitting(Model *m);
 std::vector<double> fitting(const std::vector<Vec2> data,const int maxN);
+void outputFolding_(Model *foldM);
 #endif

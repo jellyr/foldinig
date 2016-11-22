@@ -267,7 +267,6 @@ bool foldableV(double *output, Vec2 *points, int size, int points_size){//output
 			fold_sum -= len;
 		}
 		if(fold_sum+error < points[i+1].x){
-			//cout << "false\n";
 			return false;
 		}
 	}

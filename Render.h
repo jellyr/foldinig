@@ -1,20 +1,22 @@
 #ifndef MYGLWIDGET_H
 #define MYGLWIDGET_H
 
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include "cgal_defineData.h"
 #include "foldingMethod.h"
 
 
-class QGLClass : public QGLWidget
+class QGLClass : public QOpenGLWidget
 {
 	Q_OBJECT
 public:
-	explicit  QGLClass(QWidget *parent = 0);
+	explicit  QGLClass(QWidget *parent = 0) : QOpenGLWidget(parent) { };
 	~QGLClass();
 signals:
 private slots :
 	void startAllProcess();
+	void initFold(int p1, int p2);
+	void addData();
 
 protected:
 	void initializeGL();
@@ -30,7 +32,6 @@ public:
 
 	COpenGL *fObj;
 	Cmodel *cgalObj;
-	void initFold();
 
 	int vWidth; //	ビューポートの幅
 	int vHeight;//	ビューポートのタカサ
